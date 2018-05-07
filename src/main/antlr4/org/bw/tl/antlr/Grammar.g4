@@ -1,0 +1,5 @@
+grammar Grammar;
+
+file
+    :
+    ;
