@@ -54,3 +54,43 @@ LTE     : '<=';
 
 COLON   : ':';
 DOT     : '.';
+
+INT
+    : Digit+
+    ;
+
+HEX
+    : '0' [xX] HexDigit+
+    ;
+
+FLOAT
+    : Digit+ '.' Digit* ExponentPart?
+    | '.' Digit+ ExponentPart?
+    | Digit+ ExponentPart
+    ;
+
+HEX_FLOAT
+    : '0' [xX] HexDigit+ '.' HexDigit* HexExponentPart?
+    | '0' [xX] '.' HexDigit+ HexExponentPart?
+    | '0' [xX] HexDigit+ HexExponentPart
+    ;
+
+fragment
+ExponentPart
+    : [eE] [+-]? Digit+
+    ;
+
+fragment
+HexExponentPart
+    : [pP] [+-]? Digit+
+    ;
+
+fragment
+Digit
+    : [0-9]
+    ;
+
+fragment
+HexDigit
+    : [0-9a-fA-F]
+    ;
