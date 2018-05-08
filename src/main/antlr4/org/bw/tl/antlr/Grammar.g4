@@ -7,7 +7,21 @@ file
 
 
 
+fqn
+    :   IDENTIFIER
+    |   fqn DOT IDENTIFIER
+    ;
+
+
 // tokens
+
+IDENTIFIER : [a-zA-Z_][a-zA-Z_0-9]*;
+
+WS  :  [ \t\r\n\u000C]+ -> skip;
+
+COMMENT :   '/*' .*? '*/' -> channel(HIDDEN);
+
+LINE_COMMENT :   '//' ~[\r\n]* -> channel(HIDDEN);
 
 // arithmetic
 
