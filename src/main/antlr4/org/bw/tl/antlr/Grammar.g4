@@ -1,8 +1,7 @@
 grammar Grammar;
 
 file
-    :
-    imp* topLevelStatement* EOF
+    : imp* topLevelStatement* EOF
     ;
 
 topLevelStatement
@@ -12,17 +11,23 @@ topLevelStatement
     ;
 
 statement
-    :
-    expression
+    : expression
     ;
 
 expression
-    :
-    fqn
+    : fqn
     ;
 
 functionDef
-    : (VOID_T | primitiveType) NL* IDENTIFIER NL* LPAREN RPAREN NL* block
+    : (VOID_T | primitiveType) NL* IDENTIFIER NL* LPAREN functionParams? RPAREN NL* block
+    ;
+
+functionParams
+    : functionParam (NL* COMMA NL* functionParam)*
+    ;
+
+functionParam
+    : type NL* IDENTIFIER
     ;
 
 type
@@ -47,8 +52,7 @@ block
     ;
 
 ifStatement
-    :
-    IF expression block (ELSE statement)?
+    : IF expression block (ELSE statement)?
     ;
 
 literal
@@ -71,8 +75,8 @@ string
     ;
 
 fqn
-    :   IDENTIFIER
-    |   fqn DOT IDENTIFIER
+    : IDENTIFIER
+    | fqn DOT IDENTIFIER
     ;
 
 
@@ -178,6 +182,7 @@ LTE     : '<=';
 
 COLON   : ':';
 DOT     : '.';
+COMMA   : ',';
 SEMICOLON : ';';
 
 NL      : '\u000A' | '\u000D' '\u000A';
