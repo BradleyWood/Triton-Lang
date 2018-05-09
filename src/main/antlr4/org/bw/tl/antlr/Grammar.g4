@@ -2,18 +2,53 @@ grammar Grammar;
 
 file
     :
-    statement*
+    imp* topLevelStatement* EOF
     ;
 
+topLevelStatement
+    : (
+    functionDef
+    ) semi?
+    ;
 
 statement
     :
-    expression semi
+    expression
     ;
 
 expression
     :
     fqn
+    ;
+
+functionDef
+    : (VOID_T | primitiveType) NL* IDENTIFIER NL* LPAREN RPAREN NL* block
+    ;
+
+type
+    : primitiveType
+    | fqn
+    ;
+
+primitiveType
+    : INT_T
+    | LONG_T
+    | BYTE_T
+    | FLOAT_T
+    | DOUBLE_T
+    ;
+
+imp
+    : IMP fqn semi?
+    ;
+
+block
+    : LBR NL* (statement semi)* (statement semi?)? NL* RBR
+    ;
+
+ifStatement
+    :
+    IF expression block (ELSE statement)?
     ;
 
 literal
@@ -85,9 +120,18 @@ ZeroToThree
     ;
 
 IF      : 'if';
+IMP     : 'import';
+INT_T   : 'int';
+LONG_T  : 'long';
+BYTE_T  : 'byte';
 NULL    : 'null';
 TRUE    : 'true';
+ELSE    : 'else';
 FALSE   : 'false';
+FLOAT_T : 'float';
+DOUBLE_T: 'double';
+VOID_T  : 'void';
+BOOL_T  : 'boolean';
 LPAREN  : '(';
 RPAREN  : ')';
 
