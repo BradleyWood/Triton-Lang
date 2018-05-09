@@ -15,14 +15,45 @@ statement
     ;
 
 expression
-    : fqn
+    : LPAREN NL* expression NL* RPAREN
+    | literal
+    | expression NL* DOT NL* fqn
+    | fqn
+    | preceeding=expression NL* DOT NL* functionCall
+    | functionCall
+    | (PLUS | MINUS | NOT) NL* expression
+    | LPAREN NL* expression NL* RPAREN
+    | expression NL* (POW) NL* expression
+    | expression NL* (MULT | DIV | MOD) NL* expression
+    | expression NL* (PLUS | MINUS) NL* expression
+    | expression NL* (GT | LT | GTE | LTE | EQUALS | NOT_EQ) NL* expression
+    | expression NL* (AND | OR) NL* expression
+    | assignment
+    ;
+
+assignment
+    : <assoc=right>
+        fqn NL*
+        (   ASSIGN
+        |   PLUS_EQ
+        |   MINUS_EQ
+        |   MULT_EQ
+        |   DIV_EQ
+        |   MOD_EQ
+        |   POW_EQ
+        )
+        NL* expression
+    ;
+
+functionCall
+    : IDENTIFIER NL* LPAREN (expression (NL* COMMA NL* expression)*)? NL* RPAREN
     ;
 
 functionDef
-    : (VOID_T | primitiveType) NL* IDENTIFIER NL* LPAREN functionParams? RPAREN NL* block
+    : (VOID_T | primitiveType) NL* IDENTIFIER NL* LPAREN functionParamDefs? RPAREN NL* block
     ;
 
-functionParams
+functionParamDefs
     : functionParam (NL* COMMA NL* functionParam)*
     ;
 
