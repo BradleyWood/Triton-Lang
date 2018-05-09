@@ -2,10 +2,36 @@ grammar Grammar;
 
 file
     :
+    statement*
     ;
 
 
+statement
+    :
+    ;
 
+expression
+    :
+    ;
+
+literal
+    : number
+    | boolean
+    | string
+    | NULL
+    ;
+
+boolean
+    : TRUE | FALSE
+    ;
+
+number
+    : INT | HEX | FLOAT | HEX_FLOAT
+    ;
+
+string
+    : StringLiteral
+    ;
 
 fqn
     :   IDENTIFIER
@@ -14,6 +40,58 @@ fqn
 
 
 // tokens
+
+
+StringLiteral
+    :   '"' StringCharacters? '"'
+    ;
+fragment
+StringCharacters
+    :   StringCharacter+
+    ;
+fragment
+StringCharacter
+    :   ~["\\]
+    |   EscapeSequence
+    ;
+// §3.10.6 Escape Sequences for Character and String Literals
+fragment
+EscapeSequence
+    :   '\\' [btnfr"'\\]
+    |   OctalEscape
+    |   UnicodeEscape
+    ;
+
+fragment
+OctalEscape
+    :   '\\' OctalDigit
+    |   '\\' OctalDigit OctalDigit
+    |   '\\' ZeroToThree OctalDigit OctalDigit
+    ;
+fragment
+OctalDigit
+    :   [0-7]
+    ;
+fragment
+UnicodeEscape
+    :   '\\' 'u' HexDigit HexDigit HexDigit HexDigit
+    ;
+
+fragment
+ZeroToThree
+    :   [0-3]
+    ;
+
+IF      : 'if';
+NULL    : 'null';
+TRUE    : 'true';
+FALSE   : 'false';
+LPAREN  : '(';
+RPAREN  : ')';
+
+LBR     : '{';
+RBR     : '}';
+
 
 IDENTIFIER : [a-zA-Z_][a-zA-Z_0-9]*;
 
@@ -54,6 +132,11 @@ LTE     : '<=';
 
 COLON   : ':';
 DOT     : '.';
+SEMICOLON : ';';
+
+NL      : '\u000A' | '\u000D' '\u000A';
+
+semi: NL+ | SEMICOLON | SEMICOLON NL+;
 
 INT
     : Digit+
