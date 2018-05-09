@@ -11,7 +11,12 @@ topLevelStatement
     ;
 
 statement
-    : expression
+    : block
+    |
+    ( ifStatement
+    | whileStatement
+    | expression
+    ) semi
     ;
 
 expression
@@ -86,6 +91,11 @@ ifStatement
     : IF expression block (ELSE statement)?
     ;
 
+whileStatement
+    : WHILE NL* expression NL* statement
+    | DO NL* statement NL* WHILE NL* expression
+    ;
+
 literal
     : number
     | bool
@@ -155,6 +165,8 @@ ZeroToThree
     ;
 
 IF      : 'if';
+DO      : 'do';
+FOR     : 'for';
 IMP     : 'import';
 INT_T   : 'int';
 LONG_T  : 'long';
@@ -163,6 +175,7 @@ NULL    : 'null';
 TRUE    : 'true';
 ELSE    : 'else';
 FALSE   : 'false';
+WHILE   : 'while';
 FLOAT_T : 'float';
 DOUBLE_T: 'double';
 VOID_T  : 'void';
