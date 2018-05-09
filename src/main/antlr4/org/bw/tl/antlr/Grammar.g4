@@ -8,20 +8,22 @@ file
 
 statement
     :
+    expression semi
     ;
 
 expression
     :
+    fqn
     ;
 
 literal
     : number
-    | boolean
+    | bool
     | string
     | NULL
     ;
 
-boolean
+bool
     : TRUE | FALSE
     ;
 
