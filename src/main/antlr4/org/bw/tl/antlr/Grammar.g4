@@ -15,6 +15,7 @@ statement
     : block
     | ifStatement
     | whileStatement
+    | forStatement
     | expression
     | varDef
     |
@@ -100,6 +101,15 @@ whileStatement
     : WHILE NL* condition=expression NL* body=statement semi?
     | DO NL* body=statement semi? NL* WHILE NL* condition=expression semi?
     ;
+
+forStatement
+    : FOR NL* forControl statement semi?
+    ;
+
+forControl
+    : LPAREN NL* forControl NL* RPAREN
+    | (type | VAR | VAL) NL* IDENTIFIER NL* COLON NL* expression
+    ; // todo;
 
 literal
     : number
