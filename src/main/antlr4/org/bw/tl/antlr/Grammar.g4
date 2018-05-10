@@ -8,6 +8,7 @@ topLevelStatement
     : (
     functionDef
     ) semi?
+    | varDef semi
     ;
 
 statement
@@ -15,6 +16,7 @@ statement
     | ifStatement
     | whileStatement
     | expression
+    | varDef
     |
     ;
 
@@ -47,6 +49,10 @@ assignment
         |   POW_EQ
         )
         NL* expression
+    ;
+
+varDef
+    : (type | VAR | VAL) NL* IDENTIFIER (ASSIGN NL* expression)?
     ;
 
 functionCall
@@ -165,6 +171,8 @@ ZeroToThree
 
 IF      : 'if';
 DO      : 'do';
+VAR     : 'var';
+VAL     : 'val';
 FOR     : 'for';
 IMP     : 'import';
 INT_T   : 'int';
