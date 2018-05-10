@@ -12,11 +12,10 @@ topLevelStatement
 
 statement
     : block
-    |
-    ( ifStatement
+    | ifStatement
     | whileStatement
     | expression
-    ) semi
+    |
     ;
 
 expression
@@ -88,7 +87,7 @@ block
     ;
 
 ifStatement
-    : IF expression block (ELSE statement)?
+    : IF NL* expression NL* body=statement semi? (NL* ELSE NL* else_=statement semi?)?
     ;
 
 whileStatement
@@ -189,7 +188,11 @@ RBR     : '}';
 
 IDENTIFIER : [a-zA-Z_][a-zA-Z_0-9]*;
 
-WS  :  [ \t\r\n\u000C]+ -> skip;
+WS  : [\u0020\u0009\u000C] -> skip;
+
+NL: '\u000A' | '\u000D' '\u000A' ;
+
+semi: NL+ | SEMICOLON | SEMICOLON NL+;
 
 COMMENT :   '/*' .*? '*/' -> channel(HIDDEN);
 
@@ -228,10 +231,6 @@ COLON   : ':';
 DOT     : '.';
 COMMA   : ',';
 SEMICOLON : ';';
-
-NL      : '\u000A' | '\u000D' '\u000A';
-
-semi: NL+ | SEMICOLON | SEMICOLON NL+;
 
 INT
     : Digit+
