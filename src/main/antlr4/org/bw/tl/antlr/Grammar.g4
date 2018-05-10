@@ -91,8 +91,8 @@ ifStatement
     ;
 
 whileStatement
-    : WHILE NL* expression NL* statement
-    | DO NL* statement NL* WHILE NL* expression
+    : WHILE NL* condition=expression NL* body=statement semi?
+    | DO NL* body=statement semi? NL* WHILE NL* condition=expression semi?
     ;
 
 literal
