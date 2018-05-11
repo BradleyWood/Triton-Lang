@@ -1,7 +1,7 @@
 grammar Grammar;
 
 file
-    : imp* topLevelStatement* EOF
+    : packageDef? imp* topLevelStatement* EOF
     ;
 
 topLevelStatement
@@ -85,8 +85,12 @@ primitiveType
     | DOUBLE_T
     ;
 
+packageDef
+    : PACKAGE fqn semi
+    ;
+
 imp
-    : IMP fqn semi?
+    : IMP fqn semi
     ;
 
 block
@@ -211,6 +215,7 @@ FLOAT_T : 'float';
 DOUBLE_T: 'double';
 PUBLIC  : 'public';
 PRIVATE : 'private';
+PACKAGE : 'package';
 PROTECT : 'protected';
 VOID_T  : 'void';
 BOOL_T  : 'boolean';
