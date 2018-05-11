@@ -53,7 +53,7 @@ assignment
     ;
 
 varDef
-    : (type | VAR | VAL) NL* IDENTIFIER (ASSIGN NL* expression)?
+    : modifierList? (type | VAR | VAL) NL* IDENTIFIER (ASSIGN NL* expression)?
     ;
 
 functionCall
@@ -61,7 +61,7 @@ functionCall
     ;
 
 functionDef
-    : (VOID_T | primitiveType) NL* IDENTIFIER NL* LPAREN functionParamDefs? RPAREN NL* block
+    : modifierList? (VOID_T | primitiveType) NL* IDENTIFIER NL* LPAREN functionParamDefs? RPAREN NL* block
     ;
 
 functionParamDefs
@@ -69,7 +69,7 @@ functionParamDefs
     ;
 
 functionParam
-    : type NL* IDENTIFIER
+    : modifierList? type NL* IDENTIFIER
     ;
 
 type
@@ -135,6 +135,20 @@ fqn
     | fqn DOT IDENTIFIER
     ;
 
+modifierList
+    : modifier+
+    ;
+
+modifier
+    : visibilityModifier
+    ;
+
+visibilityModifier
+    : PUBLIC
+    | PRIVATE
+    | PROTECT
+    ;
+
 
 // tokens
 
@@ -195,6 +209,9 @@ FALSE   : 'false';
 WHILE   : 'while';
 FLOAT_T : 'float';
 DOUBLE_T: 'double';
+PUBLIC  : 'public';
+PRIVATE : 'private';
+PROTECT : 'protected';
 VOID_T  : 'void';
 BOOL_T  : 'boolean';
 LPAREN  : '(';
