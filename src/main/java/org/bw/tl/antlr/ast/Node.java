@@ -1,25 +1,18 @@
 package org.bw.tl.antlr.ast;
 
-public abstract class Node {
+import lombok.Data;
+import org.jetbrains.annotations.Nullable;
+
+public abstract @Data class Node {
 
     private int lineNumber = -1;
+
+    @Nullable
     private String text;
+
+    @Nullable
+    private String file;
 
     public abstract void accept(final ASTVisitor visitor);
 
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public int getLineNumber() {
-        return lineNumber;
-    }
-
-    public void setLineNumber(int lineNumber) {
-        this.lineNumber = lineNumber;
-    }
 }
