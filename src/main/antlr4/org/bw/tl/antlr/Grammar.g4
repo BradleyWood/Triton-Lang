@@ -28,7 +28,6 @@ expression
     | preceeding=expression NL* DOT NL* functionCall
     | functionCall
     | (PLUS | MINUS | NOT) NL* expression
-    | LPAREN NL* expression NL* RPAREN
     | expression NL* (POW) NL* expression
     | expression NL* (MULT | DIV | MOD) NL* expression
     | expression NL* (PLUS | MINUS) NL* expression
