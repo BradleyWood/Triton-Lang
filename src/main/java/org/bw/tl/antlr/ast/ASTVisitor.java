@@ -16,4 +16,6 @@ public interface ASTVisitor {
 
     void visitBinaryOp(final BinaryOp binaryOp);
 
+    void visitLiteral(final Literal literal);
+
 }

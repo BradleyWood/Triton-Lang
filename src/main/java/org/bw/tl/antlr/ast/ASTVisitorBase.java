@@ -36,4 +36,9 @@ public class ASTVisitorBase implements ASTVisitor {
     public void visitBinaryOp(BinaryOp binaryOp) {
 
     }
+
+    @Override
+    public void visitLiteral(Literal literal) {
+
+    }
 }
