@@ -41,4 +41,9 @@ public class ASTVisitorBase implements ASTVisitor {
     public void visitLiteral(Literal literal) {
 
     }
+
+    @Override
+    public void visitCall(Call call) {
+
+    }
 }

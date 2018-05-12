@@ -18,4 +18,6 @@ public interface ASTVisitor {
 
     void visitLiteral(final Literal literal);
 
+    void visitCall(final Call call);
+
 }
