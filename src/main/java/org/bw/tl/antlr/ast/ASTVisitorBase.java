@@ -38,6 +38,11 @@ public class ASTVisitorBase implements ASTVisitor {
     }
 
     @Override
+    public void visitUnaryOp(UnaryOp unaryOp) {
+
+    }
+
+    @Override
     public void visitLiteral(Literal literal) {
 
     }
