@@ -34,7 +34,15 @@ public class FileVisitor extends GrammarBaseVisitor<File> {
             }
         }
 
-        // todo fields, functions
+        if (ctx.topLevelStatement() != null) {
+            for (final GrammarParser.TopLevelStatementContext tlCtx : ctx.topLevelStatement()) {
+                if (tlCtx.functionDef() != null) {
+                    functions.add(tlCtx.functionDef().accept(FunctionVisitor.of(sourceFile)));
+                } else if (tlCtx.varDef() != null) {
+                    fields.add(tlCtx.varDef().accept(FieldVisitor.of(sourceFile)));
+                }
+            }
+        }
 
         return new File(packageName, imports, fields, functions, sourceFile);
     }
