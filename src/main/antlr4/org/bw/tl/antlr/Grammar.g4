@@ -18,7 +18,6 @@ statement
     | forStatement
     | expression
     | varDef
-    |
     ;
 
 expression
@@ -98,12 +97,13 @@ block
     ;
 
 ifStatement
-    : IF NL* expression NL* body=statement semi? (NL* ELSE NL* else_=statement semi?)?
+    : IF NL* LPAREN condition=expression RPAREN NL* body=statement SEMICOLON?
+    (NL* ELSE NL* else_=statement)?
     ;
 
 whileStatement
-    : WHILE NL* condition=expression NL* body=statement semi?
-    | DO NL* body=statement semi? NL* WHILE NL* condition=expression semi?
+    : WHILE NL* LPAREN condition=expression RPAREN NL* body=statement
+    | DO NL* body=statement NL* WHILE NL* LPAREN condition=expression RPAREN
     ;
 
 forStatement

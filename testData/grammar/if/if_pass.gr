@@ -2,34 +2,30 @@
 
     if (a > b) {}
 
-    if value {}
+    if (value) {}
 
-    if (value) ;
-
-    if a > b
+    if (a > b)
         println();
 
-    if a
+    if (a)
         doB();
     else
         doC();
 
     if (a > b) {
-
+        abcdf();
     } else if (b >= c) {
-        if (c == 19) {}
-    } else if (b == 1050) {
-    } else {
+        gg();
     }
 
-    if a
+    if (a)
         b();
-    else if b
+    else if (b)
         c();
     else
         d();
 
-    if abc
+    if (abc)
         d()
     else e()
 }
