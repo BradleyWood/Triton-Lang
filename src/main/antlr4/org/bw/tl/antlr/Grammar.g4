@@ -59,7 +59,7 @@ functionCall
     ;
 
 functionDef
-    : modifierList? (VOID_T | primitiveType) NL* IDENTIFIER NL* LPAREN functionParamDefs? RPAREN NL* block
+    : modifierList? (VOID_T | type) NL* IDENTIFIER NL* LPAREN functionParamDefs? RPAREN NL* block
     ;
 
 functionParamDefs
