@@ -6,4 +6,6 @@ public interface ASTVisitor {
 
     void visitAnnotation(final Annotation annotation);
 
+    void visitField(final Field field);
+
 }
