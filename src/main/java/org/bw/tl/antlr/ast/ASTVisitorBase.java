@@ -26,4 +26,9 @@ public class ASTVisitorBase implements ASTVisitor {
     public void visitIf(IfStatement ifStatement) {
 
     }
+
+    @Override
+    public void visitWhile(WhileLoop whileLoop) {
+
+    }
 }

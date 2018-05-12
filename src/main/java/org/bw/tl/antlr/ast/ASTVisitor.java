@@ -12,4 +12,6 @@ public interface ASTVisitor {
 
     void visitIf(final IfStatement ifStatement);
 
+    void visitWhile(final WhileLoop whileLoop);
+
 }
