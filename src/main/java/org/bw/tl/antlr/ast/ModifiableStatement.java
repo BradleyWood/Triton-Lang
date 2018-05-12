@@ -16,7 +16,7 @@ public abstract @Data class ModifiableStatement extends Node {
     private final List<Modifier> modifiers;
     private final List<Annotation> annotations;
 
-    public ModifiableStatement(final Modifier[] modifiers, final Annotation[] annotations) {
+    public ModifiableStatement(@NotNull final Modifier[] modifiers, @NotNull final Annotation[] annotations) {
         this(new ArrayList<>(Arrays.asList(modifiers)), new ArrayList<>(Arrays.asList(annotations)));
     }
 
@@ -32,7 +32,7 @@ public abstract @Data class ModifiableStatement extends Node {
         this.annotations.addAll(Arrays.asList(annotations));
     }
 
-    public boolean hasAnnotation(final QualifiedName name) {
+    public boolean hasAnnotation(@NotNull final QualifiedName name) {
         return this.annotations.stream().anyMatch(a -> name.equals(a.getName()));
     }
 }
