@@ -51,4 +51,9 @@ public class ASTVisitorBase implements ASTVisitor {
     public void visitCall(Call call) {
 
     }
+
+    @Override
+    public void visitReturn(Return returnStmt) {
+
+    }
 }

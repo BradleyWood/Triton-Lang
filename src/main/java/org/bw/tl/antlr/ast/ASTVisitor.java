@@ -22,4 +22,6 @@ public interface ASTVisitor {
 
     void visitCall(final Call call);
 
+    void visitReturn(final Return returnStmt);
+
 }

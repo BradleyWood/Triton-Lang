@@ -18,6 +18,7 @@ statement
     | forStatement
     | expression
     | varDef
+    | returnStatement
     ;
 
 expression
@@ -104,6 +105,10 @@ ifStatement
 whileStatement
     : WHILE NL* LPAREN condition=expression RPAREN NL* body=statement
     | DO NL* body=statement NL* WHILE NL* LPAREN condition=expression RPAREN
+    ;
+
+returnStatement
+    : RETURN expression?
     ;
 
 forStatement
@@ -212,6 +217,7 @@ FALSE   : 'false';
 WHILE   : 'while';
 FLOAT_T : 'float';
 DOUBLE_T: 'double';
+RETURN  : 'return';
 PUBLIC  : 'public';
 PRIVATE : 'private';
 PACKAGE : 'package';
