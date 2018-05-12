@@ -34,12 +34,12 @@ public class ExpressionVisitor extends GrammarBaseVisitor<Expression> {
             expression = new Call(precedingExpr, name, expressionList);
         } else if (ctx.lhs != null && ctx.rhs != null) {
             final int start = ctx.lhs.getText().length();
-            final int end = ctx.getText().length() - 1 - ctx.rhs.getText().length();
+            final int end = ctx.getText().length() - ctx.rhs.getText().length();
             final String operator = ctx.getText().substring(start, end);
 
             expression = new BinaryOp(ctx.lhs.accept(this), operator, ctx.rhs.accept(this));
         } else if (ctx.unaryOperand != null) {
-            final int end = ctx.getText().length() - 1 - ctx.unaryOperand.getText().length();
+            final int end = ctx.getText().length() - ctx.unaryOperand.getText().length();
 
             expression = new UnaryOp(ctx.unaryOperand.accept(this), ctx.getText().substring(0, end));
         } else if (ctx.assignment() != null) {
@@ -47,8 +47,8 @@ public class ExpressionVisitor extends GrammarBaseVisitor<Expression> {
             final Expression rhs = ctx.assignment().val.accept(this);
 
             final int start = ctx.assignment().fqn().getText().length();
-            final int end = ctx.assignment().val.getText().length() - 1 - ctx.assignment().getText().length();
-            expression = new BinaryOp(lhs, ctx.getText().substring(start, end), rhs);
+            final int end = ctx.assignment().getText().length() - ctx.assignment().val.getText().length();
+            expression = new BinaryOp(lhs, ctx.assignment().getText().substring(start, end), rhs);
         }
 
         if (expression == null)
