@@ -127,7 +127,7 @@ bool
     ;
 
 number
-    : INT | HEX | FLOAT | HEX_FLOAT
+    : INT | HEX | FLOAT
     ;
 
 string
@@ -283,12 +283,6 @@ FLOAT
     : Digit+ '.' Digit* ExponentPart?
     | '.' Digit+ ExponentPart?
     | Digit+ ExponentPart
-    ;
-
-HEX_FLOAT
-    : '0' [xX] HexDigit+ '.' HexDigit* HexExponentPart?
-    | '0' [xX] '.' HexDigit+ HexExponentPart?
-    | '0' [xX] HexDigit+ HexExponentPart
     ;
 
 fragment
