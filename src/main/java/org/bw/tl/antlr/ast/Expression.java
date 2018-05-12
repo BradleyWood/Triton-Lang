@@ -1,5 +1,8 @@
 package org.bw.tl.antlr.ast;
 
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode(callSuper = false)
 public abstract class Expression extends Node {
 
     private boolean pop;
