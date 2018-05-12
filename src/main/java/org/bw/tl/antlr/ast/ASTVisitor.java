@@ -10,4 +10,6 @@ public interface ASTVisitor {
 
     void visitFunction(final Function function);
 
+    void visitIf(final IfStatement ifStatement);
+
 }

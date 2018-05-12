@@ -21,4 +21,9 @@ public class ASTVisitorBase implements ASTVisitor {
     public void visitFunction(Function function) {
 
     }
+
+    @Override
+    public void visitIf(IfStatement ifStatement) {
+
+    }
 }
