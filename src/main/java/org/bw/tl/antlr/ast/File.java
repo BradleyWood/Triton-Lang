@@ -12,5 +12,6 @@ public class File {
     private final @Getter List<QualifiedName> imports;
     private final @Getter List<Field> fields;
     private final @Getter List<Function> functions;
+    private final @Getter String sourceFile;
 
 }
