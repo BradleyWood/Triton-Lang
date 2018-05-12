@@ -23,16 +23,16 @@ statement
 expression
     : LPAREN NL* expression NL* RPAREN
     | literal
-    | expression NL* DOT NL* fqn
-    | fqn
-    | preceeding=expression NL* DOT NL* functionCall
-    | functionCall
-    | (PLUS | MINUS | NOT) NL* expression
-    | expression NL* (POW) NL* expression
-    | expression NL* (MULT | DIV | MOD) NL* expression
-    | expression NL* (PLUS | MINUS) NL* expression
-    | expression NL* (GT | LT | GTE | LTE | EQUALS | NOT_EQ) NL* expression
-    | expression NL* (AND | OR) NL* expression
+    | expression NL* DOT NL* name=fqn
+    | name=fqn
+    | preceeding=expression NL* DOT NL* call=functionCall
+    | call=functionCall
+    | (PLUS | MINUS | NOT) NL* unaryOperand=expression
+    | lhs=expression NL* (POW) NL* rhs=expression
+    | lhs=expression NL* (MULT | DIV | MOD) NL* rhs=expression
+    | lhs=expression NL* (PLUS | MINUS) NL* rhs=expression
+    | lhs=expression NL* (GT | LT | GTE | LTE | EQUALS | NOT_EQ) NL* rhs=expression
+    | lhs=expression NL* (AND | OR) NL* rhs=expression
     | assignment
     ;
 
