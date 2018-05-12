@@ -4,4 +4,6 @@ public interface ASTVisitor {
 
     void visitName(final QualifiedName name);
 
+    void visitAnnotation(final Annotation annotation);
+
 }
