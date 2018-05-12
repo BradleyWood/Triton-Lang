@@ -1,7 +1,6 @@
 package org.bw.tl.antlr.ast;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,16 +8,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public abstract @Data class ModifiableStatement extends Node {
+public abstract class ModifiableStatement extends Node {
 
-    private final List<Modifier> modifiers;
-    private final List<Annotation> annotations;
-
-    public ModifiableStatement(@NotNull final Modifier[] modifiers, @NotNull final Annotation[] annotations) {
-        this(new ArrayList<>(Arrays.asList(modifiers)), new ArrayList<>(Arrays.asList(annotations)));
-    }
+    private final @Getter List<Modifier> modifiers = new ArrayList<>();
+    private final @Getter List<Annotation> annotations = new ArrayList<>();
 
     public void addModifiers(@NotNull final Modifier... modifiers) {
         this.modifiers.addAll(Arrays.asList(modifiers));
@@ -32,7 +26,7 @@ public abstract @Data class ModifiableStatement extends Node {
         this.annotations.addAll(Arrays.asList(annotations));
     }
 
-    public boolean hasAnnotation(@NotNull final QualifiedName name) {
-        return this.annotations.stream().anyMatch(a -> name.equals(a.getName()));
+    public boolean hasAnnotation(final QualifiedName name) {
+        return this.annotations.stream().anyMatch(a -> a.getName().equals(name));
     }
 }
