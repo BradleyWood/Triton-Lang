@@ -33,18 +33,10 @@ public @Data class RuleTest {
 
         p.removeErrorListener(ConsoleErrorListener.INSTANCE);
 
-        try {
-            if (!isTopLevel) {
-                new GrammarBaseVisitor().visitStatement(p.statement());
-            } else {
-                new GrammarBaseVisitor().visitFile(p.file());
-            }
-        } catch (Exception e) {
-            if (pass) {
-                Assert.fail();
-            } else {
-                return;
-            }
+        if (!isTopLevel) {
+            p.block();
+        } else {
+            p.file();
         }
 
         if (pass) {
