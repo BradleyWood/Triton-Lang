@@ -31,4 +31,9 @@ public class ASTVisitorBase implements ASTVisitor {
     public void visitWhile(WhileLoop whileLoop) {
 
     }
+
+    @Override
+    public void visitBinaryOp(BinaryOp binaryOp) {
+
+    }
 }
