@@ -8,4 +8,6 @@ public interface ASTVisitor {
 
     void visitField(final Field field);
 
+    void visitFunction(final Function function);
+
 }

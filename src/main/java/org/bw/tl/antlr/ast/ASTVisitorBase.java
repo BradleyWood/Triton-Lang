@@ -16,4 +16,9 @@ public class ASTVisitorBase implements ASTVisitor {
     public void visitField(Field field) {
 
     }
+
+    @Override
+    public void visitFunction(Function function) {
+
+    }
 }
