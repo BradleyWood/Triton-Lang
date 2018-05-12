@@ -1,7 +1,7 @@
 grammar Grammar;
 
 file
-    : packageDef? imp* topLevelStatement* EOF
+    : NL* (packageDef NL*)? imp* NL* topLevelStatement* NL* EOF
     ;
 
 topLevelStatement
@@ -79,6 +79,7 @@ type
 primitiveType
     : INT_T
     | LONG_T
+    | BOOL_T
     | BYTE_T
     | FLOAT_T
     | DOUBLE_T

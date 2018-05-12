@@ -1,0 +1,12 @@
+
+
+int a = 100
+int b = 100
+
+String c = "Hello, World!"
+
+boolean d = true
+
+var e = 500; val f = "String";
+
+Type g = e
