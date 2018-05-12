@@ -1,0 +1,35 @@
+{
+
+    if (a > b) {}
+
+    if value {}
+
+    if (value) ;
+
+    if a > b
+        println();
+
+    if a
+        doB();
+    else
+        doC();
+
+    if (a > b) {
+
+    } else if (b >= c) {
+        if (c == 19) {}
+    } else if (b == 1050) {
+    } else {
+    }
+
+    if a
+        b();
+    else if b
+        c();
+    else
+        d();
+
+    if abc
+        d()
+    else e()
+}
