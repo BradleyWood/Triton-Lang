@@ -24,16 +24,12 @@ public class FileVisitor extends GrammarBaseVisitor<File> {
         final ArrayList<Function> functions = new ArrayList<>();
 
         if (ctx.packageDef() != null) {
-            packageName = new FQNVisitor().visitFqn(ctx.packageDef().fqn());
-            packageName.setLineNumber(ctx.packageDef().fqn().start.getLine());
-            packageName.setText(ctx.packageDef().getText());
+            packageName = ctx.packageDef().fqn().accept(FQNVisitor.of(sourceFile));
         }
 
         if (ctx.imp() != null) {
             for (final GrammarParser.ImpContext impCtx : ctx.imp()) {
-                final QualifiedName fileImport = new FQNVisitor().visitFqn(impCtx.fqn());
-                fileImport.setLineNumber(impCtx.start.getLine());
-                fileImport.setText(impCtx.getText());
+                final QualifiedName fileImport = impCtx.fqn().accept(FQNVisitor.of(sourceFile));
                 imports.add(fileImport);
             }
         }
