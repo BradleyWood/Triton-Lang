@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.bw.tl.antlr.GrammarBaseVisitor;
 import org.bw.tl.antlr.GrammarParser;
 import org.bw.tl.antlr.ast.Node;
+import org.bw.tl.antlr.ast.Return;
 
 @RequiredArgsConstructor(staticName = "of")
 public class StatementVisitor extends GrammarBaseVisitor<Node> {
@@ -17,15 +18,17 @@ public class StatementVisitor extends GrammarBaseVisitor<Node> {
         if (ctx.block() != null) {
             stmt = ctx.block().accept(BlockVisitor.of(sourceFile));
         } else if (ctx.ifStatement() != null) {
-
+            stmt = ctx.ifStatement().accept(IfVisitor.of(sourceFile));
         } else if (ctx.whileStatement() != null) {
-
+            stmt = ctx.whileStatement().accept(WhileVisitor.of(sourceFile));
         } else if (ctx.forStatement() != null) {
-
+            // todo;
         } else if (ctx.expression() != null) {
-
+            stmt = ctx.expression().accept(ExpressionVisitor.of(sourceFile));
         } else if (ctx.varDef() != null) {
             stmt = ctx.varDef().accept(FieldVisitor.of(sourceFile));
+        } else if (ctx.returnStatement() != null) {
+            stmt = new Return(ctx.returnStatement().expression().accept(ExpressionVisitor.of(sourceFile)));
         }
 
         if (stmt == null)
