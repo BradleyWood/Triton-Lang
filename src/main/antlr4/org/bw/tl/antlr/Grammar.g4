@@ -136,8 +136,7 @@ string
     ;
 
 fqn
-    : IDENTIFIER
-    | fqn DOT IDENTIFIER
+    : IDENTIFIER (DOT IDENTIFIER)*
     ;
 
 modifierList
