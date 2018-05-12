@@ -21,7 +21,7 @@ statement
     ;
 
 expression
-    : LPAREN NL* expression NL* RPAREN
+    : LPAREN NL* wrapped=expression NL* RPAREN
     | literal
     | expression NL* DOT NL* name=fqn
     | name=fqn
@@ -47,7 +47,7 @@ assignment
         |   MOD_EQ
         |   POW_EQ
         )
-        NL* expression
+        NL* val=expression
     ;
 
 varDef
