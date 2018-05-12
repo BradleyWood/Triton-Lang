@@ -14,4 +14,6 @@ public interface ASTVisitor {
 
     void visitWhile(final WhileLoop whileLoop);
 
+    void visitBinaryOp(final BinaryOp binaryOp);
+
 }
