@@ -56,4 +56,9 @@ public class ASTVisitorBase implements ASTVisitor {
     public void visitReturn(Return returnStmt) {
 
     }
+
+    @Override
+    public void visitFor(ForLoop forLoop) {
+
+    }
 }
