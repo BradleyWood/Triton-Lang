@@ -19,6 +19,12 @@ public class FieldVisitor extends GrammarBaseVisitor<Field> {
 
         final Field field = new Field(name, initialValue);
 
+        if (ctx.modifierList() != null && ctx.modifierList().modifier() != null) {
+            for (final GrammarParser.ModifierContext modCtx : ctx.modifierList().modifier()) {
+                field.addModifiers(modCtx.accept(new ModifierVisitor()));
+            }
+        }
+
         field.setText(ctx.getText());
         field.setLineNumber(ctx.start.getLine());
         field.setFile(sourceFile);

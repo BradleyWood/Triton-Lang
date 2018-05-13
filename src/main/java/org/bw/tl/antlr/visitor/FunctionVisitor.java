@@ -20,6 +20,12 @@ public class FunctionVisitor extends GrammarBaseVisitor<Function> {
 
         final Function function = new Function(name, block, type);
 
+        if (ctx.modifierList() != null && ctx.modifierList().modifier() != null) {
+            for (final GrammarParser.ModifierContext modCtx : ctx.modifierList().modifier()) {
+                function.addModifiers(modCtx.accept(new ModifierVisitor()));
+            }
+        }
+
         function.setText(ctx.getText());
         function.setFile(sourceFile);
         function.setLineNumber(ctx.start.getLine());
