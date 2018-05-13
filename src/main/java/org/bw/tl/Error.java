@@ -1,8 +1,6 @@
 package org.bw.tl;
 
 import lombok.Data;
-import lombok.Getter;
-import org.bw.tl.antlr.ast.Node;
 
 import java.io.PrintStream;
 
@@ -10,7 +8,7 @@ public @Data class Error {
 
     private final String message;
     private final String file;
-    private final TYPE errorType;
+    private final ErrorType errorType;
     private final int lineNumber;
 
     /**
@@ -32,27 +30,7 @@ public @Data class Error {
     @Override
     public String toString() {
         return errorType.getName() + ": " + message + System.lineSeparator() +
-                " at " + file + " on line " + lineNumber;
+                "\tat " + file + " on line " + lineNumber;
     }
 
-    public enum TYPE {
-
-        SYNTAX_ERROR("Syntax Error"),
-        SYMBOL_ERROR("Symbol Error"),
-        INTERNAL_ERROR("Internal Error");
-
-        private @Getter String name;
-
-        TYPE(final String name) {
-            this.name = name;
-        }
-
-        public Error newError(final String message, final Node node) {
-            return new Error(message, node.getFile(), this, node.getLineNumber());
-        }
-
-        public Error newError(final String message, final String file, final int lineNumber) {
-            return new Error(message, file, this, lineNumber);
-        }
-    }
 }
