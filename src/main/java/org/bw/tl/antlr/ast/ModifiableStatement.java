@@ -1,6 +1,6 @@
 package org.bw.tl.antlr.ast;
 
-import lombok.Getter;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,10 +9,10 @@ import java.util.Arrays;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = false)
-public abstract class ModifiableStatement extends Node {
+public abstract @Data class ModifiableStatement extends Node {
 
-    private final @Getter List<Modifier> modifiers = new ArrayList<>();
-    private final @Getter List<Annotation> annotations = new ArrayList<>();
+    private final List<Modifier> modifiers = new ArrayList<>();
+    private final List<Annotation> annotations = new ArrayList<>();
 
     public void addModifiers(@NotNull final Modifier... modifiers) {
         this.modifiers.addAll(Arrays.asList(modifiers));

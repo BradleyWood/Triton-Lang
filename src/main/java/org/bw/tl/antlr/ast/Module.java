@@ -1,17 +1,17 @@
 package org.bw.tl.antlr.ast;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@AllArgsConstructor
-public class Module {
+@RequiredArgsConstructor
+public @Data class Module {
 
-    private final @Getter QualifiedName modulePackage;
-    private final @Getter List<Field> fields;
+    private final QualifiedName modulePackage;
+    private final List<Field> fields;
 
     public Module(final QualifiedName modulePackage, final Field[] fields) {
         this(modulePackage, new ArrayList<>(Arrays.asList(fields)));

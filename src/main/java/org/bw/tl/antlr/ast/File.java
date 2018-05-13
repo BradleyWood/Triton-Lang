@@ -1,17 +1,15 @@
 package org.bw.tl.antlr.ast;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 
 import java.util.List;
 
-@AllArgsConstructor
-public class File {
+public @Data class File {
 
-    private final @Getter QualifiedName packageName;
-    private final @Getter List<QualifiedName> imports;
-    private final @Getter List<Field> fields;
-    private final @Getter List<Function> functions;
-    private final @Getter String sourceFile;
+    private final QualifiedName packageName;
+    private final List<QualifiedName> imports;
+    private final List<Field> fields;
+    private final List<Function> functions;
+    private final String sourceFile;
 
 }

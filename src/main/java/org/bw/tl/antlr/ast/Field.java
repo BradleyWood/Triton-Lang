@@ -1,15 +1,13 @@
 package org.bw.tl.antlr.ast;
 
-import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class Field extends ModifiableStatement {
+public @Data class Field extends ModifiableStatement {
 
-    private final @Getter String name;
-    private final @Getter Expression initialValue;
+    private final String name;
+    private final Expression initialValue;
 
     @Override
     public void accept(final ASTVisitor visitor) {
