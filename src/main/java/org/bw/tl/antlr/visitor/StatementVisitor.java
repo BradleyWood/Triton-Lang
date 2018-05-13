@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.bw.tl.antlr.GrammarBaseVisitor;
 import org.bw.tl.antlr.GrammarParser;
+import org.bw.tl.antlr.ast.Expression;
 import org.bw.tl.antlr.ast.Node;
 import org.bw.tl.antlr.ast.Return;
 
@@ -25,6 +26,7 @@ public class StatementVisitor extends GrammarBaseVisitor<Node> {
             // todo;
         } else if (ctx.expression() != null) {
             stmt = ctx.expression().accept(ExpressionVisitor.of(sourceFile));
+            ((Expression) stmt).setPop(true);
         } else if (ctx.varDef() != null) {
             stmt = ctx.varDef().accept(FieldVisitor.of(sourceFile));
         } else if (ctx.returnStatement() != null) {
