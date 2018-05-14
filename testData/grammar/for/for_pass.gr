@@ -1,0 +1,26 @@
+{
+    for (int a : field) {
+
+    }
+    for (Object b : f) {
+        println()
+    }
+
+    for (a b : c) println(b);
+
+    for (int i : 0 .. 10) {}
+
+    for (
+    int
+    i
+    :
+    0
+    ..
+    10
+    ) {
+        println()
+    }
+
+    for (int i : 0 .. 10);
+
+}
