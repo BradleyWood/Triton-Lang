@@ -26,6 +26,8 @@ public class FunctionVisitor extends GrammarBaseVisitor<Function> {
             }
         }
 
+        block.setParent(function);
+
         function.setText(ctx.getText());
         function.setFile(sourceFile);
         function.setLineNumber(ctx.start.getLine());

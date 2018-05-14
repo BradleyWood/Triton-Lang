@@ -25,6 +25,8 @@ public class FieldVisitor extends GrammarBaseVisitor<Field> {
             }
         }
 
+        initialValue.setParent(field);
+
         field.setText(ctx.getText());
         field.setLineNumber(ctx.start.getLine());
         field.setFile(sourceFile);

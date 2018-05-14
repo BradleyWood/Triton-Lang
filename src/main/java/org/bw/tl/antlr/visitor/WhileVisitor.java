@@ -21,6 +21,9 @@ public class WhileVisitor extends GrammarBaseVisitor<WhileLoop> {
 
         final WhileLoop whileLoop = new WhileLoop(condition, body, doWhile);
 
+        body.setParent(whileLoop);
+        condition.setParent(whileLoop);
+
         whileLoop.setText(ctx.getText());
         whileLoop.setLineNumber(ctx.start.getLine());
         whileLoop.setFile(sourceFile);

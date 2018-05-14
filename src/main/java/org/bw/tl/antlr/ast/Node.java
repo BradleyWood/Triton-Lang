@@ -13,6 +13,9 @@ public abstract @Data class Node {
     @Nullable
     private String file;
 
+    @Nullable
+    private Node parent;
+
     public abstract void accept(final ASTVisitor visitor);
 
 }

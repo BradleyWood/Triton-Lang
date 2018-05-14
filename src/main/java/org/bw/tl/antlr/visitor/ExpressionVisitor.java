@@ -32,23 +32,39 @@ public class ExpressionVisitor extends GrammarBaseVisitor<Expression> {
                     .collect(Collectors.toList());
 
             expression = new Call(precedingExpr, name, expressionList);
+
+            if (precedingExpr != null) {
+                precedingExpr.setParent(expression);
+            }
+            for (final Expression expr : expressionList) {
+                expr.setParent(expression);
+            }
         } else if (ctx.lhs != null && ctx.rhs != null) {
             final int start = ctx.lhs.getText().length();
             final int end = ctx.getText().length() - ctx.rhs.getText().length();
             final String operator = ctx.getText().substring(start, end);
+            final Expression lhs = ctx.lhs.accept(this);
+            final Expression rhs = ctx.rhs.accept(this);
 
-            expression = new BinaryOp(ctx.lhs.accept(this), operator, ctx.rhs.accept(this));
+            expression = new BinaryOp(lhs, operator, rhs);
+            lhs.setParent(expression);
+            rhs.setParent(expression);
         } else if (ctx.unaryOperand != null) {
             final int end = ctx.getText().length() - ctx.unaryOperand.getText().length();
+            final Expression uExpr = ctx.unaryOperand.accept(this);
 
-            expression = new UnaryOp(ctx.unaryOperand.accept(this), ctx.getText().substring(0, end));
+            expression = new UnaryOp(uExpr, ctx.getText().substring(0, end));
+            uExpr.setParent(expression);
         } else if (ctx.assignment() != null) {
             final QualifiedName lhs = ctx.assignment().fqn().accept(FQNVisitor.of(sourceFile));
             final Expression rhs = ctx.assignment().val.accept(this);
 
             final int start = ctx.assignment().fqn().getText().length();
             final int end = ctx.assignment().getText().length() - ctx.assignment().val.getText().length();
+
             expression = new BinaryOp(lhs, ctx.assignment().getText().substring(start, end), rhs);
+            lhs.setParent(expression);
+            rhs.setParent(expression);
         }
 
         if (expression == null)

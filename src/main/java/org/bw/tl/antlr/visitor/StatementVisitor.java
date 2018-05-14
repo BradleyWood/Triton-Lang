@@ -30,7 +30,9 @@ public class StatementVisitor extends GrammarBaseVisitor<Node> {
         } else if (ctx.varDef() != null) {
             stmt = ctx.varDef().accept(FieldVisitor.of(sourceFile));
         } else if (ctx.returnStatement() != null) {
-            stmt = new Return(ctx.returnStatement().expression().accept(ExpressionVisitor.of(sourceFile)));
+            final Expression retVal = ctx.returnStatement().expression().accept(ExpressionVisitor.of(sourceFile));
+            stmt = new Return(retVal);
+            retVal.setParent(stmt);
         }
 
         if (stmt == null)

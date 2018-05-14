@@ -18,12 +18,15 @@ public class BlockVisitor extends GrammarBaseVisitor<Block> {
     @Override
     public Block visitBlock(final GrammarParser.BlockContext ctx) {
         final List<Node> statements = new LinkedList<>();
+        final Block block = new Block(statements);
 
         final StatementVisitor stmtVisitor = StatementVisitor.of(sourceFile);
         for (final GrammarParser.StatementContext stmtCtx : ctx.statement()) {
-            statements.add(stmtCtx.accept(stmtVisitor));
+            final Node stmt = stmtCtx.accept(stmtVisitor);
+            stmt.setParent(block);
+            statements.add(stmt);
         }
 
-        return new Block(statements);
+        return block;
     }
 }

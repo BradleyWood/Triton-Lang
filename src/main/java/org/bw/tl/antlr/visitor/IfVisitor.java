@@ -23,6 +23,10 @@ public class IfVisitor extends GrammarBaseVisitor<IfStatement> {
 
         final IfStatement stmt = new IfStatement(condition, body, otherwise);
 
+        body.setParent(stmt);
+        condition.setParent(stmt);
+        otherwise.setParent(stmt);
+
         stmt.setText(ctx.getText());
         stmt.setLineNumber(ctx.start.getLine());
         stmt.setFile(sourceFile);
