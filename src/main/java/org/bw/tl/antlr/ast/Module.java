@@ -2,6 +2,7 @@ package org.bw.tl.antlr.ast;
 
 import lombok.Data;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -30,5 +31,9 @@ public @Data class Module {
         }
 
         return new Module(packageName, files);
+    }
+
+    public static Module of(final File... files) {
+        return of(Arrays.asList(files));
     }
 }
