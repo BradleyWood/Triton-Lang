@@ -28,6 +28,7 @@ expression
     | name=fqn
     | preceeding=expression NL* DOT NL* call=functionCall
     | call=functionCall
+    | lhs=expression NL* (RANGE) NL* rhs=expression
     | (PLUS | MINUS | NOT) NL* unaryOperand=expression
     | lhs=expression NL* (POW) NL* rhs=expression
     | lhs=expression NL* (MULT | DIV | MOD) NL* rhs=expression
@@ -112,13 +113,28 @@ returnStatement
     ;
 
 forStatement
-    : FOR NL* forControl statement semi?
+    : FOR NL* LPAREN NL* forControl NL* RPAREN NL* ((statement semi?) | SEMICOLON)
     ;
 
 forControl
-    : LPAREN NL* forControl NL* RPAREN
-    | (type | VAR | VAL) NL* IDENTIFIER NL* COLON NL* expression
+    : modifierList? (type | VAR | VAL) NL* IDENTIFIER NL* COLON NL* expression
     ; // todo;
+
+localVariable
+    : type localVarDefList
+    ;
+
+localVarDefList
+    : localVarDef (COMMA localVarDef)*
+    ;
+
+localVarDef
+    : IDENTIFIER ASSIGN expression
+    ;
+
+expressionList
+    : expression (COMMA expression)*
+    ;
 
 literal
     : number
@@ -202,6 +218,7 @@ ZeroToThree
     ;
 
 IF      : 'if';
+IN      : 'in';
 DO      : 'do';
 VAR     : 'var';
 VAL     : 'val';
@@ -229,6 +246,7 @@ RPAREN  : ')';
 
 LBR     : '{';
 RBR     : '}';
+RANGE   : '..';
 
 
 IDENTIFIER : [a-zA-Z_][a-zA-Z_0-9]*;
