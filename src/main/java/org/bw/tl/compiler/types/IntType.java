@@ -1,4 +1,4 @@
-package org.bw.tl.compiler;
+package org.bw.tl.compiler.types;
 
 import org.objectweb.asm.MethodVisitor;
 
