@@ -46,8 +46,9 @@ public class BoolType extends Type {
     }
 
     @Override
-    public void toObject(final MethodVisitor mv) {
+    public boolean toObject(final MethodVisitor mv) {
         mv.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;", false);
+        return true;
     }
 
     @Override
@@ -56,22 +57,26 @@ public class BoolType extends Type {
     }
 
     @Override
-    public void load(final MethodVisitor mv) {
+    public boolean load(final MethodVisitor mv) {
         mv.visitInsn(ILOAD);
+        return true;
     }
 
     @Override
-    public void store(final MethodVisitor mv) {
+    public boolean store(final MethodVisitor mv) {
         mv.visitInsn(ISTORE);
+        return true;
     }
 
     @Override
-    public void arrayLoad(final MethodVisitor mv) {
+    public boolean arrayLoad(final MethodVisitor mv) {
         mv.visitInsn(BALOAD);
+        return true;
     }
 
     @Override
-    public void arrayStore(final MethodVisitor mv) {
+    public boolean arrayStore(final MethodVisitor mv) {
         mv.visitInsn(BASTORE);
+        return true;
     }
 }

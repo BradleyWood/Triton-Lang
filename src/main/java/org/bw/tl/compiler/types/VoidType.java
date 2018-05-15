@@ -46,8 +46,8 @@ public class VoidType extends Type {
     }
 
     @Override
-    public void toObject(final MethodVisitor mv) {
-
+    public boolean toObject(final MethodVisitor mv) {
+        return false;
     }
 
     @Override
@@ -56,22 +56,22 @@ public class VoidType extends Type {
     }
 
     @Override
-    public void load(final MethodVisitor mv) {
-
+    public boolean load(final MethodVisitor mv) {
+        return false;
     }
 
     @Override
-    public void store(final MethodVisitor mv) {
-
+    public boolean store(final MethodVisitor mv) {
+        return false;
     }
 
     @Override
-    public void arrayLoad(final MethodVisitor mv) {
-
+    public boolean arrayLoad(final MethodVisitor mv) {
+        return false;
     }
 
     @Override
-    public void arrayStore(final MethodVisitor mv) {
-
+    public boolean arrayStore(final MethodVisitor mv) {
+        return false;
     }
 }

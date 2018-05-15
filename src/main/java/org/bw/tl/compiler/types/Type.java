@@ -21,15 +21,15 @@ public abstract @Data class Type {
 
     public abstract boolean toDouble(final MethodVisitor mv);
 
-    public abstract void toObject(final MethodVisitor mv);
+    public abstract boolean toObject(final MethodVisitor mv);
 
     public abstract void ret(final MethodVisitor mv);
 
-    public abstract void load(final MethodVisitor mv);
+    public abstract boolean load(final MethodVisitor mv);
 
-    public abstract void store(final MethodVisitor mv);
+    public abstract boolean store(final MethodVisitor mv);
 
-    public abstract void arrayLoad(final MethodVisitor mv);
+    public abstract boolean arrayLoad(final MethodVisitor mv);
 
-    public abstract void arrayStore(final MethodVisitor mv);
+    public abstract boolean arrayStore(final MethodVisitor mv);
 }

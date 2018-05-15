@@ -16,12 +16,14 @@ public class CharType extends IntType {
     }
 
     @Override
-    public void arrayLoad(final MethodVisitor mv) {
+    public boolean arrayLoad(final MethodVisitor mv) {
         mv.visitInsn(CALOAD);
+        return true;
     }
 
     @Override
-    public void arrayStore(final MethodVisitor mv) {
+    public boolean arrayStore(final MethodVisitor mv) {
         mv.visitInsn(CASTORE);
+        return true;
     }
 }
