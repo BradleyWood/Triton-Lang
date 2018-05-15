@@ -7,7 +7,11 @@ import static org.objectweb.asm.Opcodes.*;
 public class IntType extends Type {
 
     public IntType() {
-        super("I");
+        this("I");
+    }
+
+    public IntType(final String desc) {
+        super(desc);
     }
 
     @Override
