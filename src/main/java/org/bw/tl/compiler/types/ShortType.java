@@ -6,7 +6,7 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class ShortType extends IntType {
 
-    public ShortType() {
+    private ShortType() {
         super("S");
     }
 
@@ -26,4 +26,6 @@ public class ShortType extends IntType {
         mv.visitInsn(SASTORE);
         return true;
     }
+
+    public static final ShortType INSTANCE = new ShortType();
 }

@@ -17,7 +17,7 @@ public abstract @Data class Type {
     public final String getInternalName() {
         if (isPrimitive())
             return desc;
-        return desc.substring(1, desc.length() - 2);
+        return desc.substring(1, desc.length() - 1);
     }
 
     public abstract boolean toInt(final MethodVisitor mv);

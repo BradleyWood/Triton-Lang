@@ -6,7 +6,7 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class BoolType extends Type {
 
-    public BoolType() {
+    private BoolType() {
         super("Z");
     }
 
@@ -79,4 +79,6 @@ public class BoolType extends Type {
         mv.visitInsn(BASTORE);
         return true;
     }
+
+    public static final BoolType INSTANCE = new BoolType();
 }

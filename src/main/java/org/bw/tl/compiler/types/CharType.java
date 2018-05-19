@@ -6,7 +6,7 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class CharType extends IntType {
 
-    public CharType() {
+    private CharType() {
         super("C");
     }
 
@@ -26,4 +26,6 @@ public class CharType extends IntType {
         mv.visitInsn(CASTORE);
         return true;
     }
+
+    public static final CharType INSTANCE = new CharType();
 }

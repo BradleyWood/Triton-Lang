@@ -6,7 +6,7 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class VoidType extends Type {
 
-    public VoidType() {
+    private VoidType() {
         super("V");
     }
 
@@ -74,4 +74,6 @@ public class VoidType extends Type {
     public boolean arrayStore(final MethodVisitor mv) {
         return false;
     }
+
+    public static final VoidType INSTANCE = new VoidType();
 }

@@ -6,7 +6,7 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class DoubleType extends Type {
 
-    public DoubleType() {
+    private DoubleType() {
         super("D");
     }
 
@@ -88,4 +88,6 @@ public class DoubleType extends Type {
         mv.visitInsn(DASTORE);
         return true;
     }
+
+    public static final DoubleType INSTANCE = new DoubleType();
 }

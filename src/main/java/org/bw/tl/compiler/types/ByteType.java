@@ -6,7 +6,7 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class ByteType extends IntType {
 
-    public ByteType() {
+    private ByteType() {
         super("B");
     }
 
@@ -26,4 +26,6 @@ public class ByteType extends IntType {
         mv.visitInsn(BASTORE);
         return true;
     }
+
+    public static final ByteType INSTANCE = new ByteType();
 }

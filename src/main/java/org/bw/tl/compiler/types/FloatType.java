@@ -1,13 +1,12 @@
 package org.bw.tl.compiler.types;
 
-import com.sun.media.sound.FFT;
 import org.objectweb.asm.MethodVisitor;
 
 import static org.objectweb.asm.Opcodes.*;
 
 public class FloatType extends Type {
 
-    public FloatType() {
+    private FloatType() {
         super("F");
     }
 
@@ -89,4 +88,6 @@ public class FloatType extends Type {
         mv.visitInsn(FASTORE);
         return true;
     }
+
+    public static final FloatType INSTANCE = new FloatType();
 }

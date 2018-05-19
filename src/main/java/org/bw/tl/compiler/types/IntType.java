@@ -6,11 +6,11 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class IntType extends Type {
 
-    public IntType() {
+    private IntType() {
         this("I");
     }
 
-    public IntType(final String desc) {
+    IntType(final String desc) {
         super(desc);
     }
 
@@ -89,4 +89,6 @@ public class IntType extends Type {
         mv.visitInsn(IASTORE);
         return true;
     }
+
+    public static final IntType INSTANCE = new IntType();
 }
