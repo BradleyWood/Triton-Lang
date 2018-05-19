@@ -1,11 +1,24 @@
 package org.bw.tl.compiler.types;
 
 import lombok.Data;
+import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.MethodVisitor;
 
 public abstract @Data class Type {
 
+    @NotNull
     private final String desc;
+
+    public final boolean isPrimitive() {
+        return desc.length() == 1;
+    }
+
+    @NotNull
+    public final String getInternalName() {
+        if (isPrimitive())
+            return desc;
+        return desc.substring(1, desc.length() - 2);
+    }
 
     public abstract boolean toInt(final MethodVisitor mv);
 
