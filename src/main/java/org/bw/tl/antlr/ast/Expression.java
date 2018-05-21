@@ -1,10 +1,13 @@
 package org.bw.tl.antlr.ast;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 @EqualsAndHashCode(callSuper = false)
 public abstract class Expression extends Node {
 
+    private @Getter @Setter String typeDesc;
     private boolean pop;
 
     /**
