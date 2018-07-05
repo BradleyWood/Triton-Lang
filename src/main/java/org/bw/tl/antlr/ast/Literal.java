@@ -2,6 +2,7 @@ package org.bw.tl.antlr.ast;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.bw.tl.compiler.resolve.ExpressionResolver;
 import org.bw.tl.compiler.types.*;
 
 @EqualsAndHashCode(callSuper = true)
@@ -34,5 +35,10 @@ public @Data class Literal<T> extends Expression {
             return BoolType.INSTANCE.getDesc();
         }
         return null;
+    }
+
+    @Override
+    public Type resolveType(final ExpressionResolver resolver) {
+        return resolver.resolveLiteral(this);
     }
 }

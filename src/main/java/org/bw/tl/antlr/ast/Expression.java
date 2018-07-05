@@ -3,6 +3,8 @@ package org.bw.tl.antlr.ast;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.bw.tl.compiler.resolve.ExpressionResolver;
+import org.bw.tl.compiler.types.Type;
 
 @EqualsAndHashCode(callSuper = false)
 public abstract class Expression extends Node {
@@ -27,4 +29,6 @@ public abstract class Expression extends Node {
     public boolean shouldPop() {
         return pop;
     }
+
+    public abstract Type resolveType(ExpressionResolver resolver);
 }

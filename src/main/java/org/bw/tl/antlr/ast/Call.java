@@ -3,6 +3,8 @@ package org.bw.tl.antlr.ast;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
+import org.bw.tl.compiler.resolve.ExpressionResolver;
+import org.bw.tl.compiler.types.Type;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,5 +24,10 @@ public @Data class Call extends Expression {
     @Override
     public void accept(final ASTVisitor visitor) {
         visitor.visitCall(this);
+    }
+
+    @Override
+    public Type resolveType(final ExpressionResolver resolver) {
+        return resolver.resolveCall(this);
     }
 }
