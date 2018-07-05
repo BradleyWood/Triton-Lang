@@ -53,7 +53,7 @@ assignment
     ;
 
 varDef
-    : modifierList? (type | VAR | VAL) NL* IDENTIFIER (ASSIGN NL* expression)?
+    : (modifierList NL*)? (type | VAR | VAL) NL* IDENTIFIER (ASSIGN NL* expression)?
     ;
 
 functionCall
@@ -61,7 +61,7 @@ functionCall
     ;
 
 functionDef
-    : modifierList? (VOID_T | type) NL* IDENTIFIER NL* LPAREN functionParamDefs? RPAREN NL* block
+    : (modifierList NL*)? (VOID_T | type) NL* IDENTIFIER NL* LPAREN functionParamDefs? RPAREN NL* block
     ;
 
 functionParamDefs
@@ -69,7 +69,7 @@ functionParamDefs
     ;
 
 functionParam
-    : modifierList? type NL* IDENTIFIER
+    : (modifierList NL*)? type NL* IDENTIFIER
     ;
 
 type
@@ -117,7 +117,7 @@ forStatement
     ;
 
 forControl
-    : modifierList? (type | VAR | VAL) NL* IDENTIFIER NL* COLON NL* expression
+    : (modifierList NL*)? (type | VAR | VAL) NL* IDENTIFIER NL* COLON NL* expression
     ; // todo;
 
 localVariable
