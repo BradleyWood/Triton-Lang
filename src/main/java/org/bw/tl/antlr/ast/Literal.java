@@ -24,7 +24,7 @@ public @Data class Literal<T> extends Expression {
         } else if (value instanceof Float) {
             return FloatType.INSTANCE.getDesc();
         } else if (value instanceof Integer) {
-            int v = (int) value;
+            int v = (Integer) value;
             if (v <= Byte.MAX_VALUE && v > Byte.MIN_VALUE) {
                 return ByteType.INSTANCE.getDesc();
             } else if (v <= Short.MAX_VALUE && v >= Short.MIN_VALUE) {
