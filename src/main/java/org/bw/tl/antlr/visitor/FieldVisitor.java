@@ -16,8 +16,11 @@ public class FieldVisitor extends GrammarBaseVisitor<Field> {
     public Field visitVarDef(final GrammarParser.VarDefContext ctx) {
         final String name = ctx.IDENTIFIER().getText();
         final Expression initialValue = ctx.expression().accept(ExpressionVisitor.of(sourceFile));
+        final String type = ctx.type() != null ? ctx.type().getText() : null;
 
-        final Field field = new Field(name, initialValue);
+        final Field field = new Field(name, type, initialValue);
+
+        field.setConstant(ctx.VAL() != null);
 
         if (ctx.modifierList() != null && ctx.modifierList().modifier() != null) {
             for (final GrammarParser.ModifierContext modCtx : ctx.modifierList().modifier()) {

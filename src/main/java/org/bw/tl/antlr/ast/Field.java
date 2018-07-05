@@ -7,7 +7,10 @@ import lombok.EqualsAndHashCode;
 public @Data class Field extends ModifiableStatement {
 
     private final String name;
+    private final String type;
     private final Expression initialValue;
+
+    private boolean isConstant = false;
 
     @Override
     public void accept(final ASTVisitor visitor) {
