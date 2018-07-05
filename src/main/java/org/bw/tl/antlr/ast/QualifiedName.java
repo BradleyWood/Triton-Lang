@@ -12,6 +12,30 @@ public @Data class QualifiedName extends Expression {
     @NotNull
     private final String[] names;
 
+    @NotNull
+    public QualifiedName append(@NotNull final String identifier) {
+        final String[] names = new String[this.names.length + 1];
+        System.arraycopy(this.names, 0, names, 0, this.names.length);
+        names[this.names.length] = identifier;
+        return new QualifiedName(names);
+    }
+
+    /**
+     * Remove the last name from this qualified name
+     * Example a.b.c.d ---> a.b.c
+     *
+     * @return
+     */
+    @NotNull
+    public QualifiedName removeLast() {
+        if (names.length < 1)
+            return new QualifiedName(new String[0]);
+
+        final String[] names = new String[this.names.length - 1];
+        System.arraycopy(this.names, 0, names, 0, this.names.length - 1);
+        return new QualifiedName(names);
+    }
+
     @Override
     public void accept(final ASTVisitor visitor) {
         visitor.visitName(this);
