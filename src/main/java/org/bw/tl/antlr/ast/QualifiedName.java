@@ -45,4 +45,16 @@ public @Data class QualifiedName extends Expression {
     public Type resolveType(final ExpressionResolver resolver) {
         return resolver.resolveName(this);
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < names.length; i++) {
+            builder.append(names[i]);
+            if (i + 1 < names.length) {
+                builder.append(".");
+            }
+        }
+        return builder.toString();
+    }
 }
