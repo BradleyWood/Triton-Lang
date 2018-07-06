@@ -4,7 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.bw.tl.compiler.resolve.ExpressionResolver;
-import org.bw.tl.compiler.types.Type;
+import org.objectweb.asm.Type;
 
 @EqualsAndHashCode(callSuper = false)
 public abstract class Expression extends Node {

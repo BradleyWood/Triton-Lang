@@ -1,7 +1,7 @@
 package org.bw.tl.compiler.resolve;
 
 import org.bw.tl.antlr.ast.*;
-import org.bw.tl.compiler.types.Type;
+import org.objectweb.asm.Type;
 
 public interface ExpressionResolver {
 

@@ -3,7 +3,7 @@ package org.bw.tl.antlr.ast;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.bw.tl.compiler.resolve.ExpressionResolver;
-import org.bw.tl.compiler.types.Type;
+import org.objectweb.asm.Type;
 import org.jetbrains.annotations.NotNull;
 
 @EqualsAndHashCode(callSuper = false)
