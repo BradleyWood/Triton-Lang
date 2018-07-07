@@ -1,6 +1,10 @@
 package org.bw.tl.antlr.ast;
 
 import lombok.Data;
+import org.bw.tl.util.FileUtilities;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.objectweb.asm.Type;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -35,5 +39,27 @@ public @Data class Module {
 
     public static Module of(final File... files) {
         return of(Arrays.asList(files));
+    }
+
+    @Nullable
+    public Type resolveFunction(@NotNull final String name, @NotNull final Type... parameterTypes) {
+        for (final File file : files) {
+            fun:
+            for (final Function function : file.getFunctions()) {
+                final QualifiedName[] types = function.getParameterTypes();
+
+                if (types.length != parameterTypes.length || !function.getName().equals(name))
+                    continue;
+
+                for (int i = 0; i < types.length; i++) {
+                    if (!parameterTypes[i].equals(FileUtilities.getType(file, types[i])))
+                        break fun;
+                }
+
+                return FileUtilities.getType(file, function.getType());
+            }
+        }
+
+        return null;
     }
 }
