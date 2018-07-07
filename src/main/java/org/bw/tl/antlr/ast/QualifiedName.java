@@ -56,6 +56,14 @@ public @Data class QualifiedName extends Expression {
         return resolver.resolveName(this);
     }
 
+    /**
+     *
+     * @return The number of names in the fqn
+     */
+    public int length() {
+        return names.length;
+    }
+
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();
