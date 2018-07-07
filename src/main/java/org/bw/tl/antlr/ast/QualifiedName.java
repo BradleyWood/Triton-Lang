@@ -36,6 +36,16 @@ public @Data class QualifiedName extends Expression {
         return new QualifiedName(names);
     }
 
+    /**
+     * Checks if the last name in this fqn equals the specified string
+     *
+     * @param str The string to compare
+     * @return
+     */
+    public boolean endsWith(final String str) {
+        return names.length > 0 && names[names.length - 1].equals(str);
+    }
+
     @Override
     public void accept(final ASTVisitor visitor) {
         visitor.visitName(this);
