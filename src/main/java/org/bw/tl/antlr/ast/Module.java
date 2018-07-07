@@ -62,4 +62,16 @@ public @Data class Module {
 
         return null;
     }
+
+    @Nullable
+    public Type resolveField(@NotNull final String name) {
+        for (final File file : files) {
+            for (final Field field : file.getFields()) {
+                if (field.getName().equals(name)) {
+                    return FileUtilities.getType(file, field.getType());
+                }
+            }
+        }
+        return null;
+    }
 }

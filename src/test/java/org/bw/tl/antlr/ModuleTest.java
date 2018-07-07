@@ -28,6 +28,7 @@ public class ModuleTest {
                 "testFun", new Block(new Node[0]), new QualifiedName("String"));
 
         funcs.add(func);
+        file.getFields().add(new Field("testField", new QualifiedName("String"), new Literal<>("")));
 
         module = Module.of(files);
     }
@@ -35,6 +36,13 @@ public class ModuleTest {
     @Test
     public void resolveFunctionTest() {
         final Type type = module.resolveFunction("testFun", Type.getType("I"));
+        Assert.assertNotNull(type);
+        Assert.assertEquals("Ljava/lang/String;", type.getDescriptor());
+    }
+
+    @Test
+    public void resolveFieldTest() {
+        final Type type = module.resolveField("testField");
         Assert.assertNotNull(type);
         Assert.assertEquals("Ljava/lang/String;", type.getDescriptor());
     }
