@@ -12,6 +12,10 @@ public @Data class QualifiedName extends Expression {
     @NotNull
     private final String[] names;
 
+    public QualifiedName(final String... names) {
+        this.names = names;
+    }
+
     @NotNull
     public QualifiedName append(@NotNull final String identifier) {
         final String[] names = new String[this.names.length + 1];
@@ -57,7 +61,6 @@ public @Data class QualifiedName extends Expression {
     }
 
     /**
-     *
      * @return The number of names in the fqn
      */
     public int length() {
@@ -74,5 +77,20 @@ public @Data class QualifiedName extends Expression {
             }
         }
         return builder.toString();
+    }
+
+    public String toInternalName() {
+        final StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < names.length; i++) {
+            builder.append(names[i]);
+            if (i + 1 < names.length) {
+                builder.append("/");
+            }
+        }
+        return builder.toString();
+    }
+
+    public String getDesc() {
+        return "L" + toInternalName() + ";";
     }
 }
