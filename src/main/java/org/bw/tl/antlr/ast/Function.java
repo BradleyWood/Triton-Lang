@@ -10,7 +10,7 @@ public @Data class Function extends ModifiableStatement {
     private final String[] parameterNames;
     private final String name;
     private final Block body;
-    private final String type;
+    private final QualifiedName type;
 
     @Override
     public void accept(final ASTVisitor visitor) {

@@ -15,7 +15,9 @@ public class FunctionVisitor extends GrammarBaseVisitor<Function> {
 
     @Override
     public Function visitFunctionDef(final GrammarParser.FunctionDefContext ctx) {
-        final String type = ctx.type() != null ? ctx.type().getText() : ctx.VOID_T().getText();
+        final QualifiedName type = ctx.type() != null ? ctx.type().accept(FQNVisitor.of(sourceFile)) :
+                new QualifiedName(ctx.VOID_T().getText());
+
         final Block block = ctx.block().accept(BlockVisitor.of(sourceFile));
         final String name = ctx.IDENTIFIER().getText();
 
