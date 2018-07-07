@@ -6,6 +6,7 @@ import org.bw.tl.antlr.GrammarBaseVisitor;
 import org.bw.tl.antlr.GrammarParser;
 import org.bw.tl.antlr.ast.Block;
 import org.bw.tl.antlr.ast.Function;
+import org.bw.tl.antlr.ast.QualifiedName;
 
 @RequiredArgsConstructor(staticName = "of")
 public class FunctionVisitor extends GrammarBaseVisitor<Function> {
@@ -18,7 +19,17 @@ public class FunctionVisitor extends GrammarBaseVisitor<Function> {
         final Block block = ctx.block().accept(BlockVisitor.of(sourceFile));
         final String name = ctx.IDENTIFIER().getText();
 
-        final Function function = new Function(name, block, type);
+        QualifiedName[] paramTypes = new QualifiedName[0];
+        String[] paramNames = new String[0];
+
+        if (ctx.functionParamDefs() != null) {
+            paramTypes = ctx.functionParamDefs().functionParam().stream()
+                    .map(p -> p.accept(FQNVisitor.of(sourceFile))).toArray(QualifiedName[]::new);
+            paramNames = ctx.functionParamDefs().functionParam().stream()
+                    .map(p -> p.IDENTIFIER().getText()).toArray(String[]::new);
+        }
+
+        final Function function = new Function(paramTypes, paramNames, name, block, type);
 
         if (ctx.modifierList() != null && ctx.modifierList().modifier() != null) {
             for (final GrammarParser.ModifierContext modCtx : ctx.modifierList().modifier()) {
