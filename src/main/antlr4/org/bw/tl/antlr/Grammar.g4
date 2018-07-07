@@ -53,7 +53,7 @@ assignment
     ;
 
 varDef
-    : (modifierList NL*)? (type | VAR | VAL) NL* IDENTIFIER (ASSIGN NL* expression)?
+    : (modifierList NL*)? (type | VAR | VAL) NL* IDENTIFIER (NL* ASSIGN NL* expression)?
     ;
 
 functionCall
