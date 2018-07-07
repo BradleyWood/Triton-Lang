@@ -20,7 +20,7 @@ public class FileUtilities {
     @Nullable
     public static Type getType(@NotNull final File ctx, @NotNull final QualifiedName name) {
         for (final QualifiedName imp : ctx.getImports()) {
-            if (imp.length() == 1 && imp.endsWith(name.toString()) || imp.equals(name)) {
+            if (name.length() == 1 && imp.endsWith(name.toString()) || imp.equals(name)) {
                 return Type.getType(imp.getDesc());
             }
         }
