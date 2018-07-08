@@ -12,7 +12,7 @@ public @Data class QualifiedName extends Expression {
     @NotNull
     private final String[] names;
 
-    public QualifiedName(final String... names) {
+    public QualifiedName(@NotNull final String... names) {
         this.names = names;
     }
 
@@ -33,7 +33,7 @@ public @Data class QualifiedName extends Expression {
     @NotNull
     public QualifiedName removeLast() {
         if (names.length < 1)
-            return new QualifiedName(new String[0]);
+            return new QualifiedName();
 
         final String[] names = new String[this.names.length - 1];
         System.arraycopy(this.names, 0, names, 0, this.names.length - 1);
@@ -46,17 +46,52 @@ public @Data class QualifiedName extends Expression {
      * @param str The string to compare
      * @return
      */
-    public boolean endsWith(final String str) {
-        return names.length > 0 && names[names.length - 1].equals(str);
+    public boolean endsWith(@NotNull final String str) {
+        return length() > 0 && names[names.length - 1].equals(str);
+    }
+
+    /**
+     * Checks if the first name in this qualified name is equal to the specified string
+     *
+     * @param str The string to compare
+     * @return True if the specified string is equal to the first name this fqn
+     */
+    public boolean beginsWith(@NotNull final String str) {
+        return length() > 0 && names[0].equals(str);
+    }
+
+    /**
+     * Creates a new fqn with the specified sub-indices of this fqn
+     *
+     * @param beginIdx the begin index
+     * @param endIdx the last index
+     * @return a new qualified name with the specified bounds
+     */
+    public QualifiedName subname(final int beginIdx, final int endIdx) {
+        if (beginIdx < 0) {
+            throw new StringIndexOutOfBoundsException(beginIdx);
+        }
+        if (endIdx > length()) {
+            throw new StringIndexOutOfBoundsException(endIdx);
+        }
+        int subLen = endIdx - beginIdx;
+        if (subLen < 0) {
+            throw new StringIndexOutOfBoundsException(subLen);
+        }
+
+        final String[] names = new String[endIdx - beginIdx];
+        System.arraycopy(this.names, beginIdx, names, 0, subLen);
+
+        return new QualifiedName(names);
     }
 
     @Override
-    public void accept(final ASTVisitor visitor) {
+    public void accept(@NotNull final ASTVisitor visitor) {
         visitor.visitName(this);
     }
 
     @Override
-    public Type resolveType(final ExpressionResolver resolver) {
+    public Type resolveType(@NotNull final ExpressionResolver resolver) {
         return resolver.resolveName(this);
     }
 
