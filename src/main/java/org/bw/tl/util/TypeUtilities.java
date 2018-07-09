@@ -1,6 +1,9 @@
 package org.bw.tl.util;
 
+import org.bw.tl.antlr.ast.QualifiedName;
 import org.bw.tl.compiler.types.Primitive;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
 
 public class TypeUtilities {
@@ -36,5 +39,45 @@ public class TypeUtilities {
             return true;
 
         return t == Primitive.LONG && (f == Primitive.INT || f == Primitive.SHORT || f == Primitive.BYTE || f == Primitive.CHAR);
+    }
+
+    /**
+     * Attempts to resolve a type with no contextual information. The type must
+     * be primitive or fully qualified and must exists the compiler's classpath
+     *
+     * @param name the name to resolve
+     * @return the type if it exists, otherwise null
+     */
+    @Nullable
+    public static Type getTypeFromName(@NotNull final QualifiedName name) {
+        if (name.length() == 1) {
+            final Primitive p = Primitive.getPrimitiveByName(name.toString());
+            if (p != null) {
+                return Type.getType(p.getDesc());
+            }
+        }
+
+        try {
+            return Type.getType(Class.forName(name.toString()));
+        } catch (ClassNotFoundException ignored) {
+        }
+        return null;
+    }
+
+    /**
+     * Attempts to resolve a type with no contextual information. The type must
+     * be primitive or fully qualified and must exists the compiler's classpath
+     *
+     * @param name the name to resolve
+     * @return the type if it exists, otherwise null
+     */
+    public static Type getTypeFromName(final String name) {
+        final QualifiedName fqn;
+        if (name.contains(".")) {
+            fqn = new QualifiedName(name.split("\\."));
+        } else {
+            fqn = new QualifiedName(name);
+        }
+        return getTypeFromName(fqn);
     }
 }

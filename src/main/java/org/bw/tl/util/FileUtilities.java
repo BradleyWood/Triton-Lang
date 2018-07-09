@@ -2,10 +2,11 @@ package org.bw.tl.util;
 
 import org.bw.tl.antlr.ast.File;
 import org.bw.tl.antlr.ast.QualifiedName;
-import org.bw.tl.compiler.types.Primitive;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
+
+import static org.bw.tl.util.TypeUtilities.getTypeFromName;
 
 public class FileUtilities {
 
@@ -25,28 +26,5 @@ public class FileUtilities {
             }
         }
         return getTypeFromName(name);
-    }
-
-    /**
-     * Attempts to resolve a type with no contextual information. The type must
-     * be primitive or fully qualified and must exists the compiler's classpath
-     *
-     * @param name the name to resolve
-     * @return the type if it exists, otherwise null
-     */
-    @Nullable
-    public static Type getTypeFromName(@NotNull final QualifiedName name) {
-        if (name.length() == 1) {
-            final Primitive p = Primitive.getPrimitiveByName(name.toString());
-            if (p != null) {
-                return Type.getType(p.getDesc());
-            }
-        }
-
-        try {
-            return Type.getType(Class.forName(name.toString()));
-        } catch (ClassNotFoundException ignored) {
-        }
-        return null;
     }
 }
