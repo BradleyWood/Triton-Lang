@@ -26,7 +26,7 @@ public class FunctionVisitor extends GrammarBaseVisitor<Function> {
 
         if (ctx.functionParamDefs() != null) {
             paramTypes = ctx.functionParamDefs().functionParam().stream()
-                    .map(p -> p.accept(FQNVisitor.of(sourceFile))).toArray(QualifiedName[]::new);
+                    .map(p -> QualifiedName.of(p.type().getText())).toArray(QualifiedName[]::new);
             paramNames = ctx.functionParamDefs().functionParam().stream()
                     .map(p -> p.IDENTIFIER().getText()).toArray(String[]::new);
         }
