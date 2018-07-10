@@ -89,16 +89,16 @@ public @Data class Operator implements Opcodes {
             if (isAssignableWithImplicitCast(lhs, rhs)) {
                 final Primitive from = Primitive.getPrimitiveByDesc(lhs.getDescriptor());
                 final Primitive to = Primitive.getPrimitiveByDesc(rhs.getDescriptor());
-                from.getPrimitiveHelper().cast(mv, to.getPrimitiveHelper());
+                return to.getPrimitiveHelper().cast(mv, from.getPrimitiveHelper());
             } else if (isAssignableWithImplicitCast(rhs, lhs)) {
                 final Primitive to = Primitive.getPrimitiveByDesc(lhs.getDescriptor());
                 final Primitive from = Primitive.getPrimitiveByDesc(rhs.getDescriptor());
-                from.getPrimitiveHelper().cast(mv, to.getPrimitiveHelper());
+                return to.getPrimitiveHelper().cast(mv, from.getPrimitiveHelper());
             } else {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     static {
