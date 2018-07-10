@@ -2,6 +2,7 @@ package org.bw.tl.antlr.ast;
 
 import lombok.Data;
 import org.bw.tl.util.FileUtilities;
+import org.bw.tl.util.TypeUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
@@ -10,6 +11,10 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+
+import static org.bw.tl.util.FileUtilities.getType;
+import static org.bw.tl.util.TypeUtilities.isAssignableFrom;
+import static org.bw.tl.util.TypeUtilities.isAssignableWithImplicitCast;
 
 public @Data class Module {
 
@@ -52,11 +57,13 @@ public @Data class Module {
                     continue;
 
                 for (int i = 0; i < types.length; i++) {
-                    if (!parameterTypes[i].equals(FileUtilities.getType(file, types[i])))
+                    final Type ti = getType(file, types[i]);
+                    if (!parameterTypes[i].equals(ti) && !isAssignableFrom(parameterTypes[i], ti)
+                            && !isAssignableWithImplicitCast(parameterTypes[i], ti))
                         break fun;
                 }
 
-                return FileUtilities.getType(file, function.getType());
+                return getType(file, function.getType());
             }
         }
 
@@ -68,7 +75,7 @@ public @Data class Module {
         for (final File file : files) {
             for (final Field field : file.getFields()) {
                 if (field.getName().equals(name)) {
-                    return FileUtilities.getType(file, field.getType());
+                    return getType(file, field.getType());
                 }
             }
         }
