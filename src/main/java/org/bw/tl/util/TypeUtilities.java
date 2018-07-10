@@ -8,6 +8,10 @@ import org.objectweb.asm.Type;
 
 public class TypeUtilities {
 
+    public static boolean isAssignableFrom(final String fromDesc, final String toDesc) {
+        return isAssignableFrom(Type.getType(fromDesc), Type.getType(toDesc));
+    }
+
     public static boolean isAssignableFrom(final Type from, final Type to) {
         if (from.equals(to))
             return true;
@@ -29,6 +33,10 @@ public class TypeUtilities {
             return true;
 
         return t == Primitive.SHORT && (f == Primitive.BYTE);
+    }
+
+    public static boolean isAssignableWithImplicitCast(final String fromDesc, final String toDesc) {
+        return isAssignableWithImplicitCast(Type.getType(fromDesc), Type.getType(toDesc));
     }
 
     public static boolean isAssignableWithImplicitCast(final Type from, final Type to) {
