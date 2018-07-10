@@ -55,7 +55,7 @@ public @Data class Operator implements Opcodes {
      * @return true if the comparison is possible
      */
     public boolean apply(final MethodVisitor mv) {
-        if (branchOpcode != -1 || castArgs(mv))
+        if (branchOpcode != -1 || !castArgs(mv))
             return false;
 
         mv.visitInsn(opcode);
