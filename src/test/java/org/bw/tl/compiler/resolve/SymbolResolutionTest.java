@@ -16,7 +16,7 @@ import java.util.Collections;
 
 public class SymbolResolutionTest {
 
-    private SymbolResolver getResolver(final String txt) {
+    static SymbolResolver getResolver(final String txt) {
         final GrammarLexer lexer = new GrammarLexer(CharStreams.fromString(txt));
         final CommonTokenStream ts = new CommonTokenStream(lexer);
         final GrammarParser p = new GrammarParser(ts);
