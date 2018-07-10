@@ -26,7 +26,7 @@ public class LiteralVisitor extends GrammarBaseVisitor<Literal> {
             final int radix = ctx.number().HEX() != null ? 16 : 10;
             final Object value;
             if (ctx.number().FLOAT() == null) {
-                value = Integer.parseInt(ctx.number().getText(), radix);
+                value = Long.parseLong(ctx.number().getText(), radix);
             } else {
                 value = Double.parseDouble(ctx.number().getText());
             }
