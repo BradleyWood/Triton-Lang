@@ -14,7 +14,7 @@ public class FQNVisitor extends GrammarBaseVisitor<QualifiedName> {
 
     @Override
     public QualifiedName visitFqn(final GrammarParser.FqnContext ctx) {
-        final QualifiedName fqn = new QualifiedName(ctx.IDENTIFIER().stream().map(ParseTree::getText).toArray(String[]::new));
+        final QualifiedName fqn = QualifiedName.of(ctx.getText());
 
         fqn.setLineNumber(ctx.start.getLine());
         fqn.setText(ctx.getText());
