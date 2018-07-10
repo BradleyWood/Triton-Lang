@@ -17,7 +17,7 @@ public class FieldVisitor extends GrammarBaseVisitor<Field> {
     public Field visitVarDef(final GrammarParser.VarDefContext ctx) {
         final String name = ctx.IDENTIFIER().getText();
         final Expression initialValue = ctx.expression().accept(ExpressionVisitor.of(sourceFile));
-        final QualifiedName type = ctx.type() != null ? ctx.type().accept(FQNVisitor.of(sourceFile)) : null;
+        final QualifiedName type = ctx.type() != null ? QualifiedName.of(ctx.type().getText()) : null;
 
         final Field field = new Field(name, type, initialValue);
 
