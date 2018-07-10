@@ -95,6 +95,16 @@ public @Data class QualifiedName extends Expression {
         return resolver.resolveName(this);
     }
 
+    public static QualifiedName of(@NotNull final String name) {
+        final QualifiedName fqn;
+        if (name.contains(".")) {
+            fqn = new QualifiedName(name.split("\\."));
+        } else {
+            fqn = new QualifiedName(name);
+        }
+        return fqn;
+    }
+
     /**
      * @return The number of names in the fqn
      */
