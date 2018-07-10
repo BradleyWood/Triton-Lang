@@ -45,6 +45,8 @@ public class TypeUtilities {
 
         if (t == Primitive.DOUBLE && f == Primitive.FLOAT)
             return true;
+        if (t == Primitive.FLOAT && (f == Primitive.LONG || f == Primitive.INT || f == Primitive.SHORT || f == Primitive.BYTE))
+            return true;
 
         return t == Primitive.LONG && (f == Primitive.INT || f == Primitive.SHORT || f == Primitive.BYTE || f == Primitive.CHAR);
     }
