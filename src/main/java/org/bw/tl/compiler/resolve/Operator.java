@@ -3,6 +3,7 @@ package org.bw.tl.compiler.resolve;
 import lombok.Data;
 import org.bw.tl.compiler.types.Primitive;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -65,7 +66,7 @@ public @Data class Operator implements Opcodes {
     /**
      * Applies the comparison and performs a jump if the comparison is false
      *
-     * @param mv the method visitor to use to write instructions
+     * @param mv       the method visitor to use to write instructions
      * @param jmpLabel The label to jump to if the comparison is false
      * @return true if the comparison is possible
      */
@@ -216,5 +217,16 @@ public @Data class Operator implements Opcodes {
     public static void addCmpOperator(@NotNull final String name, final int opcode, final @NotNull String type,
                                       @NotNull final String... applicableTypes) {
         addCmpOperator(name, opcode, -1, type, applicableTypes);
+    }
+
+    @Nullable
+    public static Operator getOperator(@NotNull final String name, @NotNull final Type lhs, @NotNull final Type rhs) {
+        for (final Operator operator : operators) {
+            if (operator.getName().equals(name)) {
+                if ((operator.lhs.equals(lhs) && operator.rhs.equals(rhs)) || (operator.lhs.equals(rhs) && operator.rhs.equals(lhs)))
+                    return operator;
+            }
+        }
+        return null;
     }
 }
