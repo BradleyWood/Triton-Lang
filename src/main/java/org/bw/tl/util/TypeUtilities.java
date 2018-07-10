@@ -80,12 +80,6 @@ public class TypeUtilities {
      * @return the type if it exists, otherwise null
      */
     public static Type getTypeFromName(final String name) {
-        final QualifiedName fqn;
-        if (name.contains(".")) {
-            fqn = new QualifiedName(name.split("\\."));
-        } else {
-            fqn = new QualifiedName(name);
-        }
-        return getTypeFromName(fqn);
+        return getTypeFromName(QualifiedName.of(name));
     }
 }
