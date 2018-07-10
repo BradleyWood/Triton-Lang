@@ -1,8 +1,11 @@
 package org.bw.tl.compiler.types;
 
 import lombok.Data;
+import org.bw.tl.util.TypeUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.MethodVisitor;
+
+import static org.objectweb.asm.Opcodes.*;
 
 public abstract @Data class Type {
 
@@ -18,6 +21,18 @@ public abstract @Data class Type {
         if (isPrimitive())
             return desc;
         return desc.substring(1, desc.length() - 1);
+    }
+
+    public boolean cast(final MethodVisitor mv, final String from) {
+        return cast(mv, new AnyType(from));
+    }
+
+    public boolean cast(final MethodVisitor mv, final Type from) {
+        if (!isPrimitive() && !from.isPrimitive() && TypeUtilities.isAssignableFrom(from.getDesc(), getDesc())) {
+            mv.visitTypeInsn(CHECKCAST, from.getInternalName());
+            return true;
+        }
+        return false;
     }
 
     public abstract boolean toInt(final MethodVisitor mv);

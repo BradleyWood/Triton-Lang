@@ -27,5 +27,13 @@ public class ShortType extends IntType {
         return true;
     }
 
+    @Override
+    public boolean cast(final MethodVisitor mv, final Type from) {
+        if (from.isPrimitive() && !(from instanceof VoidType) && !(from instanceof BoolType)) {
+            return from.toShort(mv);
+        }
+        return false;
+    }
+
     public static final ShortType INSTANCE = new ShortType();
 }

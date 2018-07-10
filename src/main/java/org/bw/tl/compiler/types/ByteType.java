@@ -27,5 +27,13 @@ public class ByteType extends IntType {
         return true;
     }
 
+    @Override
+    public boolean cast(final MethodVisitor mv, final Type from) {
+        if (from.isPrimitive() && !(from instanceof VoidType) && !(from instanceof BoolType)) {
+            return from.toByte(mv);
+        }
+        return false;
+    }
+
     public static final ByteType INSTANCE = new ByteType();
 }

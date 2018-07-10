@@ -28,6 +28,19 @@ public class AnyType extends Type {
     }
 
     @Override
+    public boolean cast(final MethodVisitor mv, final Type from) {
+        if (from.isPrimitive()) {
+            final Primitive fromPrimitive = Primitive.getPrimitiveByDesc(from.getDesc());
+
+            if (fromPrimitive != Primitive.VOID && getDesc().equals(fromPrimitive.getWrappedType())) {
+                mv.visitMethodInsn(INVOKESTATIC, getDesc(), "valueOf", "()" + fromPrimitive.getDesc(), false);
+            }
+            return false;
+        }
+        return super.cast(mv, from);
+    }
+
+    @Override
     public boolean toInt(final MethodVisitor mv) {
         if (isNumber()) {
             mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(), "intValue", "()I", false);

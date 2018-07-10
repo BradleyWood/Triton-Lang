@@ -27,5 +27,13 @@ public class CharType extends IntType {
         return true;
     }
 
+    @Override
+    public boolean cast(final MethodVisitor mv, final Type from) {
+        if (from.isPrimitive() && !(from instanceof VoidType) && !(from instanceof BoolType)) {
+            return from.toChar(mv);
+        }
+        return false;
+    }
+
     public static final CharType INSTANCE = new CharType();
 }

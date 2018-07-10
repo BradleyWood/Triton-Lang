@@ -89,5 +89,13 @@ public class FloatType extends Type {
         return true;
     }
 
+    @Override
+    public boolean cast(final MethodVisitor mv, final Type from) {
+        if (from.isPrimitive() && !(from instanceof VoidType) && !(from instanceof BoolType)) {
+            return from.toFloat(mv);
+        }
+        return false;
+    }
+
     public static final FloatType INSTANCE = new FloatType();
 }

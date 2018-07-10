@@ -80,5 +80,15 @@ public class BoolType extends Type {
         return true;
     }
 
+    @Override
+    public boolean cast(final MethodVisitor mv, final Type from) {
+        if (from.getDesc().equals("Ljava/lang/Boolean;")) {
+            mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(), "booleanValue", "()Z", false);
+            return true;
+        }
+
+        return false;
+    }
+
     public static final BoolType INSTANCE = new BoolType();
 }

@@ -90,5 +90,13 @@ public class IntType extends Type {
         return true;
     }
 
+    @Override
+    public boolean cast(final MethodVisitor mv, final Type from) {
+        if (from.isPrimitive() && !(from instanceof VoidType) && !(from instanceof BoolType)) {
+            return from.toInt(mv);
+        }
+        return false;
+    }
+
     public static final IntType INSTANCE = new IntType();
 }

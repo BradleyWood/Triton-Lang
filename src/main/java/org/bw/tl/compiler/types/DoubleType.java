@@ -89,5 +89,13 @@ public class DoubleType extends Type {
         return true;
     }
 
+    @Override
+    public boolean cast(final MethodVisitor mv, final Type from) {
+        if (from.isPrimitive() && !(from instanceof VoidType) && !(from instanceof BoolType)) {
+            return from.toDouble(mv);
+        }
+        return false;
+    }
+
     public static final DoubleType INSTANCE = new DoubleType();
 }

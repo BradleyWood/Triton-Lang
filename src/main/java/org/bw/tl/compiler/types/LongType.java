@@ -89,5 +89,13 @@ public class LongType extends Type {
         return true;
     }
 
+    @Override
+    public boolean cast(final MethodVisitor mv, final Type from) {
+        if (from.isPrimitive() && !(from instanceof VoidType) && !(from instanceof BoolType)) {
+            return from.toLong(mv);
+        }
+        return false;
+    }
+
     public static final LongType INSTANCE = new LongType();
 }
