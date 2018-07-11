@@ -43,9 +43,9 @@ public class TypeUtilities {
         final Primitive f = Primitive.getPrimitiveByDesc(from.getDescriptor());
         final Primitive t = Primitive.getPrimitiveByDesc(to.getDescriptor());
 
-        if (t == Primitive.DOUBLE && f != Primitive.VOID && f != Primitive.BOOL)
+        if (t == Primitive.DOUBLE && f != Primitive.VOID && f != Primitive.BOOL && f != Primitive.DOUBLE)
             return true;
-        if (t == Primitive.FLOAT && f != Primitive.VOID && f != Primitive.BOOL)
+        if (t == Primitive.FLOAT && f != Primitive.VOID && f != Primitive.BOOL && f != Primitive.DOUBLE)
             return true;
 
         return t == Primitive.LONG && (f == Primitive.INT || f == Primitive.SHORT || f == Primitive.BYTE || f == Primitive.CHAR);
