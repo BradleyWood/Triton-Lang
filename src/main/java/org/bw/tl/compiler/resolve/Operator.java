@@ -1,7 +1,6 @@
 package org.bw.tl.compiler.resolve;
 
 import lombok.Data;
-import org.bw.tl.compiler.types.Primitive;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Label;
@@ -13,8 +12,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static org.bw.tl.util.TypeUtilities.getTypeFromName;
-import static org.bw.tl.util.TypeUtilities.isAssignableFrom;
-import static org.bw.tl.util.TypeUtilities.isAssignableWithImplicitCast;
 
 public @Data class Operator implements Opcodes {
 
@@ -55,7 +52,7 @@ public @Data class Operator implements Opcodes {
      * @return true if the comparison is possible
      */
     public boolean apply(final MethodVisitor mv) {
-        if (branchOpcode != -1 || !castArgs(mv))
+        if (branchOpcode != -1)
             return false;
 
         mv.visitInsn(opcode);
@@ -71,9 +68,6 @@ public @Data class Operator implements Opcodes {
      * @return true if the comparison is possible
      */
     public boolean applyCmp(@NotNull final MethodVisitor mv, @NotNull final Label jmpLabel) {
-        if (castArgs(mv))
-            return false;
-
         if (branchOpcode != -1) {
             mv.visitInsn(opcode);
             mv.visitJumpInsn(branchOpcode, jmpLabel);
@@ -81,23 +75,6 @@ public @Data class Operator implements Opcodes {
             mv.visitJumpInsn(opcode, jmpLabel);
         }
 
-        return true;
-    }
-
-    private boolean castArgs(MethodVisitor mv) {
-        if (!lhs.equals(rhs) && !isAssignableFrom(lhs, rhs) && !isAssignableFrom(rhs, lhs)) {
-            if (isAssignableWithImplicitCast(lhs, rhs)) {
-                final Primitive from = Primitive.getPrimitiveByDesc(lhs.getDescriptor());
-                final Primitive to = Primitive.getPrimitiveByDesc(rhs.getDescriptor());
-                return to.getPrimitiveHelper().cast(mv, from.getPrimitiveHelper());
-            } else if (isAssignableWithImplicitCast(rhs, lhs)) {
-                final Primitive to = Primitive.getPrimitiveByDesc(lhs.getDescriptor());
-                final Primitive from = Primitive.getPrimitiveByDesc(rhs.getDescriptor());
-                return to.getPrimitiveHelper().cast(mv, from.getPrimitiveHelper());
-            } else {
-                return false;
-            }
-        }
         return true;
     }
 
@@ -223,8 +200,9 @@ public @Data class Operator implements Opcodes {
     public static Operator getOperator(@NotNull final String name, @NotNull final Type lhs, @NotNull final Type rhs) {
         for (final Operator operator : operators) {
             if (operator.getName().equals(name)) {
-                if ((operator.lhs.equals(lhs) && operator.rhs.equals(rhs)) || (operator.lhs.equals(rhs) && operator.rhs.equals(lhs)))
-                    return operator;
+                if ((operator.lhs.equals(lhs) && operator.rhs.equals(rhs)) || (operator.lhs.equals(rhs) && operator.rhs.equals(lhs))) {
+                    return new Operator(operator.getName(), operator.getOpcode(), operator.getBranchOpcode(), lhs, rhs, operator.getResultType());
+                }
             }
         }
         return null;
