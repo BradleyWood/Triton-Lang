@@ -53,4 +53,20 @@ public enum Primitive {
         }
         return null;
     }
+
+    @Nullable
+    public static Primitive getPrimitiveFromWrapper(@Nullable final Class<?> clazz) {
+        if (clazz == null)
+            return null;
+
+        final String internalName = "L" + clazz.getTypeName().replace(".", "/") + ";";
+
+        for (final Primitive primitive : values()) {
+            if (internalName.equals(primitive.wrappedType)) {
+                return primitive;
+            }
+        }
+
+        return null;
+    }
 }
