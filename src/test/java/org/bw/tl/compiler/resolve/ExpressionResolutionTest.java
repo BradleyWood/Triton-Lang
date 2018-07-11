@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import static org.bw.tl.TestUtilities.getResolver;
 import static org.bw.tl.TestUtilities.parseExpression;
 import static org.bw.tl.util.TypeUtilities.getTypeFromName;
 import static org.bw.tl.util.TypeUtilities.isAssignableFrom;
@@ -52,7 +53,7 @@ public class ExpressionResolutionTest {
 
         @Test
         public void resolveExpression() {
-            final SymbolResolver resolver = SymbolResolutionTest.getResolver("package mod;" +
+            final SymbolResolver resolver = getResolver("package mod;" +
                     "float abc = 100\n" +
                     "java.lang.String str = \"a string lol\"\n" +
                     "long add(int a, float b) {}");

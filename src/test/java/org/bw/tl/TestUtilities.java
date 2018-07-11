@@ -6,10 +6,33 @@ import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.bw.tl.antlr.GrammarLexer;
 import org.bw.tl.antlr.GrammarParser;
 import org.bw.tl.antlr.ast.Expression;
+import org.bw.tl.antlr.ast.File;
+import org.bw.tl.antlr.ast.Module;
 import org.bw.tl.antlr.visitor.ExpressionVisitor;
+import org.bw.tl.antlr.visitor.FileVisitor;
+import org.bw.tl.compiler.resolve.SymbolResolver;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
+
 public class TestUtilities {
+
+    public static SymbolResolver getResolver(final String txt) {
+        final GrammarLexer lexer = new GrammarLexer(CharStreams.fromString(txt));
+        final CommonTokenStream ts = new CommonTokenStream(lexer);
+        final GrammarParser p = new GrammarParser(ts);
+
+        p.removeErrorListener(ConsoleErrorListener.INSTANCE);
+
+        GrammarParser.FileContext fc = p.file();
+
+        if (p.getNumberOfSyntaxErrors() == 0) {
+            final File file = fc.accept(FileVisitor.of("<test>"));
+            final Module mod = Module.of(file);
+            return new SymbolResolver(Collections.singletonList(mod), mod);
+        }
+        return null;
+    }
 
     @Nullable
     public static Expression parseExpression(final String expr) {
