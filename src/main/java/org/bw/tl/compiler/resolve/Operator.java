@@ -91,7 +91,7 @@ public @Data class Operator implements Opcodes {
 
         addOperator("-", LSUB, "long", "int", "short", "char", "byte");
         addOperator("-", FSUB, "float", "long", "int", "short", "char", "byte");
-        addOperator("-", DSUB, "double", "float", "int", "short", "char", "byte");
+        addOperator("-", DSUB, "double", "long", "float", "int", "short", "char", "byte");
         addOperator("-", ISUB, "int", "short", "char", "byte");
         addOperator("-", ISUB, "short", "char", "byte");
         addOperator("-", ISUB, "char");
@@ -99,7 +99,7 @@ public @Data class Operator implements Opcodes {
 
         addOperator("*", LMUL, "long", "int", "short", "char", "byte");
         addOperator("*", FMUL, "float", "long", "int", "short", "char", "byte");
-        addOperator("*", DMUL, "double", "float", "int", "short", "char", "byte");
+        addOperator("*", DMUL, "double", "long", "float", "int", "short", "char", "byte");
         addOperator("*", IMUL, "int", "short", "char", "byte");
         addOperator("*", IMUL, "short", "char", "byte");
         addOperator("*", IMUL, "char");
@@ -107,7 +107,7 @@ public @Data class Operator implements Opcodes {
 
         addOperator("/", LDIV, "long", "int", "short", "char", "byte");
         addOperator("/", FDIV, "float", "long", "int", "short", "char", "byte");
-        addOperator("/", DDIV, "double", "float", "int", "short", "char", "byte");
+        addOperator("/", DDIV, "double", "long", "float", "int", "short", "char", "byte");
         addOperator("/", IDIV, "int", "short", "char", "byte");
         addOperator("/", IDIV, "short", "char", "byte");
         addOperator("/", IDIV, "char");
@@ -115,7 +115,7 @@ public @Data class Operator implements Opcodes {
 
         addOperator("%", LREM, "long", "int", "short", "char", "byte");
         addOperator("%", FREM, "float", "long", "int", "short", "char", "byte");
-        addOperator("%", DREM, "double", "float", "int", "short", "char", "byte");
+        addOperator("%", DREM, "double", "long", "float", "int", "short", "char", "byte");
         addOperator("%", IREM, "int", "short", "char", "byte");
         addOperator("%", IREM, "short", "char", "byte");
         addOperator("%", IREM, "char");
@@ -123,7 +123,7 @@ public @Data class Operator implements Opcodes {
 
         addCmpOperator("==", LCMP, IFNE, "long", "int", "short", "char", "byte");
         addCmpOperator("==", FCMPG, IFNE, "float", "long", "int", "short", "char", "byte");
-        addCmpOperator("==", DCMPG, IFNE, "double", "float", "int", "short", "char", "byte");
+        addCmpOperator("==", DCMPG, IFNE, "double", "long", "float", "int", "short", "char", "byte");
         addCmpOperator("==", IF_ICMPNE, "int", "short", "char", "byte");
         addCmpOperator("==", IF_ICMPNE, "short", "char", "byte");
         addCmpOperator("==", IF_ICMPNE, "char");
@@ -131,7 +131,7 @@ public @Data class Operator implements Opcodes {
 
         addCmpOperator("!=", LCMP, IFEQ, "long", "int", "short", "char", "byte");
         addCmpOperator("!=", FCMPG, IFEQ, "float", "long", "int", "short", "char", "byte");
-        addCmpOperator("!=", DCMPG, IFEQ, "double", "float", "int", "short", "char", "byte");
+        addCmpOperator("!=", DCMPG, IFEQ, "double", "long", "float", "int", "short", "char", "byte");
         addCmpOperator("!=", IF_ICMPEQ, "int", "short", "char", "byte");
         addCmpOperator("!=", IF_ICMPEQ, "short", "char", "byte");
         addCmpOperator("!=", IF_ICMPEQ, "char");
@@ -139,7 +139,7 @@ public @Data class Operator implements Opcodes {
 
         addCmpOperator(">", LCMP, IFLE, "long", "int", "short", "char", "byte");
         addCmpOperator(">", FCMPG, IFLE, "float", "long", "int", "short", "char", "byte");
-        addCmpOperator(">", DCMPG, IFLE, "double", "float", "int", "short", "char", "byte");
+        addCmpOperator(">", DCMPG, IFLE, "double", "long", "float", "int", "short", "char", "byte");
         addCmpOperator(">", IF_ICMPLE, "int", "short", "char", "byte");
         addCmpOperator(">", IF_ICMPLE, "short", "char", "byte");
         addCmpOperator(">", IF_ICMPLE, "char");
@@ -147,7 +147,7 @@ public @Data class Operator implements Opcodes {
 
         addCmpOperator("<", LCMP, IFGE, "long", "int", "short", "char", "byte");
         addCmpOperator("<", FCMPG, IFGE, "float", "long", "int", "short", "char", "byte");
-        addCmpOperator("<", DCMPG, IFGE, "double", "float", "int", "short", "char", "byte");
+        addCmpOperator("<", DCMPG, IFGE, "double", "long", "float", "int", "short", "char", "byte");
         addCmpOperator("<", IF_ICMPGE, "int", "short", "char", "byte");
         addCmpOperator("<", IF_ICMPGE, "short", "char", "byte");
         addCmpOperator("<", IF_ICMPGE, "char");
@@ -155,7 +155,7 @@ public @Data class Operator implements Opcodes {
 
         addCmpOperator(">=", LCMP, IFLT, "long", "int", "short", "char", "byte");
         addCmpOperator(">=", FCMPG, IFLT, "float", "long", "int", "short", "char", "byte");
-        addCmpOperator(">=", DCMPG, IFLT, "double", "float", "int", "short", "char", "byte");
+        addCmpOperator(">=", DCMPG, IFLT, "double", "long", "float", "int", "short", "char", "byte");
         addCmpOperator(">=", IF_ICMPLT, "int", "short", "char", "byte");
         addCmpOperator(">=", IF_ICMPLT, "short", "char", "byte");
         addCmpOperator(">=", IF_ICMPLT, "char");
@@ -163,7 +163,7 @@ public @Data class Operator implements Opcodes {
 
         addCmpOperator(">=", LCMP, IFGT, "long", "int", "short", "char", "byte");
         addCmpOperator(">=", FCMPG, IFGT, "float", "long", "int", "short", "char", "byte");
-        addCmpOperator(">=", DCMPG, IFGT, "double", "float", "int", "short", "char", "byte");
+        addCmpOperator(">=", DCMPG, IFGT, "double", "long", "float", "int", "short", "char", "byte");
         addCmpOperator(">=", IF_ICMPGT, "int", "short", "char", "byte");
         addCmpOperator(">=", IF_ICMPGT, "short", "char", "byte");
         addCmpOperator(">=", IF_ICMPGT, "char");
