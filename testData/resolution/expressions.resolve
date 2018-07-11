@@ -1,0 +1,19 @@
+byte             : 0
+short            : 1000
+int              : 100000
+long             : 5000000000
+byte             : -1
+short            : -1000
+int              : -100000
+long             : 5000000000
+java.lang.String : "Hello, World"
+
+
+int              : 100000 * 10
+double           : 1 * 10.0
+
+int             ~: 1
+int             ~: 40000
+short           ~: 4000
+short           ~: 4000 + 1 * 65 + 51
+
