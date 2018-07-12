@@ -185,7 +185,7 @@ public @Data class Operator implements Opcodes {
         final Type pt = getTypeFromName(type);
         final Type rt = getTypeFromName("boolean");
 
-        operators.add(new Operator(name, opcode, pt, pt, rt));
+        operators.add(new Operator(name, opcode, branchOpcode, pt, pt, rt));
         for (final String t : applicableTypes) {
             operators.add(new Operator(name, opcode, branchOpcode, getTypeFromName(t), pt, rt));
         }
