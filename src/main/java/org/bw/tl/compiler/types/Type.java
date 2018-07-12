@@ -57,6 +57,8 @@ public abstract @Data class Type {
 
     public abstract boolean store(final MethodVisitor mv);
 
+    public abstract boolean newArray(final MethodVisitor mv);
+
     public abstract boolean arrayLoad(final MethodVisitor mv);
 
     public abstract boolean arrayStore(final MethodVisitor mv);

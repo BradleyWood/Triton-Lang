@@ -28,6 +28,12 @@ public class CharType extends IntType {
     }
 
     @Override
+    public boolean newArray(final MethodVisitor mv) {
+        mv.visitIntInsn(NEWARRAY, T_CHAR);
+        return true;
+    }
+
+    @Override
     public boolean cast(final MethodVisitor mv, final Type from) {
         if (from.isPrimitive() && !(from instanceof VoidType) && !(from instanceof BoolType)) {
             return from.toChar(mv);

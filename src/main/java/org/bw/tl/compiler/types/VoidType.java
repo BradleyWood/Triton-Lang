@@ -66,6 +66,11 @@ public class VoidType extends Type {
     }
 
     @Override
+    public boolean newArray(final MethodVisitor mv) {
+        return false;
+    }
+
+    @Override
     public boolean arrayLoad(final MethodVisitor mv) {
         return false;
     }

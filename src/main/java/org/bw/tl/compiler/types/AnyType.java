@@ -144,4 +144,10 @@ public class AnyType extends Type {
         mv.visitInsn(AASTORE);
         return true;
     }
+
+    @Override
+    public boolean newArray(final MethodVisitor mv) {
+        mv.visitTypeInsn(ANEWARRAY, getInternalName());
+        return true;
+    }
 }

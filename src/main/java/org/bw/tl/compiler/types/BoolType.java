@@ -81,6 +81,12 @@ public class BoolType extends Type {
     }
 
     @Override
+    public boolean newArray(final MethodVisitor mv) {
+        mv.visitIntInsn(NEWARRAY, T_BOOLEAN);
+        return true;
+    }
+
+    @Override
     public boolean cast(final MethodVisitor mv, final Type from) {
         if (from.getDesc().equals("Ljava/lang/Boolean;")) {
             mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(), "booleanValue", "()Z", false);

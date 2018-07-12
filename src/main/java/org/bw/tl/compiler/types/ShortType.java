@@ -35,5 +35,11 @@ public class ShortType extends IntType {
         return false;
     }
 
+    @Override
+    public boolean newArray(final MethodVisitor mv) {
+        mv.visitIntInsn(NEWARRAY, T_SHORT);
+        return true;
+    }
+
     public static final ShortType INSTANCE = new ShortType();
 }

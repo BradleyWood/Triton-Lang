@@ -91,6 +91,12 @@ public class IntType extends Type {
     }
 
     @Override
+    public boolean newArray(final MethodVisitor mv) {
+        mv.visitIntInsn(NEWARRAY, T_INT);
+        return true;
+    }
+
+    @Override
     public boolean cast(final MethodVisitor mv, final Type from) {
         if (from.isPrimitive() && !(from instanceof VoidType) && !(from instanceof BoolType)) {
             return from.toInt(mv);
