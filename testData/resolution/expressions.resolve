@@ -12,8 +12,15 @@ java.lang.String : "Hello, World"
 int              : 100000 * 10
 double           : 1 * 10.0
 
-int             ~: 1
-int             ~: 40000
+byte            ~: 0
+byte            ~: 50 + 1 - 1 * 2 - 40
 short           ~: 4000
 short           ~: 4000 + 1 * 65 + 51
-
+int             ~: 0
+int             ~: 40000 * 4 - 20 / 1 % 2
+long            ~: 0
+long            ~: -100 * 2 + 500
+float           ~: 1000000
+double          ~: 1000000
+double          ~: 1000000.0
+double          ~: 1000000.0 * 1 * 1.0 / 1 + 1 - 1 % 1
