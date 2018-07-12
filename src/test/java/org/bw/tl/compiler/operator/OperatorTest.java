@@ -108,10 +108,6 @@ public class OperatorTest implements Opcodes {
 
         byte[] bytes = cw.toByteArray();
 
-        FileOutputStream fos = new FileOutputStream("target/classes/OpTest.class");
-        fos.write(bytes);
-        fos.close();
-
         ClassLoader cl = new ClassLoader() {
             @Override
             public Class<?> findClass(String name) {
