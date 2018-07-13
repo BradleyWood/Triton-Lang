@@ -15,6 +15,7 @@ public @Data class MethodCtx {
     private final List<Error> errors = new LinkedList<>();
     private final Scope scope = new Scope();
     private ExpressionResolver resolver;
+    private SymbolResolver symbolResolver;
     private final List<Module> classPath;
     private final Function function;
     private final Module module;
@@ -22,9 +23,16 @@ public @Data class MethodCtx {
 
     public ExpressionResolver getResolver() {
         if (resolver == null) {
-            resolver = new ExpressionResolverImpl(new SymbolResolver(classPath, module), module, file, scope);
+            resolver = new ExpressionResolverImpl(getSymbolResolver(), module, file, scope);
         }
         return resolver;
+    }
+
+    public SymbolResolver getSymbolResolver() {
+        if (symbolResolver == null) {
+            symbolResolver = new SymbolResolver(classPath, module);
+        }
+        return symbolResolver;
     }
 
     public Type resolveField(final QualifiedName name) {
@@ -33,6 +41,10 @@ public @Data class MethodCtx {
 
     public Type resolveFunction(final Call call) {
         return resolver.resolveCall(call);
+    }
+
+    public Type resolveType(final QualifiedName name) {
+        return symbolResolver.resolveType(name);
     }
 
     public boolean isInitializer() {
