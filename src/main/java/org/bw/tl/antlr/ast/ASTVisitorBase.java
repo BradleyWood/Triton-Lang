@@ -3,62 +3,62 @@ package org.bw.tl.antlr.ast;
 public class ASTVisitorBase implements ASTVisitor {
 
     @Override
-    public void visitName(QualifiedName name) {
-
+    public void visitName(final QualifiedName name) {
+        throw new UnsupportedOperationException("Names not implemented");
     }
 
     @Override
-    public void visitAnnotation(Annotation annotation) {
-
+    public void visitAnnotation(final Annotation annotation) {
+        throw new UnsupportedOperationException("Annotations not implemented");
     }
 
     @Override
-    public void visitField(Field field) {
-
+    public void visitField(final Field field) {
+        throw new UnsupportedOperationException("Fields not implemented");
     }
 
     @Override
-    public void visitFunction(Function function) {
-
+    public void visitFunction(final Function function) {
+        throw new UnsupportedOperationException("Function not implemented");
     }
 
     @Override
-    public void visitIf(IfStatement ifStatement) {
-
+    public void visitIf(final IfStatement ifStatement) {
+        throw new UnsupportedOperationException("If statements not implemented");
     }
 
     @Override
-    public void visitWhile(WhileLoop whileLoop) {
-
+    public void visitWhile(final WhileLoop whileLoop) {
+        throw new UnsupportedOperationException("While loop not implemented");
     }
 
     @Override
-    public void visitBinaryOp(BinaryOp binaryOp) {
-
+    public void visitBinaryOp(final BinaryOp binaryOp) {
+        throw new UnsupportedOperationException("Binary operators not implemented");
     }
 
     @Override
-    public void visitUnaryOp(UnaryOp unaryOp) {
-
+    public void visitUnaryOp(final UnaryOp unaryOp) {
+        throw new UnsupportedOperationException("Unary operators not implemented");
     }
 
     @Override
-    public void visitLiteral(Literal literal) {
-
+    public void visitLiteral(final Literal literal) {
+        throw new UnsupportedOperationException("Literal values not implemented");
     }
 
     @Override
-    public void visitCall(Call call) {
-
+    public void visitCall(final Call call) {
+        throw new UnsupportedOperationException("Function calls not implemented");
     }
 
     @Override
-    public void visitReturn(Return returnStmt) {
-
+    public void visitReturn(final Return returnStmt) {
+        throw new UnsupportedOperationException("Return statement not implemented");
     }
 
     @Override
-    public void visitFor(ForLoop forLoop) {
-
+    public void visitFor(final ForLoop forLoop) {
+        throw new UnsupportedOperationException("For loop not implemented");
     }
 }
