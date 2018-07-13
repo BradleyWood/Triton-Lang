@@ -122,14 +122,14 @@ public class AnyType extends Type {
     }
 
     @Override
-    public boolean load(final MethodVisitor mv) {
-        mv.visitInsn(ALOAD);
+    public boolean load(final MethodVisitor mv, final int idx) {
+        mv.visitVarInsn(ALOAD, idx);
         return true;
     }
 
     @Override
-    public boolean store(final MethodVisitor mv) {
-        mv.visitInsn(ASTORE);
+    public boolean store(final MethodVisitor mv, final int idx) {
+        mv.visitVarInsn(ASTORE, idx);
         return true;
     }
 

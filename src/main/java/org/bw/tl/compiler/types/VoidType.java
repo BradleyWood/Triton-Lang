@@ -56,12 +56,12 @@ public class VoidType extends Type {
     }
 
     @Override
-    public boolean load(final MethodVisitor mv) {
+    public boolean load(final MethodVisitor mv, final int idx) {
         return false;
     }
 
     @Override
-    public boolean store(final MethodVisitor mv) {
+    public boolean store(final MethodVisitor mv, final int idx) {
         return false;
     }
 

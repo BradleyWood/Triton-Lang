@@ -67,14 +67,14 @@ public class IntType extends Type {
     }
 
     @Override
-    public boolean load(final MethodVisitor mv) {
-        mv.visitInsn(ILOAD);
+    public boolean load(final MethodVisitor mv, final int idx) {
+        mv.visitVarInsn(ILOAD, idx);
         return true;
     }
 
     @Override
-    public boolean store(final MethodVisitor mv) {
-        mv.visitInsn(ISTORE);
+    public boolean store(final MethodVisitor mv, final int idx) {
+        mv.visitVarInsn(ISTORE, idx);
         return true;
     }
 

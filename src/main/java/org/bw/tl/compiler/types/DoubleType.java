@@ -66,14 +66,14 @@ public class DoubleType extends Type {
     }
 
     @Override
-    public boolean load(final MethodVisitor mv) {
-        mv.visitInsn(DLOAD);
+    public boolean load(final MethodVisitor mv, final int idx) {
+        mv.visitVarInsn(DLOAD, idx);
         return true;
     }
 
     @Override
-    public boolean store(final MethodVisitor mv) {
-        mv.visitInsn(DSTORE);
+    public boolean store(final MethodVisitor mv, final int idx) {
+        mv.visitVarInsn(DSTORE, idx);
         return true;
     }
 

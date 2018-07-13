@@ -66,14 +66,14 @@ public class FloatType extends Type {
     }
 
     @Override
-    public boolean load(final MethodVisitor mv) {
-        mv.visitInsn(FLOAD);
+    public boolean load(final MethodVisitor mv, final int idx) {
+        mv.visitVarInsn(FLOAD, idx);
         return true;
     }
 
     @Override
-    public boolean store(final MethodVisitor mv) {
-        mv.visitInsn(FSTORE);
+    public boolean store(final MethodVisitor mv, final int idx) {
+        mv.visitVarInsn(FSTORE, idx);
         return true;
     }
 

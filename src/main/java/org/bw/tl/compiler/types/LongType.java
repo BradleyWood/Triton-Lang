@@ -66,14 +66,14 @@ public class LongType extends Type {
     }
 
     @Override
-    public boolean load(final MethodVisitor mv) {
-        mv.visitInsn(LLOAD);
+    public boolean load(final MethodVisitor mv, final int idx) {
+        mv.visitVarInsn(LLOAD, idx);
         return true;
     }
 
     @Override
-    public boolean store(final MethodVisitor mv) {
-        mv.visitInsn(LSTORE);
+    public boolean store(final MethodVisitor mv, final int idx) {
+        mv.visitVarInsn(LSTORE, idx);
         return true;
     }
 
