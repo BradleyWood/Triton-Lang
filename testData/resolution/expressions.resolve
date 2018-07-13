@@ -6,6 +6,13 @@ byte             : -1
 short            : -1000
 int              : -100000
 long             : 5000000000
+float            : 1.0f
+float            : 1f
+float            : 1e6f
+float            : 1.0e6f
+double           : 1.0
+double           : 1e6
+double           : 1.0e6
 java.lang.String : "Hello, World"
 
 
@@ -21,6 +28,13 @@ int             ~: 40000 * 4 - 20 / 1 % 2
 long            ~: 0
 long            ~: -100 * 2 + 500
 float           ~: 1000000
+float           ~: 1f
+float           ~: 1e6f
+float           ~: 1.0e6f
+float           ~: 1.0f
+float           ~: 1.0f + 1.0f + 100 * 2 / 2 % 1 - 10
 double          ~: 1000000
+double          ~: 1e6
+double          ~: 1.0e6
 double          ~: 1000000.0
 double          ~: 1000000.0 * 1 * 1.0 / 1 + 1 - 1 % 1
