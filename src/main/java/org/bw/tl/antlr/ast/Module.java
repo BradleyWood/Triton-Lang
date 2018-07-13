@@ -5,10 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static org.bw.tl.util.FileUtilities.getType;
 import static org.bw.tl.util.TypeUtilities.isAssignableFrom;
@@ -92,5 +89,29 @@ public @Data class Module {
 
     public String getDescriptor() {
         return "L" + getInternalName() + ";";
+    }
+
+    /**
+     * Creates a list containing all fields in the module.
+     * Adding or removing from this list doest not modify the module.
+     *
+     * @return A list containing all fields in the module
+     */
+    public List<Field> getFields() {
+        final List<Field> fields = new LinkedList<>();
+        files.forEach(file -> fields.addAll(file.getFields()));
+        return fields;
+    }
+
+    /**
+     * Creates a list containing all the functions in the module.
+     * Adding or removing from this list does not modify the module.
+     *
+     * @return A list containing all functions in the module
+     */
+    public List<Function> getFunctions() {
+        final List<Function> fields = new LinkedList<>();
+        files.forEach(file -> fields.addAll(file.getFunctions()));
+        return fields;
     }
 }
