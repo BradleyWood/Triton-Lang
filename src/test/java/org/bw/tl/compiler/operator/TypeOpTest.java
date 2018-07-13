@@ -37,7 +37,7 @@ public class TypeOpTest implements Opcodes {
         cw.visit(52, ACC_PUBLIC + ACC_SUPER, "org/bw/tl/compiler/CmpTest", null,
                 "java/lang/Object", null);
 
-        final MethodVisitor mv = cw.visitMethod(ACC_PUBLIC + ACC_STATIC, "TEST_METHOD", "()V",
+        MethodVisitor mv = cw.visitMethod(ACC_PUBLIC + ACC_STATIC, "TEST_METHOD", "()V",
                 null, null);
         mv.visitCode();
         // method body begin
@@ -83,6 +83,13 @@ public class TypeOpTest implements Opcodes {
             op.applyCmp(mv, throwLabel);
         }
 
+        {
+            mv.visitLdcInsn(number);
+            mv.visitMethodInsn(INVOKESTATIC, "org/bw/tl/compiler/CmpTest", "retTest",
+                    "()" + type.getDescriptor(), false);
+            op.applyCmp(mv, throwLabel);
+        }
+
 
         mv.visitJumpInsn(GOTO, endLabel);
 
@@ -99,6 +106,18 @@ public class TypeOpTest implements Opcodes {
         mv.visitInsn(RETURN);
         mv.visitMaxs(0, 0);
         mv.visitEnd();
+
+        {
+
+            mv = cw.visitMethod(ACC_PUBLIC + ACC_STATIC, "retTest", "()" + type.getDescriptor(), null, null);
+            mv.visitCode();
+
+            mv.visitLdcInsn(number);
+            typeHandler.ret(mv);
+
+            mv.visitMaxs(0, 0);
+            mv.visitEnd();
+        }
 
         cw.visitEnd();
 
@@ -124,7 +143,7 @@ public class TypeOpTest implements Opcodes {
 
         for (final String type : TYPES) {
             final Type typeHelper = Primitive.getPrimitiveByName(type).getPrimitiveHelper();
-            parameters.add(new Object[] {typeHelper, getNumber(type) });
+            parameters.add(new Object[]{typeHelper, getNumber(type)});
         }
 
         return parameters;
