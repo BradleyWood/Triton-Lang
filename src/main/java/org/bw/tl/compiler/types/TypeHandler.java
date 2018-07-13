@@ -7,7 +7,7 @@ import org.objectweb.asm.MethodVisitor;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public abstract @Data class Type {
+public abstract @Data class TypeHandler {
 
     @NotNull
     private final String desc;
@@ -24,10 +24,10 @@ public abstract @Data class Type {
     }
 
     public boolean cast(final MethodVisitor mv, final String from) {
-        return cast(mv, new AnyType(from));
+        return cast(mv, new AnyTypeHandler(from));
     }
 
-    public boolean cast(final MethodVisitor mv, final Type from) {
+    public boolean cast(final MethodVisitor mv, final TypeHandler from) {
         if (!isPrimitive() && !from.isPrimitive() && TypeUtilities.isAssignableFrom(from.getDesc(), getDesc())) {
             mv.visitTypeInsn(CHECKCAST, from.getInternalName());
             return true;

@@ -2,6 +2,7 @@ package org.bw.tl.compiler.operator;
 
 import org.bw.tl.compiler.resolve.Operator;
 import org.bw.tl.compiler.types.Primitive;
+import org.bw.tl.compiler.types.TypeHandler;
 import org.bw.tl.util.TypeUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
@@ -9,7 +10,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.objectweb.asm.*;
 
-import java.io.FileOutputStream;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Random;
@@ -85,7 +85,7 @@ public class OperatorTest implements Opcodes {
         boolean convertToLong = TypeUtilities.isAssignableWithImplicitCast(op.getResultType(), Type.LONG_TYPE);
         boolean convertToDouble = op.getResultType().equals(Type.FLOAT_TYPE);
 
-        org.bw.tl.compiler.types.Type t = Primitive.getPrimitiveByDesc(op.getResultType().getDescriptor()).getPrimitiveHelper();
+        TypeHandler t = Primitive.getPrimitiveByDesc(op.getResultType().getDescriptor()).getPrimitiveHelper();
         if (convertToLong) {
             t.toLong(mv);
         } else if (convertToDouble) {

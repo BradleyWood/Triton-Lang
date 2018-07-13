@@ -4,10 +4,10 @@ import org.objectweb.asm.MethodVisitor;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class BoolType extends Type {
+public class VoidHandler extends TypeHandler {
 
-    private BoolType() {
-        super("Z");
+    private VoidHandler() {
+        super("V");
     }
 
     @Override
@@ -47,54 +47,38 @@ public class BoolType extends Type {
 
     @Override
     public boolean toObject(final MethodVisitor mv) {
-        mv.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;", false);
-        return true;
+        return false;
     }
 
     @Override
     public void ret(final MethodVisitor mv) {
-        mv.visitInsn(IRETURN);
+        mv.visitInsn(RETURN);
     }
 
     @Override
     public boolean load(final MethodVisitor mv, final int idx) {
-        mv.visitVarInsn(ILOAD, idx);
-        return true;
+        return false;
     }
 
     @Override
     public boolean store(final MethodVisitor mv, final int idx) {
-        mv.visitVarInsn(ISTORE, idx);
-        return true;
-    }
-
-    @Override
-    public boolean arrayLoad(final MethodVisitor mv) {
-        mv.visitInsn(BALOAD);
-        return true;
-    }
-
-    @Override
-    public boolean arrayStore(final MethodVisitor mv) {
-        mv.visitInsn(BASTORE);
-        return true;
+        return false;
     }
 
     @Override
     public boolean newArray(final MethodVisitor mv) {
-        mv.visitIntInsn(NEWARRAY, T_BOOLEAN);
-        return true;
-    }
-
-    @Override
-    public boolean cast(final MethodVisitor mv, final Type from) {
-        if (from.getDesc().equals("Ljava/lang/Boolean;")) {
-            mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(), "booleanValue", "()Z", false);
-            return true;
-        }
-
         return false;
     }
 
-    public static final BoolType INSTANCE = new BoolType();
+    @Override
+    public boolean arrayLoad(final MethodVisitor mv) {
+        return false;
+    }
+
+    @Override
+    public boolean arrayStore(final MethodVisitor mv) {
+        return false;
+    }
+
+    public static final VoidHandler INSTANCE = new VoidHandler();
 }

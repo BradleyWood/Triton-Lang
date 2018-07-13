@@ -7,7 +7,7 @@ import java.util.List;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class AnyType extends Type {
+public class AnyTypeHandler extends TypeHandler {
 
     private static final List<String> NUMBER_TYPES = Arrays.asList(
             "Ljava/lang/Number;",
@@ -19,7 +19,7 @@ public class AnyType extends Type {
             "Ljava/lang/Double;"
     );
 
-    public AnyType(final String desc) {
+    public AnyTypeHandler(final String desc) {
         super(desc);
     }
 
@@ -28,7 +28,7 @@ public class AnyType extends Type {
     }
 
     @Override
-    public boolean cast(final MethodVisitor mv, final Type from) {
+    public boolean cast(final MethodVisitor mv, final TypeHandler from) {
         if (from.isPrimitive()) {
             final Primitive fromPrimitive = Primitive.getPrimitiveByDesc(from.getDesc());
 

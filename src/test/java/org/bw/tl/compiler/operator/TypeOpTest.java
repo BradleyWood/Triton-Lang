@@ -1,16 +1,12 @@
 package org.bw.tl.compiler.operator;
 
-
 import org.bw.tl.compiler.resolve.Operator;
 import org.bw.tl.compiler.types.Primitive;
-import org.bw.tl.compiler.types.Type;
+import org.bw.tl.compiler.types.TypeHandler;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.*;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -22,10 +18,10 @@ public class TypeOpTest implements Opcodes {
 
     private static final String[] TYPES = {"byte", "short", "int", "long", "float", "double"};
 
-    private final Type typeHandler;
+    private final TypeHandler typeHandler;
     private final Number number;
 
-    public TypeOpTest(final Type typeHandler, final Number number) {
+    public TypeOpTest(final TypeHandler typeHandler, final Number number) {
         this.typeHandler = typeHandler;
         this.number = number;
     }
@@ -42,7 +38,7 @@ public class TypeOpTest implements Opcodes {
         mv.visitCode();
         // method body begin
 
-        org.objectweb.asm.Type type = org.objectweb.asm.Type.getType(typeHandler.getDesc());
+        Type type = Type.getType(typeHandler.getDesc());
         Operator op = Operator.getOperator("==", type, type);
 
         Label throwLabel = new Label();
@@ -142,7 +138,7 @@ public class TypeOpTest implements Opcodes {
         final LinkedList<Object[]> parameters = new LinkedList<>();
 
         for (final String type : TYPES) {
-            final Type typeHelper = Primitive.getPrimitiveByName(type).getPrimitiveHelper();
+            final TypeHandler typeHelper = Primitive.getPrimitiveByName(type).getPrimitiveHelper();
             parameters.add(new Object[]{typeHelper, getNumber(type)});
         }
 

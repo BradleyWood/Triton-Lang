@@ -4,9 +4,9 @@ import org.objectweb.asm.MethodVisitor;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class FloatType extends Type {
+public class FloatHandler extends TypeHandler {
 
-    private FloatType() {
+    private FloatHandler() {
         super("F");
     }
 
@@ -96,12 +96,12 @@ public class FloatType extends Type {
     }
 
     @Override
-    public boolean cast(final MethodVisitor mv, final Type from) {
-        if (from.isPrimitive() && !(from instanceof VoidType) && !(from instanceof BoolType)) {
+    public boolean cast(final MethodVisitor mv, final TypeHandler from) {
+        if (from.isPrimitive() && !(from instanceof VoidHandler) && !(from instanceof BoolHandler)) {
             return from.toFloat(mv);
         }
         return false;
     }
 
-    public static final FloatType INSTANCE = new FloatType();
+    public static final FloatHandler INSTANCE = new FloatHandler();
 }

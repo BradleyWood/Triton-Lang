@@ -4,10 +4,10 @@ import org.objectweb.asm.MethodVisitor;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class VoidType extends Type {
+public class BoolHandler extends TypeHandler {
 
-    private VoidType() {
-        super("V");
+    private BoolHandler() {
+        super("Z");
     }
 
     @Override
@@ -47,38 +47,54 @@ public class VoidType extends Type {
 
     @Override
     public boolean toObject(final MethodVisitor mv) {
-        return false;
+        mv.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;", false);
+        return true;
     }
 
     @Override
     public void ret(final MethodVisitor mv) {
-        mv.visitInsn(RETURN);
+        mv.visitInsn(IRETURN);
     }
 
     @Override
     public boolean load(final MethodVisitor mv, final int idx) {
-        return false;
+        mv.visitVarInsn(ILOAD, idx);
+        return true;
     }
 
     @Override
     public boolean store(final MethodVisitor mv, final int idx) {
-        return false;
-    }
-
-    @Override
-    public boolean newArray(final MethodVisitor mv) {
-        return false;
+        mv.visitVarInsn(ISTORE, idx);
+        return true;
     }
 
     @Override
     public boolean arrayLoad(final MethodVisitor mv) {
-        return false;
+        mv.visitInsn(BALOAD);
+        return true;
     }
 
     @Override
     public boolean arrayStore(final MethodVisitor mv) {
+        mv.visitInsn(BASTORE);
+        return true;
+    }
+
+    @Override
+    public boolean newArray(final MethodVisitor mv) {
+        mv.visitIntInsn(NEWARRAY, T_BOOLEAN);
+        return true;
+    }
+
+    @Override
+    public boolean cast(final MethodVisitor mv, final TypeHandler from) {
+        if (from.getDesc().equals("Ljava/lang/Boolean;")) {
+            mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(), "booleanValue", "()Z", false);
+            return true;
+        }
+
         return false;
     }
 
-    public static final VoidType INSTANCE = new VoidType();
+    public static final BoolHandler INSTANCE = new BoolHandler();
 }

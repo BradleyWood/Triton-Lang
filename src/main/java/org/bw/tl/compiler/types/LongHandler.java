@@ -4,15 +4,15 @@ import org.objectweb.asm.MethodVisitor;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class DoubleType extends Type {
+public class LongHandler extends TypeHandler {
 
-    private DoubleType() {
-        super("D");
+    private LongHandler() {
+        super("J");
     }
 
     @Override
     public boolean toInt(final MethodVisitor mv) {
-        mv.visitInsn(D2I);
+        mv.visitInsn(L2I);
         return true;
     }
 
@@ -39,69 +39,69 @@ public class DoubleType extends Type {
 
     @Override
     public boolean toLong(final MethodVisitor mv) {
-        mv.visitInsn(D2L);
         return true;
     }
 
     @Override
     public boolean toFloat(final MethodVisitor mv) {
-        mv.visitInsn(D2F);
+        mv.visitInsn(L2F);
         return true;
     }
 
     @Override
     public boolean toDouble(final MethodVisitor mv) {
+        mv.visitInsn(L2D);
         return true;
     }
 
     @Override
     public boolean toObject(final MethodVisitor mv) {
-        mv.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);
+        mv.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf", "(I)Ljava/lang/Long;", false);
         return true;
     }
 
     @Override
     public void ret(final MethodVisitor mv) {
-        mv.visitInsn(DRETURN);
+        mv.visitInsn(LRETURN);
     }
 
     @Override
     public boolean load(final MethodVisitor mv, final int idx) {
-        mv.visitVarInsn(DLOAD, idx);
+        mv.visitVarInsn(LLOAD, idx);
         return true;
     }
 
     @Override
     public boolean store(final MethodVisitor mv, final int idx) {
-        mv.visitVarInsn(DSTORE, idx);
+        mv.visitVarInsn(LSTORE, idx);
         return true;
     }
 
     @Override
     public boolean arrayLoad(final MethodVisitor mv) {
-        mv.visitInsn(DALOAD);
+        mv.visitInsn(LALOAD);
         return true;
     }
 
     @Override
     public boolean arrayStore(final MethodVisitor mv) {
-        mv.visitInsn(DASTORE);
+        mv.visitInsn(LASTORE);
         return true;
     }
 
     @Override
     public boolean newArray(final MethodVisitor mv) {
-        mv.visitIntInsn(NEWARRAY, T_DOUBLE);
+        mv.visitIntInsn(NEWARRAY, T_LONG);
         return true;
     }
 
     @Override
-    public boolean cast(final MethodVisitor mv, final Type from) {
-        if (from.isPrimitive() && !(from instanceof VoidType) && !(from instanceof BoolType)) {
-            return from.toDouble(mv);
+    public boolean cast(final MethodVisitor mv, final TypeHandler from) {
+        if (from.isPrimitive() && !(from instanceof VoidHandler) && !(from instanceof BoolHandler)) {
+            return from.toLong(mv);
         }
         return false;
     }
 
-    public static final DoubleType INSTANCE = new DoubleType();
+    public static final LongHandler INSTANCE = new LongHandler();
 }

@@ -4,9 +4,9 @@ import org.objectweb.asm.MethodVisitor;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class ShortType extends IntType {
+public class ShortHandler extends IntHandler {
 
-    private ShortType() {
+    private ShortHandler() {
         super("S");
     }
 
@@ -28,8 +28,8 @@ public class ShortType extends IntType {
     }
 
     @Override
-    public boolean cast(final MethodVisitor mv, final Type from) {
-        if (from.isPrimitive() && !(from instanceof VoidType) && !(from instanceof BoolType)) {
+    public boolean cast(final MethodVisitor mv, final TypeHandler from) {
+        if (from.isPrimitive() && !(from instanceof VoidHandler) && !(from instanceof BoolHandler)) {
             return from.toShort(mv);
         }
         return false;
@@ -41,5 +41,5 @@ public class ShortType extends IntType {
         return true;
     }
 
-    public static final ShortType INSTANCE = new ShortType();
+    public static final ShortHandler INSTANCE = new ShortHandler();
 }

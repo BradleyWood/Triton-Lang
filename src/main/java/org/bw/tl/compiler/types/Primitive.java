@@ -6,22 +6,23 @@ import org.jetbrains.annotations.Nullable;
 
 public enum Primitive {
 
-    INT("int", "I", "Ljava/lang/Integer;", IntType.INSTANCE),
-    SHORT("short", "S", "Ljava/lang/Short;", ShortType.INSTANCE),
-    CHAR("char", "C", "Ljava/lang/Character;", CharType.INSTANCE),
-    BYTE("byte", "B", "Ljava/lang/Byte;", ByteType.INSTANCE),
-    LONG("long", "J", "Ljava/lang/Long;", LongType.INSTANCE),
-    FLOAT("float", "F", "Ljava/lang/Float;", FloatType.INSTANCE),
-    DOUBLE("double", "D", "Ljava/lang/Double;", DoubleType.INSTANCE),
-    VOID("void", "V", null, VoidType.INSTANCE),
-    BOOL("boolean", "Z", "Ljava/lang/Boolean;", BoolType.INSTANCE);
+    INT("int", "I", "Ljava/lang/Integer;", IntHandler.INSTANCE),
+    SHORT("short", "S", "Ljava/lang/Short;", ShortHandler.INSTANCE),
+    CHAR("char", "C", "Ljava/lang/Character;", CharHandler.INSTANCE),
+    BYTE("byte", "B", "Ljava/lang/Byte;", ByteHandler.INSTANCE),
+    LONG("long", "J", "Ljava/lang/Long;", LongHandler.INSTANCE),
+    FLOAT("float", "F", "Ljava/lang/Float;", FloatHandler.INSTANCE),
+    DOUBLE("double", "D", "Ljava/lang/Double;", DoubleHandler.INSTANCE),
+    VOID("void", "V", null, VoidHandler.INSTANCE),
+    BOOL("boolean", "Z", "Ljava/lang/Boolean;", BoolHandler.INSTANCE);
 
     private final @Getter String name;
     private final @Getter String desc;
     private final @Getter String wrappedType;
-    private final @Getter Type primitiveHelper;
+    private final @Getter
+    TypeHandler primitiveHelper;
 
-    Primitive(final String name, final String desc, final String wrappedType, final Type primitiveHelper) {
+    Primitive(final String name, final String desc, final String wrappedType, final TypeHandler primitiveHelper) {
         this.name = name;
         this.desc = desc;
         this.wrappedType = wrappedType;

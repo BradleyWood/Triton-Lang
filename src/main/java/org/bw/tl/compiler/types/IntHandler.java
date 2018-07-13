@@ -4,13 +4,13 @@ import org.objectweb.asm.MethodVisitor;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class IntType extends Type {
+public class IntHandler extends TypeHandler {
 
-    private IntType() {
+    private IntHandler() {
         this("I");
     }
 
-    IntType(final String desc) {
+    IntHandler(final String desc) {
         super(desc);
     }
 
@@ -97,12 +97,12 @@ public class IntType extends Type {
     }
 
     @Override
-    public boolean cast(final MethodVisitor mv, final Type from) {
-        if (from.isPrimitive() && !(from instanceof VoidType) && !(from instanceof BoolType)) {
+    public boolean cast(final MethodVisitor mv, final TypeHandler from) {
+        if (from.isPrimitive() && !(from instanceof VoidHandler) && !(from instanceof BoolHandler)) {
             return from.toInt(mv);
         }
         return false;
     }
 
-    public static final IntType INSTANCE = new IntType();
+    public static final IntHandler INSTANCE = new IntHandler();
 }

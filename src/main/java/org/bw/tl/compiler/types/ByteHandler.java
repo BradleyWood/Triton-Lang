@@ -4,9 +4,9 @@ import org.objectweb.asm.MethodVisitor;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class ByteType extends IntType {
+public class ByteHandler extends IntHandler {
 
-    private ByteType() {
+    private ByteHandler() {
         super("B");
     }
 
@@ -34,12 +34,12 @@ public class ByteType extends IntType {
     }
 
     @Override
-    public boolean cast(final MethodVisitor mv, final Type from) {
-        if (from.isPrimitive() && !(from instanceof VoidType) && !(from instanceof BoolType)) {
+    public boolean cast(final MethodVisitor mv, final TypeHandler from) {
+        if (from.isPrimitive() && !(from instanceof VoidHandler) && !(from instanceof BoolHandler)) {
             return from.toByte(mv);
         }
         return false;
     }
 
-    public static final ByteType INSTANCE = new ByteType();
+    public static final ByteHandler INSTANCE = new ByteHandler();
 }

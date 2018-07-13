@@ -4,9 +4,9 @@ import org.objectweb.asm.MethodVisitor;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class CharType extends IntType {
+public class CharHandler extends IntHandler {
 
-    private CharType() {
+    private CharHandler() {
         super("C");
     }
 
@@ -34,12 +34,12 @@ public class CharType extends IntType {
     }
 
     @Override
-    public boolean cast(final MethodVisitor mv, final Type from) {
-        if (from.isPrimitive() && !(from instanceof VoidType) && !(from instanceof BoolType)) {
+    public boolean cast(final MethodVisitor mv, final TypeHandler from) {
+        if (from.isPrimitive() && !(from instanceof VoidHandler) && !(from instanceof BoolHandler)) {
             return from.toChar(mv);
         }
         return false;
     }
 
-    public static final CharType INSTANCE = new CharType();
+    public static final CharHandler INSTANCE = new CharHandler();
 }
