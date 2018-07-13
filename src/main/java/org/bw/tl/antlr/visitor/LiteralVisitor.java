@@ -28,7 +28,11 @@ public class LiteralVisitor extends GrammarBaseVisitor<Literal> {
             if (ctx.number().FLOAT() == null) {
                 value = Long.parseLong(ctx.number().getText(), radix);
             } else {
-                value = Double.parseDouble(ctx.number().getText());
+                if (ctx.number().getText().toLowerCase().contains("f")) {
+                    value = Float.parseFloat(ctx.number().getText());
+                } else {
+                    value = Double.parseDouble(ctx.number().getText());
+                }
             }
             literal = new Literal<>(value);
         }

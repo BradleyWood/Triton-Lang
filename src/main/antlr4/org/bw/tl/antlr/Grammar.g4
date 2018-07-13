@@ -304,9 +304,10 @@ HEX
     ;
 
 FLOAT
-    : Digit+ '.' Digit* ExponentPart?
-    | '.' Digit+ ExponentPart?
-    | Digit+ ExponentPart
+    : Digit+ '.' Digit* ExponentPart? [fF]?
+    | '.' Digit+ ExponentPart? [fF]?
+    | Digit+ ExponentPart [fF]?
+    | Digit+ [fF]
     ;
 
 fragment
