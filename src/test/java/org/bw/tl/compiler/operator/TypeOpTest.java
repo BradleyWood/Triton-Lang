@@ -42,6 +42,9 @@ public class TypeOpTest implements Opcodes {
         mv.visitCode();
         // method body begin
 
+        org.objectweb.asm.Type type = org.objectweb.asm.Type.getType(typeHandler.getDesc());
+        Operator op = Operator.getOperator("==", type, type);
+
         Label throwLabel = new Label();
         Label endLabel = new Label();
 
@@ -68,8 +71,15 @@ public class TypeOpTest implements Opcodes {
             mv.visitInsn(ICONST_0);
             typeHandler.arrayLoad(mv); // get item at 0th idx
 
-            org.objectweb.asm.Type type = org.objectweb.asm.Type.getType(typeHandler.getDesc());
-            Operator op = Operator.getOperator("==", type, type);
+            op.applyCmp(mv, throwLabel);
+        }
+
+        {
+            mv.visitLdcInsn(number);
+            mv.visitLdcInsn(number);
+            typeHandler.store(mv, 1);
+            typeHandler.load(mv, 1);
+
             op.applyCmp(mv, throwLabel);
         }
 
