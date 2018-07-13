@@ -1,6 +1,7 @@
 package org.bw.tl.util;
 
 import org.bw.tl.antlr.ast.QualifiedName;
+import org.bw.tl.compiler.resolve.SymbolResolver;
 import org.bw.tl.compiler.types.Primitive;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,7 +23,7 @@ public class TypeUtilities {
         if (f == null && t == null) {
             try {
                 return Class.forName(to.getClassName()).isAssignableFrom(Class.forName(from.getClassName()));
-            } catch (Throwable ignored){
+            } catch (Throwable ignored) {
             }
             return false;
         } else if (f == null || t == null) {
@@ -83,5 +84,23 @@ public class TypeUtilities {
      */
     public static Type getTypeFromName(final String name) {
         return getTypeFromName(QualifiedName.of(name));
+    }
+
+    @Nullable
+    public static String getFunctionDescriptor(@NotNull final SymbolResolver resolver, @NotNull final QualifiedName returnType,
+                                         @NotNull final QualifiedName... parameterTypeNames) {
+        final Type retType = resolver.resolveType(returnType);
+        final Type[] parameterTypes = new Type[parameterTypeNames.length];
+
+        for (int i = 0; i < parameterTypes.length; i++) {
+            parameterTypes[i] = resolver.resolveType(parameterTypeNames[i]);
+            if (parameterTypes[i] == null)
+                return null;
+        }
+
+        if (retType == null)
+            return null;
+
+        return Type.getMethodDescriptor(retType, parameterTypes);
     }
 }
