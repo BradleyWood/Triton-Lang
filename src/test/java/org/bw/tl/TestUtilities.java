@@ -18,6 +18,15 @@ import java.util.Collections;
 public class TestUtilities {
 
     public static SymbolResolver getResolver(final String txt) {
+        final Module module = getModule(txt);
+
+        if (module == null)
+            return null;
+
+        return new SymbolResolver(Collections.singletonList(module), module);
+    }
+
+    public static Module getModule(final String txt) {
         final GrammarLexer lexer = new GrammarLexer(CharStreams.fromString(txt));
         final CommonTokenStream ts = new CommonTokenStream(lexer);
         final GrammarParser p = new GrammarParser(ts);
@@ -28,8 +37,7 @@ public class TestUtilities {
 
         if (p.getNumberOfSyntaxErrors() == 0) {
             final File file = fc.accept(FileVisitor.of("<test>"));
-            final Module mod = Module.of(file);
-            return new SymbolResolver(Collections.singletonList(mod), mod);
+            return Module.of(file);
         }
         return null;
     }
