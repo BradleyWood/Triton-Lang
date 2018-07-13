@@ -22,8 +22,7 @@ public @Data class MethodCtx {
 
     public ExpressionResolver getResolver() {
         if (resolver == null) {
-            SymbolResolver symbolResolver = new SymbolResolver(classPath, module);
-            resolver = new ExpressionResolverImpl(symbolResolver, module, file, scope);
+            resolver = new ExpressionResolverImpl(new SymbolResolver(classPath, module), module, file, scope);
         }
         return resolver;
     }
@@ -38,6 +37,18 @@ public @Data class MethodCtx {
 
     public boolean isInitializer() {
         return getMethodName().equals("<clinit>");
+    }
+
+    public boolean isSynthetic() {
+        return file == null;
+    }
+
+    public void beginScope() {
+        scope.beginScope();
+    }
+
+    public void endScope() {
+        scope.endScope();
     }
 
     public boolean isMain() {
