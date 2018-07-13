@@ -11,6 +11,7 @@ import org.objectweb.asm.Type;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import static org.bw.tl.util.TypeUtilities.getTypeFromName;
 import static org.bw.tl.util.TypeUtilities.isAssignableFrom;
 import static org.bw.tl.util.TypeUtilities.isAssignableWithImplicitCast;
 
@@ -82,7 +83,7 @@ public @Data class SymbolResolver {
         } catch (ClassNotFoundException ignored) {
         }
 
-        return null;
+        return getTypeFromName(name);
     }
 
     @Nullable
