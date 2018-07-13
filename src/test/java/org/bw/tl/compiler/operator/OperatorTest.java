@@ -67,7 +67,7 @@ public class OperatorTest implements Opcodes {
         if (!op.getLhs().equals(op.getResultType()) && isAssignableWithImplicitCast(op.getLhs(), op.getRhs())) {
             final Primitive to = Primitive.getPrimitiveByDesc(op.getRhs().getDescriptor());
             final Primitive from = Primitive.getPrimitiveByDesc(op.getLhs().getDescriptor());
-            to.getPrimitiveHelper().cast(mv, from.getPrimitiveHelper());
+            to.getTypeHandler().cast(mv, from.getTypeHandler());
             // lhs must be cast
         }
 
@@ -76,7 +76,7 @@ public class OperatorTest implements Opcodes {
         if (!op.getRhs().equals(op.getResultType()) && isAssignableWithImplicitCast(op.getRhs(), op.getLhs())) {
             final Primitive to = Primitive.getPrimitiveByDesc(op.getLhs().getDescriptor());
             final Primitive from = Primitive.getPrimitiveByDesc(op.getRhs().getDescriptor());
-            to.getPrimitiveHelper().cast(mv, from.getPrimitiveHelper());
+            to.getTypeHandler().cast(mv, from.getTypeHandler());
             // rhs must be cast
         }
 
@@ -85,7 +85,7 @@ public class OperatorTest implements Opcodes {
         boolean convertToLong = TypeUtilities.isAssignableWithImplicitCast(op.getResultType(), Type.LONG_TYPE);
         boolean convertToDouble = op.getResultType().equals(Type.FLOAT_TYPE);
 
-        TypeHandler t = Primitive.getPrimitiveByDesc(op.getResultType().getDescriptor()).getPrimitiveHelper();
+        TypeHandler t = Primitive.getPrimitiveByDesc(op.getResultType().getDescriptor()).getTypeHandler();
         if (convertToLong) {
             t.toLong(mv);
         } else if (convertToDouble) {

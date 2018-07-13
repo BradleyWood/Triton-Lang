@@ -109,7 +109,7 @@ public class AnyTypeHandler extends TypeHandler {
         if (isPrimitive()) {
             final Primitive p = Primitive.getPrimitiveByDesc(getDesc());
             if (p != null) {
-                return p.getPrimitiveHelper().toObject(mv);
+                return p.getTypeHandler().toObject(mv);
             }
             return false;
         }

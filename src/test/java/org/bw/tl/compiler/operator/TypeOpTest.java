@@ -138,7 +138,7 @@ public class TypeOpTest implements Opcodes {
         final LinkedList<Object[]> parameters = new LinkedList<>();
 
         for (final String type : TYPES) {
-            final TypeHandler typeHelper = Primitive.getPrimitiveByName(type).getPrimitiveHelper();
+            final TypeHandler typeHelper = Primitive.getPrimitiveByName(type).getTypeHandler();
             parameters.add(new Object[]{typeHelper, getNumber(type)});
         }
 

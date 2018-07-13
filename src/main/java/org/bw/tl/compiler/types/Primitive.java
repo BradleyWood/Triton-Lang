@@ -19,14 +19,13 @@ public enum Primitive {
     private final @Getter String name;
     private final @Getter String desc;
     private final @Getter String wrappedType;
-    private final @Getter
-    TypeHandler primitiveHelper;
+    private final @Getter TypeHandler typeHandler;
 
-    Primitive(final String name, final String desc, final String wrappedType, final TypeHandler primitiveHelper) {
+    Primitive(final String name, final String desc, final String wrappedType, final TypeHandler typeHandler) {
         this.name = name;
         this.desc = desc;
         this.wrappedType = wrappedType;
-        this.primitiveHelper = primitiveHelper;
+        this.typeHandler = typeHandler;
     }
 
     @Nullable
