@@ -1,8 +1,6 @@
 package org.bw.tl.antlr.ast;
 
 import lombok.Data;
-import org.bw.tl.util.FileUtilities;
-import org.bw.tl.util.TypeUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
@@ -80,5 +78,19 @@ public @Data class Module {
             }
         }
         return null;
+    }
+
+    public String getModuleClassName() {
+        if (modulePackage == null || modulePackage.length() == 0)
+            return "default";
+        return modulePackage.append(modulePackage.getNames()[modulePackage.length() - 1]).toString();
+    }
+
+    public String getInternalName() {
+        return getModuleClassName().replace(".", "/");
+    }
+
+    public String getDescriptor() {
+        return "L" + getInternalName() + ";";
     }
 }
