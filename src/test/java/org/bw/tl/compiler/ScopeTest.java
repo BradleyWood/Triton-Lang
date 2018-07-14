@@ -42,7 +42,7 @@ public class ScopeTest {
     public void testVars1() {
         scope.beginScope();
 
-        scope.putVar("test", Type.INT_TYPE);
+        scope.putVar("test", Type.INT_TYPE, 0);
 
         final Scope.Var var = scope.findVar("test");
 
@@ -57,9 +57,9 @@ public class ScopeTest {
     public void testVars2() {
         scope.beginScope();
 
-        scope.putVar("test", Type.BOOLEAN_TYPE);
+        scope.putVar("test", Type.BOOLEAN_TYPE, 0);
         Assert.assertEquals(0, scope.findVar("test").getIndex());
-        scope.putVar("testing", Type.INT_TYPE);
+        scope.putVar("testing", Type.INT_TYPE, 0);
         Assert.assertEquals(1, scope.findVar("testing").getIndex());
 
         scope.endScope();
@@ -69,11 +69,11 @@ public class ScopeTest {
     public void testVars3() {
         scope.beginScope();
 
-        scope.putVar("test", Type.getType("Ljava/lang/String;"));
+        scope.putVar("test", Type.getType("Ljava/lang/String;"), 0);
         Assert.assertEquals(0, scope.findVar("test").getIndex());
 
         scope.beginScope();
-        scope.putVar("testing", Type.getType("Ljava/lang/Object;"));
+        scope.putVar("testing", Type.getType("Ljava/lang/Object;"), 0);
         Assert.assertEquals(Type.getType("Ljava/lang/Object;"), scope.findVar("testing").getType());
         scope.endScope();
 
@@ -88,13 +88,13 @@ public class ScopeTest {
     public void testVarOverload() {
         scope.beginScope();
 
-        scope.putVar("test", Type.INT_TYPE);
+        scope.putVar("test", Type.INT_TYPE, 0);
 
         Assert.assertEquals(0, scope.findVar("test").getIndex());
 
         scope.beginScope();
 
-        Assert.assertFalse(scope.putVar("test", Type.SHORT_TYPE));
+        Assert.assertFalse(scope.putVar("test", Type.SHORT_TYPE, 0));
 
         scope.endScope();
 

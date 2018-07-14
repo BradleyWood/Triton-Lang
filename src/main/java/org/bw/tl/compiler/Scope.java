@@ -19,7 +19,7 @@ public class Scope {
         scope.pop();
     }
 
-    public boolean putVar(@NotNull final String name, @NotNull final Type type) {
+    public boolean putVar(@NotNull final String name, @NotNull final Type type, final int modifiers) {
         if (findVar(name) != null) {
             return false;
         }
@@ -29,7 +29,7 @@ public class Scope {
             idx += vars.size();
         }
 
-        final Var var = new Var(name, type, idx);
+        final Var var = new Var(name, type, idx, modifiers);
 
         scope.peek().add(var);
         return true;
@@ -58,5 +58,6 @@ public class Scope {
         private final @NotNull String name;
         private final @NotNull Type type;
         private final int index;
+        private final int modifiers;
     }
 }
