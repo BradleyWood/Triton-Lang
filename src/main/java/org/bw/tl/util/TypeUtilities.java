@@ -2,7 +2,9 @@ package org.bw.tl.util;
 
 import org.bw.tl.antlr.ast.QualifiedName;
 import org.bw.tl.compiler.resolve.SymbolResolver;
+import org.bw.tl.compiler.types.AnyTypeHandler;
 import org.bw.tl.compiler.types.Primitive;
+import org.bw.tl.compiler.types.TypeHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
@@ -88,7 +90,7 @@ public class TypeUtilities {
 
     @Nullable
     public static String getFunctionDescriptor(@NotNull final SymbolResolver resolver, @NotNull final QualifiedName returnType,
-                                         @NotNull final QualifiedName... parameterTypeNames) {
+                                               @NotNull final QualifiedName... parameterTypeNames) {
         final Type retType = resolver.resolveType(returnType);
         final Type[] parameterTypes = new Type[parameterTypeNames.length];
 
@@ -102,5 +104,15 @@ public class TypeUtilities {
             return null;
 
         return Type.getMethodDescriptor(retType, parameterTypes);
+    }
+
+    public static TypeHandler getTypeHandler(final Type type) {
+        final String desc = type.getDescriptor();
+        final Primitive primitive = Primitive.getPrimitiveByDesc(desc);
+
+        if (primitive != null)
+            return primitive.getTypeHandler();
+
+        return new AnyTypeHandler(desc);
     }
 }
