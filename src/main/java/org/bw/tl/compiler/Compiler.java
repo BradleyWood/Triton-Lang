@@ -1,15 +1,13 @@
 package org.bw.tl.compiler;
 
 import lombok.Data;
+import org.bw.tl.Error;
 import org.bw.tl.antlr.ast.*;
 import org.bw.tl.compiler.resolve.SymbolResolver;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.bw.tl.util.TypeUtilities.getFunctionDescriptor;
@@ -18,6 +16,7 @@ import static org.objectweb.asm.Opcodes.*;
 
 public @Data class Compiler {
 
+    private final List<Error> errors = new LinkedList<>();
     private final List<Module> modules;
 
     public Compiler(final List<Module> modules) {
@@ -39,6 +38,9 @@ public @Data class Compiler {
                 return null;
             }
         }
+
+        if (!errors.isEmpty())
+            return null;
 
         return classMap;
     }
@@ -74,6 +76,8 @@ public @Data class Compiler {
 
                 mv.visitMaxs(0, 0);
                 mv.visitEnd();
+
+                errors.addAll(ctx.getErrors());
             }
         }
 
