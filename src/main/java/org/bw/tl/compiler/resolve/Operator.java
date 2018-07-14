@@ -30,19 +30,22 @@ public @Data class Operator implements Opcodes {
 
     private final int branchOpcode;
 
+    private final boolean isCmpOp;
+
     public Operator(@NotNull final String name, final int opcode, @NotNull final Type lhs, @NotNull final Type rhs,
-                    @NotNull final Type resultType) {
-        this(name, opcode, -1, lhs, rhs, resultType);
+                    @NotNull final Type resultType, final boolean isCmpOp) {
+        this(name, opcode, -1, lhs, rhs, resultType, isCmpOp);
     }
 
     public Operator(@NotNull final String name, final int opcode, final int branchOpcode, @NotNull final Type lhs, @NotNull final Type rhs,
-                    @NotNull final Type resultType) {
+                    @NotNull final Type resultType, final boolean isCmpOp) {
         this.name = name;
         this.opcode = opcode;
         this.branchOpcode = branchOpcode;
         this.lhs = lhs;
         this.rhs = rhs;
         this.resultType = resultType;
+        this.isCmpOp = isCmpOp;
     }
 
     /**
@@ -174,9 +177,9 @@ public @Data class Operator implements Opcodes {
                                    @NotNull final String... applicableTypes) {
         final Type rt = getTypeFromName(resultType);
 
-        operators.add(new Operator(name, opcode, rt, rt, rt));
+        operators.add(new Operator(name, opcode, rt, rt, rt, false));
         for (final String t : applicableTypes) {
-            operators.add(new Operator(name, opcode, getTypeFromName(t), rt, rt));
+            operators.add(new Operator(name, opcode, getTypeFromName(t), rt, rt, false));
         }
     }
 
@@ -185,9 +188,9 @@ public @Data class Operator implements Opcodes {
         final Type pt = getTypeFromName(type);
         final Type rt = getTypeFromName("boolean");
 
-        operators.add(new Operator(name, opcode, branchOpcode, pt, pt, rt));
+        operators.add(new Operator(name, opcode, branchOpcode, pt, pt, rt, true));
         for (final String t : applicableTypes) {
-            operators.add(new Operator(name, opcode, branchOpcode, getTypeFromName(t), pt, rt));
+            operators.add(new Operator(name, opcode, branchOpcode, getTypeFromName(t), pt, rt, true));
         }
     }
 
@@ -201,7 +204,7 @@ public @Data class Operator implements Opcodes {
         for (final Operator operator : operators) {
             if (operator.getName().equals(name)) {
                 if ((operator.lhs.equals(lhs) && operator.rhs.equals(rhs)) || (operator.lhs.equals(rhs) && operator.rhs.equals(lhs))) {
-                    return new Operator(operator.getName(), operator.getOpcode(), operator.getBranchOpcode(), lhs, rhs, operator.getResultType());
+                    return new Operator(operator.getName(), operator.getOpcode(), operator.getBranchOpcode(), lhs, rhs, operator.getResultType(), operator.isCmpOp);
                 }
             }
         }
