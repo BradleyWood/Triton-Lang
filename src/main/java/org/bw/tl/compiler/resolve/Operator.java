@@ -49,18 +49,27 @@ public @Data class Operator implements Opcodes {
     }
 
     /**
-     * Apply the operator
+     * Apply the operator. If this operator is a comparison operator
+     * a 1 will be left on the stack if the result is true, otherwise 0
      *
      * @param mv the method visitor to use to write instructions
-     * @return true if the comparison is possible
      */
-    public boolean apply(final MethodVisitor mv) {
-        if (branchOpcode != -1)
-            return false;
+    public void apply(final MethodVisitor mv) {
+        if (isCmpOp) {
+            final Label falseLabel = new Label();
+            final Label after = new Label();
+            applyCmp(mv, falseLabel);
 
-        mv.visitInsn(opcode);
+            mv.visitInsn(ICONST_1);
+            mv.visitJumpInsn(GOTO, after);
 
-        return true;
+            mv.visitLabel(falseLabel);
+
+            mv.visitInsn(ICONST_0);
+            mv.visitLabel(after);
+        } else {
+            mv.visitInsn(opcode);
+        }
     }
 
     /**
@@ -68,17 +77,14 @@ public @Data class Operator implements Opcodes {
      *
      * @param mv       the method visitor to use to write instructions
      * @param jmpLabel The label to jump to if the comparison is false
-     * @return true if the comparison is possible
      */
-    public boolean applyCmp(@NotNull final MethodVisitor mv, @NotNull final Label jmpLabel) {
+    public void applyCmp(@NotNull final MethodVisitor mv, @NotNull final Label jmpLabel) {
         if (branchOpcode != -1) {
             mv.visitInsn(opcode);
             mv.visitJumpInsn(branchOpcode, jmpLabel);
         } else {
             mv.visitJumpInsn(opcode, jmpLabel);
         }
-
-        return true;
     }
 
     static {
