@@ -1,6 +1,8 @@
 package org.bw.tl.compiler;
 
 import lombok.Data;
+import org.bw.tl.Error;
+import org.bw.tl.ErrorType;
 import org.bw.tl.antlr.ast.*;
 import org.bw.tl.compiler.resolve.ExpressionResolver;
 import org.bw.tl.compiler.resolve.ExpressionResolverImpl;
@@ -65,6 +67,18 @@ public @Data class MethodCtx {
 
     public void endScope() {
         scope.endScope();
+    }
+
+    public void reportError(final Node node) {
+        reportError("", node);
+    }
+
+    public void reportError(final String message, final Node node) {
+        reportError(ErrorType.GENERAL_ERROR, message, node);
+    }
+
+    public void reportError(final ErrorType errorType, final String message, final Node node) {
+        errors.add(errorType.newError(message, node));
     }
 
     public boolean isMain() {
