@@ -22,6 +22,15 @@ public abstract @Data class ModifiableStatement extends Node {
         return modifiers.contains(modifier);
     }
 
+    public int getAccessModifiers() {
+        int access = 0;
+
+        for (final Modifier modifier : modifiers) {
+            access += modifier.getValue();
+        }
+        return access;
+    }
+
     public void addAnnotations(@NotNull final Annotation... annotations) {
         this.annotations.addAll(Arrays.asList(annotations));
     }
