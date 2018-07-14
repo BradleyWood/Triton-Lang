@@ -19,13 +19,18 @@ public class IfVisitor extends GrammarBaseVisitor<IfStatement> {
 
         final Expression condition = ctx.condition.accept(ExpressionVisitor.of(sourceFile));
         final Node body = ctx.body.accept(stmtVisitor);
-        final Node otherwise = ctx.else_.accept(stmtVisitor);
+        Node otherwise = null;
+
+        if (ctx.else_ != null)
+            otherwise = ctx.else_.accept(stmtVisitor);
 
         final IfStatement stmt = new IfStatement(condition, body, otherwise);
 
         body.setParent(stmt);
         condition.setParent(stmt);
-        otherwise.setParent(stmt);
+
+        if (otherwise != null)
+            otherwise.setParent(stmt);
 
         stmt.setText(ctx.getText());
         stmt.setLineNumber(ctx.start.getLine());
