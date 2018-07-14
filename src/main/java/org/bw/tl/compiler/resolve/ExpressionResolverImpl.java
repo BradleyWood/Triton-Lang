@@ -3,7 +3,6 @@ package org.bw.tl.compiler.resolve;
 import lombok.Data;
 import org.bw.tl.antlr.ast.*;
 import org.bw.tl.compiler.Scope;
-import org.bw.tl.util.FileUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
@@ -39,44 +38,12 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     @Nullable
     @Override
     public Type resolveCall(@NotNull final Call call) {
-        final Type[] parameterTypes = new Type[call.getParameters().size()];
-        final Expression preceding = call.getPrecedingExpr();
+        final SymbolContext ctx = resolveCallCtx(call);
 
-        for (int i = 0; i < parameterTypes.length; i++) {
-            parameterTypes[i] = call.getParameters().get(i).resolveType(this);
-        }
+        if (ctx == null)
+            return null;
 
-        if (preceding != null) {
-            if (preceding instanceof QualifiedName) {
-                Type owner = resolveName((QualifiedName) preceding);
-                if (owner == null)
-                    owner = Type.getType(((QualifiedName) preceding).getDesc());
-                if (owner == null)
-                    return null;
-
-                final SymbolContext ctx = symbolResolver.resolveFunction(owner, call.getName(),
-                        parameterTypes);
-
-                if (ctx == null)
-                    return null;
-
-                return ctx.getTypeDescriptor();
-            } else {
-                final Type objType = preceding.resolveType(this);
-
-                if (objType == null)
-                    return null;
-
-                final SymbolContext ctx = symbolResolver.resolveFunction(objType, call.getName(), parameterTypes);
-
-                if (ctx == null)
-                    return null;
-
-                return ctx.getTypeDescriptor();
-            }
-        } else {
-            return module.resolveFunctionType(call.getName(), parameterTypes);
-        }
+        return ctx.getTypeDescriptor();
     }
 
     @Nullable
@@ -111,18 +78,59 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     @Nullable
     @Override
     public Type resolveName(@NotNull final QualifiedName name) {
-        if (scope != null) {
-            Scope.Var var = scope.findVar(name.getNames()[0]);
-            if (var != null) {
-                return var.getType();
-            }
-        }
-
-        final FieldContext ctx = symbolResolver.resolveField(name);
+        final FieldContext ctx = resolveFieldContext(name);
 
         if (ctx == null)
             return null;
 
         return ctx.getTypeDescriptor();
+    }
+
+    @Override
+    public SymbolContext resolveCallCtx(final Call call) {
+        final Type[] parameterTypes = new Type[call.getParameters().size()];
+        final Expression preceding = call.getPrecedingExpr();
+
+        for (int i = 0; i < parameterTypes.length; i++) {
+            parameterTypes[i] = call.getParameters().get(i).resolveType(this);
+        }
+
+        if (preceding != null) {
+            if (preceding instanceof QualifiedName) {
+                Type owner = resolveName((QualifiedName) preceding);
+                if (owner == null)
+                    owner = Type.getType(((QualifiedName) preceding).getDesc());
+                if (owner == null)
+                    return null;
+
+                return symbolResolver.resolveFunction(owner, call.getName(), parameterTypes);
+            } else {
+                final Type objType = preceding.resolveType(this);
+
+                if (objType == null)
+                    return null;
+
+                return symbolResolver.resolveFunction(objType, call.getName(), parameterTypes);
+            }
+        }
+        final Function function = module.resolveFunction(call.getName(), parameterTypes);
+        final Type type = module.resolveFunctionType(call.getName(), parameterTypes);
+
+        if (function == null)
+            return null;
+
+        return new SymbolContext(function.getName(), type, function.getAccessModifiers());
+    }
+
+    @Override
+    public FieldContext resolveFieldContext(final QualifiedName name) {
+        if (scope != null) {
+            Scope.Var var = scope.findVar(name.getNames()[0]);
+            if (var != null) {
+                return new FieldContext(var.getName(), var.getType(), 0, true);
+            }
+        }
+
+        return symbolResolver.resolveField(name);
     }
 }

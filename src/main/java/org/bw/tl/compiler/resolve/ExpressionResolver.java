@@ -15,4 +15,7 @@ public interface ExpressionResolver {
 
     Type resolveName(QualifiedName name);
 
+    SymbolContext resolveCallCtx(Call call);
+
+    FieldContext resolveFieldContext(QualifiedName name);
 }
