@@ -13,6 +13,9 @@ import org.bw.tl.antlr.visitor.FileVisitor;
 import org.bw.tl.compiler.resolve.SymbolResolver;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 
 public class TestUtilities {
@@ -38,6 +41,14 @@ public class TestUtilities {
         if (p.getNumberOfSyntaxErrors() == 0) {
             final File file = fc.accept(FileVisitor.of("<test>"));
             return Module.of(file);
+        }
+        return null;
+    }
+
+    public static Module getModuleFromFile(final String file) {
+        try {
+            return getModule(new String(Files.readAllBytes(Paths.get(file))));
+        } catch (IOException e) {
         }
         return null;
     }
