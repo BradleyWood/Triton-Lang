@@ -170,13 +170,13 @@ public @Data class Operator implements Opcodes {
         addCmpOperator(">=", IF_ICMPLT, "char");
         addCmpOperator(">=", IF_ICMPLT, "byte");
 
-        addCmpOperator(">=", LCMP, IFGT, "long", "int", "short", "char", "byte");
-        addCmpOperator(">=", FCMPG, IFGT, "float", "long", "int", "short", "char", "byte");
-        addCmpOperator(">=", DCMPG, IFGT, "double", "long", "float", "int", "short", "char", "byte");
-        addCmpOperator(">=", IF_ICMPGT, "int", "short", "char", "byte");
-        addCmpOperator(">=", IF_ICMPGT, "short", "char", "byte");
-        addCmpOperator(">=", IF_ICMPGT, "char");
-        addCmpOperator(">=", IF_ICMPGT, "byte");
+        addCmpOperator("<=", LCMP, IFGT, "long", "int", "short", "char", "byte");
+        addCmpOperator("<=", FCMPG, IFGT, "float", "long", "int", "short", "char", "byte");
+        addCmpOperator("<=", DCMPG, IFGT, "double", "long", "float", "int", "short", "char", "byte");
+        addCmpOperator("<=", IF_ICMPGT, "int", "short", "char", "byte");
+        addCmpOperator("<=", IF_ICMPGT, "short", "char", "byte");
+        addCmpOperator("<=", IF_ICMPGT, "char");
+        addCmpOperator("<=", IF_ICMPGT, "byte");
     }
 
     public static void addOperator(@NotNull final String name, final int opcode, final @NotNull String resultType,
