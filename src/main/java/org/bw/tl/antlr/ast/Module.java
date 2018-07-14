@@ -42,7 +42,7 @@ public @Data class Module {
     }
 
     @Nullable
-    public Type resolveFunction(@NotNull final String name, @NotNull final Type... parameterTypes) {
+    public Function resolveFunction(@NotNull final String name, @NotNull final Type... parameterTypes) {
         for (final File file : files) {
             fun:
             for (final Function function : file.getFunctions()) {
@@ -58,7 +58,7 @@ public @Data class Module {
                         break fun;
                 }
 
-                return getType(file, function.getType());
+                return function;
             }
         }
 
@@ -66,15 +66,39 @@ public @Data class Module {
     }
 
     @Nullable
-    public Type resolveField(@NotNull final String name) {
+    public Type resolveFunctionType(@NotNull final String name, @NotNull final Type... parameterTypes) {
+        final Function function = resolveFunction(name, parameterTypes);
+
+        if (function == null)
+            return null;
+
+        final Optional<File> file = files.stream().filter(f -> f.getFunctions().contains(function)).findFirst();
+
+        return file.map(f -> getType(f, function.getType())).orElse(null);
+    }
+
+    @Nullable
+    public Field resolveField(@NotNull final String name) {
         for (final File file : files) {
             for (final Field field : file.getFields()) {
                 if (field.getName().equals(name)) {
-                    return getType(file, field.getType());
+                    return field;
                 }
             }
         }
         return null;
+    }
+
+    @Nullable
+    public Type resolveFieldType(@NotNull final String name) {
+        final Field field = resolveField(name);
+
+        if (field == null)
+            return null;
+
+        final Optional<File> file = files.stream().filter(f -> f.getFields().contains(field)).findFirst();
+
+        return file.map(f -> getType(f, field.getType())).orElse(null);
     }
 
     public String getModuleClassName() {

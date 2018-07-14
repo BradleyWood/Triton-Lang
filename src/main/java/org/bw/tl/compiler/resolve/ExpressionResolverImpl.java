@@ -3,6 +3,7 @@ package org.bw.tl.compiler.resolve;
 import lombok.Data;
 import org.bw.tl.antlr.ast.*;
 import org.bw.tl.compiler.Scope;
+import org.bw.tl.util.FileUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
@@ -52,16 +53,29 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
                     owner = Type.getType(((QualifiedName) preceding).getDesc());
                 if (owner == null)
                     return null;
-                return symbolResolver.resolveFunction(owner, call.getName(),
+
+                final SymbolContext ctx = symbolResolver.resolveFunction(owner, call.getName(),
                         parameterTypes);
+
+                if (ctx == null)
+                    return null;
+
+                return ctx.getTypeDescriptor();
             } else {
                 final Type objType = preceding.resolveType(this);
+
                 if (objType == null)
                     return null;
-                return symbolResolver.resolveFunction(objType, call.getName(), parameterTypes);
+
+                final SymbolContext ctx = symbolResolver.resolveFunction(objType, call.getName(), parameterTypes);
+
+                if (ctx == null)
+                    return null;
+
+                return ctx.getTypeDescriptor();
             }
         } else {
-            return module.resolveFunction(call.getName(), parameterTypes);
+            return module.resolveFunctionType(call.getName(), parameterTypes);
         }
     }
 
@@ -103,6 +117,12 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
                 return var.getType();
             }
         }
-        return symbolResolver.resolveField(name);
+
+        final FieldContext ctx = symbolResolver.resolveField(name);
+
+        if (ctx == null)
+            return null;
+
+        return ctx.getTypeDescriptor();
     }
 }

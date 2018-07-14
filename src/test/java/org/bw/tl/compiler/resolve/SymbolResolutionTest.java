@@ -16,11 +16,11 @@ public class SymbolResolutionTest {
 
         final Type modType = Type.getType("LtestModule;");
 
-        Assert.assertEquals(Type.INT_TYPE, resolver.resolveFunction(modType, "testFunction"));
-        Assert.assertEquals(Type.VOID_TYPE, resolver.resolveFunction(modType, "anotherTest"));
+        Assert.assertEquals(Type.INT_TYPE, resolver.resolveFunction(modType, "testFunction").getTypeDescriptor());
+        Assert.assertEquals(Type.VOID_TYPE, resolver.resolveFunction(modType, "anotherTest").getTypeDescriptor());
 
         Assert.assertEquals(Type.VOID_TYPE, resolver.resolveFunction(modType, "funWithParams", Type.BOOLEAN_TYPE,
-                Type.INT_TYPE));
+                Type.INT_TYPE).getTypeDescriptor());
 
         Assert.assertNull(resolver.resolveFunction(modType, "funWithParams", Type.BOOLEAN_TYPE,
                 Type.LONG_TYPE));

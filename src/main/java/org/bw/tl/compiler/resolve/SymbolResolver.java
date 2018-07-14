@@ -2,6 +2,8 @@ package org.bw.tl.compiler.resolve;
 
 import lombok.Data;
 import lombok.AllArgsConstructor;
+import org.bw.tl.antlr.ast.Field;
+import org.bw.tl.antlr.ast.Function;
 import org.bw.tl.antlr.ast.Module;
 import org.bw.tl.antlr.ast.QualifiedName;
 import org.jetbrains.annotations.NotNull;
@@ -31,13 +33,13 @@ public @Data class SymbolResolver {
     private Module ctx;
 
     @Nullable
-    public Type resolveFunction(@NotNull Type owner, @NotNull String name, @NotNull final Type... parameterTypes) {
+    public SymbolContext resolveFunction(@NotNull Type owner, @NotNull String name, @NotNull final Type... parameterTypes) {
         for (final Module module : classpath) {
             if (module.getModulePackage().toString().equals(owner.getClassName())) {
-                final Type type = module.resolveFunction(name, parameterTypes);
+                final Function fun = module.resolveFunction(name, parameterTypes);
 
-                if (type != null) {
-                    return type;
+                if (fun != null) {
+                    return new SymbolContext(fun.getName(), getTypeFromName(fun.getType()), fun.getAccessModifiers());
                 }
             }
         }
@@ -51,8 +53,8 @@ public @Data class SymbolResolver {
     }
 
     @Nullable
-    public Type resolveFunction(final @NotNull Class<?> clazz, final @NotNull String name,
-                                @NotNull final Type... parameterTypes) {
+    public SymbolContext resolveFunction(final @NotNull Class<?> clazz, final @NotNull String name,
+                                         @NotNull final Type... parameterTypes) {
         next:
         for (final Method method : clazz.getMethods()) {
             if (method.getName().equals(name)) {
@@ -64,7 +66,7 @@ public @Data class SymbolResolver {
                         break next;
                     }
                 }
-                return Type.getType(method);
+                return new SymbolContext(name, Type.getType(method), method.getModifiers());
             }
         }
         return null;
@@ -87,11 +89,16 @@ public @Data class SymbolResolver {
     }
 
     @Nullable
-    public Type resolveField(@NotNull final QualifiedName name) {
+    public FieldContext resolveField(@NotNull final QualifiedName name) {
         final String[] names = name.getNames();
 
         if (names.length == 1) {
-            return ctx.resolveField(name.toString());
+            final Field field = ctx.resolveField(name.toString());
+
+            if (field == null)
+                return null;
+
+            return new FieldContext(field.getName(), getTypeFromName(field.getType()), field.getAccessModifiers(), false);
         }
 
         for (final Module module : classpath) {
@@ -103,7 +110,10 @@ public @Data class SymbolResolver {
                 } else break;
             }
             if (fqn.length() < name.length()) {
-                return module.resolveField(names[fqn.length()]);
+                final Field field = ctx.resolveField(names[fqn.length()]);
+
+                if (field != null)
+                    return new FieldContext(field.getName(), getTypeFromName(field.getType()), field.getAccessModifiers(), false);
                 // todo resolve deep
             }
         }
