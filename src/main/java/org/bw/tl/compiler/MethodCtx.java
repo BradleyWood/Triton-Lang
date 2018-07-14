@@ -35,6 +35,10 @@ public @Data class MethodCtx {
         return symbolResolver;
     }
 
+    public Type getReturnType() {
+        return getSymbolResolver().resolveType(function.getType());
+    }
+
     public Type resolveField(final QualifiedName name) {
         return resolver.resolveName(name);
     }
