@@ -8,6 +8,7 @@ import java.lang.reflect.Modifier;
 public @Data class SymbolContext {
 
     private final String name;
+    private final String owner;
     private final Type typeDescriptor;
     private final int accessModifiers;
 

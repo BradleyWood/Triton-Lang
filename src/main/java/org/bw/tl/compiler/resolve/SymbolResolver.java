@@ -39,7 +39,7 @@ public @Data class SymbolResolver {
                 final Function fun = module.resolveFunction(name, parameterTypes);
 
                 if (fun != null) {
-                    return new SymbolContext(fun.getName(), getTypeFromName(fun.getType()), fun.getAccessModifiers());
+                    return new SymbolContext(fun.getName(), module.getInternalName(), getTypeFromName(fun.getType()), fun.getAccessModifiers());
                 }
             }
         }
@@ -66,7 +66,8 @@ public @Data class SymbolResolver {
                         break next;
                     }
                 }
-                return new SymbolContext(name, Type.getType(method), method.getModifiers());
+                return new SymbolContext(name, clazz.getName().replace(".", "/"), Type.getType(method),
+                        method.getModifiers());
             }
         }
         return null;
@@ -98,7 +99,7 @@ public @Data class SymbolResolver {
             if (field == null)
                 return null;
 
-            return new FieldContext(field.getName(), getTypeFromName(field.getType()), field.getAccessModifiers(), false);
+            return new FieldContext(field.getName(), ctx.getInternalName(), getTypeFromName(field.getType()), field.getAccessModifiers(), false);
         }
 
         for (final Module module : classpath) {
@@ -113,7 +114,7 @@ public @Data class SymbolResolver {
                 final Field field = ctx.resolveField(names[fqn.length()]);
 
                 if (field != null)
-                    return new FieldContext(field.getName(), getTypeFromName(field.getType()), field.getAccessModifiers(), false);
+                    return new FieldContext(field.getName(), module.getInternalName(), getTypeFromName(field.getType()), field.getAccessModifiers(), false);
                 // todo resolve deep
             }
         }

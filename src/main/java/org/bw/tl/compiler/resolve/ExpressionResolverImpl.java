@@ -119,7 +119,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         if (function == null)
             return null;
 
-        return new SymbolContext(function.getName(), type, function.getAccessModifiers());
+        return new SymbolContext(function.getName(), module.getInternalName(), type, function.getAccessModifiers());
     }
 
     @Override
@@ -127,7 +127,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         if (scope != null) {
             Scope.Var var = scope.findVar(name.getNames()[0]);
             if (var != null) {
-                return new FieldContext(var.getName(), var.getType(), 0, true);
+                return new FieldContext(var.getName(), null, var.getType(), 0, true);
             }
         }
 

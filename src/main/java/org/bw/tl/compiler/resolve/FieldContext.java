@@ -7,8 +7,8 @@ public class FieldContext extends SymbolContext {
 
     private @Getter final boolean isLocal;
 
-    public FieldContext(final String name, final Type typeDescriptor, final int accessModifiers, final boolean isLocal) {
-        super(name, typeDescriptor, accessModifiers);
+    public FieldContext(final String name, final String owner, final Type typeDescriptor, final int accessModifiers, final boolean isLocal) {
+        super(name, owner, typeDescriptor, accessModifiers);
         this.isLocal = isLocal;
     }
 }
