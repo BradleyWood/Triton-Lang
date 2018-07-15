@@ -103,6 +103,46 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
     }
 
     @Override
+    public void visitUnaryOp(final UnaryOp unaryOp) {
+        final Expression expr = unaryOp.getExpression();
+        final Type type = expr.resolveType(ctx.getResolver());
+
+        if (type == null) {
+            ctx.reportError("Cannot resolve expression", expr);
+            return;
+        }
+
+        switch (unaryOp.getOperator()) {
+            case "-":
+                new BinaryOp(new Literal<>(0), "-", expr).accept(this);
+                return;
+            case "+":
+                expr.accept(this);
+                return;
+            case "!":
+                expr.accept(this);
+                if (type.equals(Type.BOOLEAN_TYPE)) {
+                    final Label after = new Label();
+                    final Label falseLabel = new Label();
+
+                    mv.visitJumpInsn(IFEQ, falseLabel);
+
+                    mv.visitInsn(ICONST_0);
+                    mv.visitJumpInsn(GOTO, after);
+
+                    mv.visitLabel(falseLabel);
+
+                    mv.visitInsn(ICONST_1);
+
+                    mv.visitLabel(after);
+                    return;
+                }
+        }
+
+        ctx.reportError("No such operator: (" + unaryOp.getOperator() + type.getClassName() + ")", unaryOp);
+    }
+
+    @Override
     public void visitWhile(final WhileLoop whileLoop) {
         final Expression condition = whileLoop.getCondition();
         final Type type = condition.resolveType(ctx.getResolver());
