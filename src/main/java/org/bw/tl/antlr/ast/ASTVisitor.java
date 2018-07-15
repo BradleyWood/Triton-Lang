@@ -26,4 +26,6 @@ public interface ASTVisitor {
 
     void visitFor(final ForLoop forLoop);
 
+    void visitAssignment(final Assignment assignment);
+
 }

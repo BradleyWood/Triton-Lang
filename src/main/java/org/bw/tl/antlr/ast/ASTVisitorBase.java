@@ -61,4 +61,9 @@ public class ASTVisitorBase implements ASTVisitor {
     public void visitFor(final ForLoop forLoop) {
         throw new UnsupportedOperationException("For loop not implemented");
     }
+
+    @Override
+    public void visitAssignment(final Assignment assignment) {
+        throw new UnsupportedOperationException("Assignment not implemented");
+    }
 }

@@ -27,6 +27,7 @@ expression
     | expression NL* DOT NL* name=fqn
     | name=fqn
     | preceeding=expression NL* DOT NL* call=functionCall
+    | preceeding=expression NL* DOT NL* assignment
     | call=functionCall
     | lhs=expression NL* (RANGE) NL* rhs=expression
     | (PLUS | MINUS | NOT) NL* unaryOperand=expression
@@ -35,12 +36,11 @@ expression
     | lhs=expression NL* (PLUS | MINUS) NL* rhs=expression
     | lhs=expression NL* (GT | LT | GTE | LTE | EQUALS | NOT_EQ) NL* rhs=expression
     | lhs=expression NL* (AND | OR) NL* rhs=expression
-    | assignment
     ;
 
 assignment
-    : <assoc=right>
-        fqn NL*
+    :   <assoc=right>
+        IDENTIFIER NL*
         (   ASSIGN
         |   PLUS_EQ
         |   MINUS_EQ

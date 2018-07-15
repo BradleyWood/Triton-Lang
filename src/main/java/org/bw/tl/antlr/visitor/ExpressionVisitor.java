@@ -56,14 +56,20 @@ public class ExpressionVisitor extends GrammarBaseVisitor<Expression> {
             expression = new UnaryOp(uExpr, ctx.getText().substring(0, end));
             uExpr.setParent(expression);
         } else if (ctx.assignment() != null) {
-            final QualifiedName lhs = ctx.assignment().fqn().accept(FQNVisitor.of(sourceFile));
-            final Expression rhs = ctx.assignment().val.accept(this);
+            final Expression lhs = ctx.preceeding != null ? ctx.preceeding.accept(this) : null;
+            Expression rhs = ctx.assignment().val.accept(this);
 
-            final int start = ctx.assignment().fqn().getText().length();
+            final int start = ctx.assignment().IDENTIFIER().getText().length();
             final int end = ctx.assignment().getText().length() - ctx.assignment().val.getText().length();
+            final String op = ctx.assignment().getText().substring(start, end);
+            if (!op.equals("=")) {
+                rhs = new BinaryOp(lhs, op.substring(0, 1), rhs);
+            }
 
-            expression = new BinaryOp(lhs, ctx.assignment().getText().substring(start, end), rhs);
-            lhs.setParent(expression);
+            expression = new Assignment(lhs, ctx.assignment().IDENTIFIER().getText(), rhs);
+
+            if (lhs != null)
+                lhs.setParent(expression);
             rhs.setParent(expression);
         }
 
