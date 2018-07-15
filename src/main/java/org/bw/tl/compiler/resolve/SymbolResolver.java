@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -124,6 +125,61 @@ public @Data class SymbolResolver {
         }
 
         return getTypeFromName(name);
+    }
+
+    @Nullable
+    public SymbolContext resolveConstructor(@NotNull final QualifiedName owner, @NotNull final Type... parameterTypes) {
+        final Type type = resolveType(owner);
+
+        if (type != null)
+            return resolveConstructor(type, parameterTypes);
+
+        return null;
+    }
+
+    @Nullable
+    public SymbolContext resolveConstructor(@NotNull final Type owner, @NotNull final Type... parameterTypes) {
+        final SymbolContext ctx = resolveConstructor(owner, true, parameterTypes);
+
+        if (ctx == null)
+            return resolveConstructor(owner, false, parameterTypes);
+
+        return ctx;
+    }
+
+    @Nullable
+    public SymbolContext resolveConstructor(@NotNull final Type owner, final boolean exactParams,
+                                            @NotNull final Type... parameterTypes) {
+        try {
+            final Class<?> clazz = Class.forName(owner.getClassName());
+
+            next:
+            for (final Constructor<?> constructor : clazz.getConstructors()) {
+                final Class<?>[] types = constructor.getParameterTypes();
+
+                if (types.length != parameterTypes.length)
+                    continue;
+
+                for (int i = 0; i < types.length; i++) {
+                    final Type funParamType = Type.getType(types[i]);
+
+                    if (!parameterTypes[i].equals(funParamType) && exactParams) {
+                        continue next;
+                    } else if (!parameterTypes[i].equals(funParamType)) {
+                        if (!isAssignableFrom(parameterTypes[i], funParamType)
+                                && !isAssignableWithImplicitCast(parameterTypes[i], funParamType)) {
+                            continue next;
+                        }
+                    }
+                }
+
+                return new SymbolContext("<init>", owner.getInternalName(), Type.getType(constructor),
+                        constructor.getModifiers());
+            }
+        } catch (final ClassNotFoundException ignored) {
+        }
+
+        return null;
     }
 
     @Nullable

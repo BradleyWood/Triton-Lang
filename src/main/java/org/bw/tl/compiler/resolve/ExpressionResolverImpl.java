@@ -7,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
 
+import java.util.List;
+
 import static org.bw.tl.util.TypeUtilities.isMethodType;
 
 public @Data class ExpressionResolverImpl implements ExpressionResolver {
@@ -143,13 +145,30 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         return new SymbolContext(function.getName(), module.getInternalName(), type, function.getAccessModifiers());
     }
 
+    @Nullable
     @Override
-    public SymbolContext resolveConstructorContext(New newStmt) {
-        return null;
+    public SymbolContext resolveConstructorContext(final New newStmt) {
+        final List<Expression> expressionList = newStmt.getParameters();
+        final Type[] types = new Type[expressionList.size()];
+
+        for (int i = 0; i < types.length; i++) {
+            types[i] = expressionList.get(i).resolveType(this);
+            if (types[i] == null)
+                return null;
+        }
+
+        return symbolResolver.resolveConstructor(newStmt.getType(), types);
     }
 
+    @Nullable
     @Override
-    public Type resolveConstructor(New newStmt) {
+    public Type resolveConstructor(final New newStmt) {
+        final SymbolContext ctx = resolveConstructorContext(newStmt);
+        final Type type = symbolResolver.resolveType(newStmt.getType());
+
+        if (ctx != null && type != null)
+            return type;
+
         return null;
     }
 
