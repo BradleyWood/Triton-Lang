@@ -177,6 +177,9 @@ public @Data class Operator implements Opcodes {
         addCmpOperator("<=", IF_ICMPGT, "short", "char", "byte");
         addCmpOperator("<=", IF_ICMPGT, "char");
         addCmpOperator("<=", IF_ICMPGT, "byte");
+
+        addCmpOperator("==", IF_ICMPNE, "boolean");
+        addCmpOperator("!=", IF_ICMPEQ, "boolean");
     }
 
     public static void addOperator(@NotNull final String name, final int opcode, final @NotNull String resultType,
