@@ -1,7 +1,6 @@
 package org.bw.tl.antlr;
 
 import org.bw.tl.antlr.ast.*;
-import org.bw.tl.compiler.resolve.SymbolContext;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +35,7 @@ public class ModuleTest {
 
     @Test
     public void resolveFunctionTest() {
-        final Type type = module.resolveFunctionType("testFun", Type.getType("I"));
+        final Type type = module.resolveFunctionReturnType("testFun", Type.getType("I"));
         Assert.assertNotNull(type);
         Assert.assertEquals("Ljava/lang/String;", type.getDescriptor());
     }

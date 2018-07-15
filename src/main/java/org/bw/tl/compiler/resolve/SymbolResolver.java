@@ -43,7 +43,7 @@ public @Data class SymbolResolver {
                     if (retType == null)
                         return null;
 
-                    final Type methodType = Type.getMethodType(retType, parameterTypes);
+                    final Type methodType = module.resolveFunctionType(fun);
                     return new SymbolContext(fun.getName(), module.getInternalName(), methodType, fun.getAccessModifiers());
                 }
             }

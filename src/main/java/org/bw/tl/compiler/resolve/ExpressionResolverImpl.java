@@ -131,14 +131,12 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
             }
         }
         final Function function = module.resolveFunction(call.getName(), parameterTypes);
-        final Type type = module.resolveFunctionType(call.getName(), parameterTypes);
+        final Type type = file.resolveFunction(function);
 
         if (function == null || type == null)
             return null;
 
-        final Type methodType = Type.getMethodType(type, parameterTypes);
-
-        return new SymbolContext(function.getName(), module.getInternalName(), methodType, function.getAccessModifiers());
+        return new SymbolContext(function.getName(), module.getInternalName(), type, function.getAccessModifiers());
     }
 
     @Override

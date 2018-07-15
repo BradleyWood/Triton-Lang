@@ -66,7 +66,24 @@ public @Data class Module {
     }
 
     @Nullable
+    public Type resolveFunctionType(@NotNull final Function function) {
+        final Optional<File> file = files.stream().filter(f -> f.getFunctions().contains(function)).findFirst();
+
+        return file.map(f -> f.resolveFunction(function)).orElse(null);
+    }
+
+    @Nullable
     public Type resolveFunctionType(@NotNull final String name, @NotNull final Type... parameterTypes) {
+        final Function fun = resolveFunction(name, parameterTypes);
+
+        if (fun == null)
+            return null;
+
+        return resolveFunctionType(fun);
+    }
+
+    @Nullable
+    public Type resolveFunctionReturnType(@NotNull final String name, @NotNull final Type... parameterTypes) {
         final Function function = resolveFunction(name, parameterTypes);
 
         if (function == null)
