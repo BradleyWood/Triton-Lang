@@ -99,14 +99,19 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
     @Override
     public void visitIf(final IfStatement ifStatement) {
         final Expression condition = ifStatement.getCondition();
+        final Type type = condition.resolveType(ctx.getResolver());
         final Node elseBlock = ifStatement.getElseBody();
 
-        if (condition instanceof BinaryOp) {
-            final BinaryOp bop = (BinaryOp) condition;
+        if (type == null) {
+            ctx.reportError("Cannot resolve expression", condition);
+            return;
+        }
+
+        if (type.equals(Type.BOOLEAN_TYPE)) {
             final Label after = new Label();
             final Label elseLabel = new Label();
 
-            bop.accept(this);
+            condition.accept(this);
 
             if (elseBlock != null) {
                 mv.visitJumpInsn(IFEQ, elseLabel);
@@ -132,8 +137,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
 
             mv.visitLabel(after);
         } else {
-            final Type found = condition.resolveType(ctx.getResolver());
-            ctx.reportError("Expected boolean, found: " + (found != null ? found.getClassName() : "unknown"), condition);
+            ctx.reportError("Expected boolean, found: " + type.getClassName(), condition);
         }
     }
 
