@@ -65,6 +65,8 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
 
             final TypeHandler from = getTypeHandler(valueType);
 
+            value.accept(this);
+
             if (!valueType.equals(fieldType) && !isAssignableFrom(valueType, fieldType)) {
                 if (isAssignableWithImplicitCast(valueType, fieldType)) {
                     to.cast(mv, from);
@@ -73,7 +75,6 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
                     return;
                 }
             }
-            value.accept(this);
         } else {
             pushDefault(fieldType);
         }
