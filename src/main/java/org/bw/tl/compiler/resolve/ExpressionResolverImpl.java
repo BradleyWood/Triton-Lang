@@ -7,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
 
+import static org.bw.tl.util.TypeUtilities.isMethodType;
+
 public @Data class ExpressionResolverImpl implements ExpressionResolver {
 
     private final SymbolResolver symbolResolver;
@@ -17,8 +19,23 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     @Nullable
     @Override
     public Type resolveBinaryOp(@NotNull final BinaryOp bop) {
-        final Type lhs = bop.getLeftSide().resolveType(this);
-        final Type rhs = bop.getRightSide().resolveType(this);
+        Type lhs = bop.getLeftSide().resolveType(this);
+        Type rhs = bop.getRightSide().resolveType(this);
+
+        if (lhs != null) {
+            if (isMethodType(lhs)) {
+                lhs = lhs.getReturnType();
+            }
+        } else {
+            return null;
+        }
+
+        if (rhs != null) {
+            if (isMethodType(rhs))
+                rhs = rhs.getReturnType();
+        } else {
+            return null;
+        }
 
         final Operator operator = Operator.getOperator(bop.getOperator(), lhs, rhs);
 
@@ -43,7 +60,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         if (ctx == null)
             return null;
 
-        return ctx.getTypeDescriptor();
+        return ctx.getTypeDescriptor().getReturnType();
     }
 
     @Nullable
@@ -116,10 +133,12 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         final Function function = module.resolveFunction(call.getName(), parameterTypes);
         final Type type = module.resolveFunctionType(call.getName(), parameterTypes);
 
-        if (function == null)
+        if (function == null || type == null)
             return null;
 
-        return new SymbolContext(function.getName(), module.getInternalName(), type, function.getAccessModifiers());
+        final Type methodType = Type.getMethodType(type, parameterTypes);
+
+        return new SymbolContext(function.getName(), module.getInternalName(), methodType, function.getAccessModifiers());
     }
 
     @Override

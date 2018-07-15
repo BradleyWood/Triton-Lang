@@ -115,4 +115,8 @@ public class TypeUtilities {
 
         return new AnyTypeHandler(desc);
     }
+
+    public static boolean isMethodType(final Type type) {
+        return type.getDescriptor().contains("(");
+    }
 }
