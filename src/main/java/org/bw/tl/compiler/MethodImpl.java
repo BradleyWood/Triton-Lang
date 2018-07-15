@@ -164,7 +164,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
 
             mv.visitMethodInsn(opcode, funCtx.getOwner(), funCtx.getName(), funCtx.getTypeDescriptor().getDescriptor(), false);
 
-            if (call.shouldPop()) {
+            if (call.shouldPop() && !funCtx.getTypeDescriptor().getReturnType().equals(Type.VOID_TYPE)) {
                 final Type retType = funCtx.getTypeDescriptor().getReturnType();
                 if (retType.equals(Type.LONG_TYPE) || retType.equals(Type.DOUBLE_TYPE)) {
                     mv.visitInsn(DUP2);
