@@ -64,6 +64,10 @@ public @Data class SymbolResolver {
         for (final Method method : clazz.getMethods()) {
             if (method.getName().equals(name)) {
                 final Class<?>[] types = method.getParameterTypes();
+
+                if (types.length != parameterTypes.length)
+                    continue;
+
                 for (int i = 0; i < types.length; i++) {
                     final Type funParamType = Type.getType(types[i]);
 
