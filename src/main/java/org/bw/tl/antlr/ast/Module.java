@@ -43,6 +43,16 @@ public @Data class Module {
 
     @Nullable
     public Function resolveFunction(@NotNull final String name, @NotNull final Type... parameterTypes) {
+        final Function fun = resolveFunction(name, true, parameterTypes);
+
+        if (fun != null)
+            return fun;
+
+        return resolveFunction(name, false, parameterTypes);
+    }
+
+    @Nullable
+    public Function resolveFunction(@NotNull final String name, final boolean exactParams, @NotNull final Type... parameterTypes) {
         for (final File file : files) {
             fun:
             for (final Function function : file.getFunctions()) {
@@ -51,11 +61,20 @@ public @Data class Module {
                 if (types.length != parameterTypes.length || !function.getName().equals(name))
                     continue;
 
+
                 for (int i = 0; i < types.length; i++) {
                     final Type ti = getType(file, types[i]);
-                    if (!parameterTypes[i].equals(ti) && !isAssignableFrom(parameterTypes[i], ti)
-                            && !isAssignableWithImplicitCast(parameterTypes[i], ti))
-                        break fun;
+
+                    if (ti == null)
+                        return null;
+
+                    if (!parameterTypes[i].equals(ti) && exactParams) {
+                        continue fun;
+                    } else if (!parameterTypes[i].equals(ti)) {
+                        if (!isAssignableFrom(parameterTypes[i], ti) && !isAssignableWithImplicitCast(parameterTypes[i], ti))
+                            continue fun;
+                    }
+
                 }
 
                 return function;

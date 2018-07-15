@@ -59,23 +59,40 @@ public @Data class SymbolResolver {
 
     @Nullable
     public SymbolContext resolveFunction(final @NotNull Class<?> clazz, final @NotNull String name,
-                                         @NotNull final Type... parameterTypes) {
+                                         final boolean exactParams, @NotNull final Type... parameterTypes) {
         next:
         for (final Method method : clazz.getMethods()) {
             if (method.getName().equals(name)) {
                 final Class<?>[] types = method.getParameterTypes();
                 for (int i = 0; i < types.length; i++) {
                     final Type funParamType = Type.getType(types[i]);
-                    if (!parameterTypes[i].equals(funParamType) && !isAssignableFrom(parameterTypes[i], funParamType)
-                            && !isAssignableWithImplicitCast(parameterTypes[i], funParamType)) {
-                        break next;
+
+                    if (!parameterTypes[i].equals(funParamType) && exactParams) {
+                        continue next;
+                    } else if (!parameterTypes[i].equals(funParamType)) {
+                        if (!isAssignableFrom(parameterTypes[i], funParamType)
+                                && !isAssignableWithImplicitCast(parameterTypes[i], funParamType)) {
+                            continue next;
+                        }
                     }
                 }
+
                 return new SymbolContext(name, clazz.getName().replace(".", "/"), Type.getType(method),
                         method.getModifiers());
             }
         }
         return null;
+    }
+
+    @Nullable
+    public SymbolContext resolveFunction(final @NotNull Class<?> clazz, final @NotNull String name,
+                                         @NotNull final Type... parameterTypes) {
+        final SymbolContext ctx = resolveFunction(clazz, name, true, parameterTypes);
+
+        if (ctx != null)
+            return ctx;
+
+        return resolveFunction(clazz, name, false, parameterTypes);
     }
 
     @Nullable
