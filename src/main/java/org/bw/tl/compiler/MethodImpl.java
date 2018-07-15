@@ -2,11 +2,24 @@ package org.bw.tl.compiler;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.bw.tl.antlr.ast.ASTVisitorBase;
-import org.bw.tl.antlr.ast.Function;
+import org.bw.tl.antlr.ast.*;
+import org.bw.tl.compiler.resolve.FieldContext;
+import org.bw.tl.compiler.resolve.Operator;
+import org.bw.tl.compiler.resolve.SymbolContext;
+import org.bw.tl.compiler.types.Primitive;
+import org.bw.tl.compiler.types.TypeHandler;
+import org.bw.tl.util.TypeUtilities;
 import org.jetbrains.annotations.NotNull;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+
+import java.util.List;
+
+import static org.bw.tl.util.TypeUtilities.getTypeHandler;
+import static org.bw.tl.util.TypeUtilities.isAssignableFrom;
+import static org.bw.tl.util.TypeUtilities.isAssignableWithImplicitCast;
 
 @EqualsAndHashCode(callSuper = false)
 public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase implements Opcodes {
@@ -16,7 +29,287 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
 
     @Override
     public void visitFunction(final Function function) {
+        ctx.beginScope();
 
-        mv.visitInsn(RET);
+        final String[] parameterNames = function.getParameterNames();
+        final QualifiedName[] parameterTypes = function.getParameterTypes();
+
+        for (int i = 0; i < function.getParameterNames().length; i++) {
+            ctx.getScope().putVar(parameterNames[i], ctx.resolveType(parameterTypes[i]), 0);
+        }
+
+        function.getBody().accept(this);
+
+        mv.visitInsn(RETURN);
+        ctx.endScope();
+    }
+
+    @Override
+    public void visitField(final Field field) {
+        final Type fieldType = ctx.resolveType(field.getType());
+        final Expression value = field.getInitialValue();
+        final Type valueType = value.resolveType(ctx.getResolver());
+
+        if (fieldType == null) {
+            ctx.reportError("Cannot resolve field type: " + field.getType(), field);
+            return;
+        }
+
+        if (valueType == null) {
+            ctx.reportError("Cannot resolve expression", value);
+            return;
+        }
+
+        final TypeHandler from = getTypeHandler(valueType);
+        final TypeHandler to = getTypeHandler(fieldType);
+
+        if (!valueType.equals(fieldType) && !isAssignableFrom(valueType, fieldType)) {
+            if (isAssignableWithImplicitCast(valueType, fieldType)) {
+                to.cast(mv, from);
+            } else {
+                ctx.reportError("Expected type: " + fieldType.getClassName() + " but got: " + valueType.getClassName(), value);
+                return;
+            }
+        }
+
+        ctx.getScope().putVar(field.getName(), fieldType, field.getAccessModifiers());
+
+        value.accept(this);
+
+        to.store(mv, ctx.getScope().findVar(field.getName()).getIndex());
+    }
+
+    @Override
+    public void visitName(final QualifiedName name) {
+        final FieldContext fieldCtx = ctx.getResolver().resolveFieldContext(name);
+
+        if (fieldCtx != null) {
+            final Type type = fieldCtx.getTypeDescriptor();
+            final TypeHandler handler = TypeUtilities.getTypeHandler(type);
+
+            if (fieldCtx.isLocal()) {
+                handler.load(mv, ctx.getScope().findVar(name.toString()).getIndex());
+            } else if (fieldCtx.isStatic()) {
+                mv.visitFieldInsn(GETSTATIC, fieldCtx.getOwner(), fieldCtx.getName(), fieldCtx.getTypeDescriptor().getDescriptor());
+            } else {
+                mv.visitFieldInsn(GETFIELD, fieldCtx.getOwner(), fieldCtx.getName(), fieldCtx.getTypeDescriptor().getDescriptor());
+            }
+        } else {
+            ctx.reportError("Cannot resolve field: " + name, name);
+        }
+    }
+
+    @Override
+    public void visitIf(final IfStatement ifStatement) {
+        final Expression condition = ifStatement.getCondition();
+        final Node elseBlock = ifStatement.getElseBody();
+
+        if (condition instanceof BinaryOp) {
+            final BinaryOp bop = (BinaryOp) condition;
+            final Label after = new Label();
+            final Label elseLabel = new Label();
+
+            bop.accept(this);
+
+            if (elseBlock != null) {
+                mv.visitJumpInsn(IFEQ, elseLabel);
+
+                ctx.beginScope();
+                ifStatement.getBody().accept(this);
+                ctx.endScope();
+
+                mv.visitJumpInsn(GOTO, after);
+
+                mv.visitLabel(elseLabel);
+
+                ctx.beginScope();
+                elseBlock.accept(this);
+                ctx.endScope();
+            } else {
+                mv.visitJumpInsn(IFEQ, after);
+
+                ctx.beginScope();
+                ifStatement.getBody().accept(this);
+                ctx.endScope();
+            }
+
+            mv.visitLabel(after);
+        } else {
+            final Type found = condition.resolveType(ctx.getResolver());
+            ctx.reportError("Expected boolean, found: " + (found != null ? found.getClassName() : "unknown"), condition);
+        }
+    }
+
+    @Override
+    public void visitCall(final Call call) {
+        final SymbolContext funCtx = ctx.getResolver().resolveCallCtx(call);
+
+        if (funCtx != null) {
+            final List<Expression> expressions = call.getParameters();
+            final Type[] argumentTypes = funCtx.getTypeDescriptor().getArgumentTypes();
+            for (int i = 0; i < expressions.size(); i++) {
+                expressions.get(i).accept(this);
+                final Type exprType = expressions.get(i).resolveType(ctx.getResolver());
+
+                if (isAssignableWithImplicitCast(exprType, argumentTypes[i])) {
+                    final TypeHandler from = getTypeHandler(exprType);
+                    final TypeHandler to = getTypeHandler(argumentTypes[i]);
+                    to.cast(mv, from);
+                }
+            }
+
+            int opcode = ctx.isStatic() ? INVOKESTATIC : INVOKEVIRTUAL;
+
+            mv.visitMethodInsn(opcode, funCtx.getOwner(), funCtx.getName(), funCtx.getTypeDescriptor().getDescriptor(), false);
+
+            if (call.shouldPop()) {
+                final Type retType = funCtx.getTypeDescriptor().getReturnType();
+                if (retType.equals(Type.LONG_TYPE) || retType.equals(Type.DOUBLE_TYPE)) {
+                    mv.visitInsn(DUP2);
+                } else {
+                    mv.visitInsn(DUP);
+                }
+            }
+        } else {
+            ctx.reportError("Cannot resolve function", call);
+        }
+    }
+
+    @Override
+    public void visitBinaryOp(final BinaryOp binaryOp) {
+        final Expression lhs = binaryOp.getLeftSide();
+        final Expression rhs = binaryOp.getRightSide();
+        final Type leftType = lhs.resolveType(ctx.getResolver());
+        final Type rightType = rhs.resolveType(ctx.getResolver());
+
+        if (leftType == null) {
+            ctx.reportError("Cannot resolve expression", binaryOp.getLeftSide());
+            return;
+        }
+
+        if (rightType == null) {
+            ctx.reportError("Cannot resolve expression", binaryOp.getRightSide());
+            return;
+        }
+
+        final Operator op = Operator.getOperator(binaryOp.getOperator(), leftType, rightType);
+
+        if (op == null) {
+            ctx.reportError("No such operator (" + leftType.getClassName() + " " + binaryOp.getOperator() +
+                    " " + rightType.getClassName(), binaryOp);
+        } else {
+            lhs.accept(this);
+
+            if (!op.getLhs().equals(op.getResultType()) && isAssignableWithImplicitCast(op.getLhs(), op.getRhs())) {
+                final Primitive to = Primitive.getPrimitiveByDesc(op.getRhs().getDescriptor());
+                final Primitive from = Primitive.getPrimitiveByDesc(op.getLhs().getDescriptor());
+                to.getTypeHandler().cast(mv, from.getTypeHandler());
+                // lhs must be cast
+            }
+
+            rhs.accept(this);
+
+            if (!op.getRhs().equals(op.getResultType()) && isAssignableWithImplicitCast(op.getRhs(), op.getLhs())) {
+                final Primitive to = Primitive.getPrimitiveByDesc(op.getLhs().getDescriptor());
+                final Primitive from = Primitive.getPrimitiveByDesc(op.getRhs().getDescriptor());
+                to.getTypeHandler().cast(mv, from.getTypeHandler());
+                // rhs must be cast
+            }
+
+            op.apply(mv);
+
+            if (binaryOp.shouldPop()) {
+                final Type opType = op.getResultType();
+                if (opType.equals(Type.LONG_TYPE) || opType.equals(Type.DOUBLE_TYPE)) {
+                    mv.visitInsn(DUP2);
+                } else {
+                    mv.visitInsn(DUP);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void visitLiteral(final Literal literal) {
+        final Type type = literal.resolveType(ctx.getResolver());
+
+        if (literal.getValue() == null) {
+            mv.visitInsn(ACONST_NULL);
+        } else if (type != null) {
+            final Object value = literal.getValue();
+            if (value instanceof Long) {
+                long val = (Long) value;
+                if (val >= Short.MIN_VALUE && val <= Short.MAX_VALUE) {
+                    pushInteger(((Long) value).intValue());
+                } else {
+                    mv.visitLdcInsn(value);
+                }
+            } else if (value instanceof Float) {
+                pushFloat((Float) value);
+            } else if (value instanceof Double) {
+                pushDouble((Double) value);
+            } else if (value instanceof Boolean) {
+                pushInteger((Boolean) value ? 1 : 0);
+            } else {
+                mv.visitLdcInsn(value);
+            }
+        } else {
+            System.err.println("Invalid literal type");
+        }
+    }
+
+    @Override
+    public void visitReturn(final Return returnStmt) {
+        final Expression expr = returnStmt.getExpression();
+        final Type exprType = expr.resolveType(ctx.getResolver());
+        final Type returnType = ctx.getReturnType();
+        final TypeHandler retTypeHandler = getTypeHandler(returnType);
+
+        expr.accept(this);
+
+        if (isAssignableWithImplicitCast(exprType, returnType)) {
+            final TypeHandler from = getTypeHandler(exprType);
+            retTypeHandler.cast(mv, from);
+        } else if (!isAssignableFrom(exprType, returnType) && !exprType.equals(returnType)) {
+            ctx.reportError("Expected type: " + returnType.getClassName() + " but" +
+                    " got " + exprType.getClassName(), expr);
+            return;
+        }
+
+        retTypeHandler.ret(mv);
+    }
+
+    private void pushFloat(final float value) {
+        if (value == 0f) {
+            mv.visitInsn(FCONST_0);
+        } else if (value == 1f) {
+            mv.visitInsn(FCONST_1);
+        } else if (value == 2f) {
+            mv.visitInsn(FCONST_2);
+        } else {
+            mv.visitLdcInsn(value);
+        }
+    }
+
+    private void pushDouble(final double value) {
+        if (value == 0D) {
+            mv.visitInsn(DCONST_0);
+        } else if (value == 1D) {
+            mv.visitInsn(DCONST_1);
+        } else {
+            mv.visitLdcInsn(value);
+        }
+    }
+
+    private void pushInteger(final int value) {
+        if (value >= -1 && value <= 5) {
+            mv.visitInsn(ICONST_M1 + value + 1);
+        } else if (value >= Byte.MIN_VALUE && value <= Byte.MAX_VALUE) {
+            mv.visitIntInsn(BIPUSH, value);
+        } else if (value >= Short.MIN_VALUE && value <= Short.MAX_VALUE) {
+            mv.visitIntInsn(SIPUSH, value);
+        } else {
+            mv.visitLdcInsn(value);
+        }
     }
 }
