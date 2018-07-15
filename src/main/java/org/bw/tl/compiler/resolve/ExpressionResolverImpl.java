@@ -103,8 +103,9 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         return ctx.getTypeDescriptor();
     }
 
+    @Nullable
     @Override
-    public SymbolContext resolveCallCtx(final Call call) {
+    public SymbolContext resolveCallCtx(@NotNull final Call call) {
         final Type[] parameterTypes = new Type[call.getParameters().size()];
         final Expression preceding = call.getPrecedingExpr();
 
@@ -139,8 +140,9 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         return new SymbolContext(function.getName(), module.getInternalName(), type, function.getAccessModifiers());
     }
 
+    @Nullable
     @Override
-    public FieldContext resolveFieldContext(final QualifiedName name) {
+    public FieldContext resolveFieldContext(@NotNull final QualifiedName name) {
         if (scope != null) {
             Scope.Var var = scope.findVar(name.getNames()[0]);
             if (var != null) {
@@ -149,5 +151,20 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         }
 
         return symbolResolver.resolveField(name);
+    }
+
+    @Nullable
+    @Override
+    public FieldContext resolveFieldContext(@Nullable final Expression preceding, @NotNull final String name) {
+        if (preceding == null)
+            return resolveFieldContext(QualifiedName.of(name));
+
+        final Type type = preceding.resolveType(this);
+
+        if (type != null) {
+            return symbolResolver.resolveField(type, name);
+        }
+
+        return null;
     }
 }

@@ -18,4 +18,6 @@ public interface ExpressionResolver {
     SymbolContext resolveCallCtx(Call call);
 
     FieldContext resolveFieldContext(QualifiedName name);
+
+    FieldContext resolveFieldContext(Expression preceding, String name);
 }
