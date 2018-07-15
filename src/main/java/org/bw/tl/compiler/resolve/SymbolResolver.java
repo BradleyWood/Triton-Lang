@@ -140,13 +140,14 @@ public @Data class SymbolResolver {
             return new FieldContext(field.getName(), ctx.getInternalName(), getTypeFromName(field.getType()), field.getAccessModifiers(), false);
         }
 
+        outer:
         for (final Module module : classpath) {
             QualifiedName fqn = module.getModulePackage();
             for (final String n : names) {
                 if (fqn.beginsWith(n)) {
                     fqn = fqn.subname(1, fqn.length());
 
-                } else break;
+                } else break outer;
             }
             if (fqn.length() < name.length()) {
                 final Field field = ctx.resolveField(names[fqn.length()]);
@@ -158,6 +159,11 @@ public @Data class SymbolResolver {
             }
         }
 
+        try {
+            final Class<?> clazz = Class.forName(name.subname(0, name.length() - 1).toString());
+            return resolveField(clazz, names[names.length - 1]);
+        } catch (final ClassNotFoundException ignored) {
+        }
         return null;
     }
 }
