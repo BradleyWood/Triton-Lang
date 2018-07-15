@@ -27,8 +27,9 @@ expression
     | expression NL* DOT NL* name=fqn
     | name=fqn
     | preceeding=expression NL* DOT NL* call=functionCall
-    | preceeding=expression NL* DOT NL* assignment
     | call=functionCall
+    | preceeding=expression NL* DOT NL* assignment
+    | assignment
     | lhs=expression NL* (RANGE) NL* rhs=expression
     | (PLUS | MINUS | NOT) NL* unaryOperand=expression
     | lhs=expression NL* (POW) NL* rhs=expression
