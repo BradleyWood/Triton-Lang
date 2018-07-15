@@ -77,7 +77,7 @@ public @Data class Compiler {
                     return null;
                 }
 
-                final MethodVisitor mv = cw.visitMethod(ACC_PUBLIC + ACC_STATIC, function.getName(),
+                final MethodVisitor mv = cw.visitMethod(function.getAccessModifiers(), function.getName(),
                         methodDescriptor, null, null);
 
                 mv.visitCode();
