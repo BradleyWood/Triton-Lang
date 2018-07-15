@@ -28,6 +28,7 @@ expression
     | name=fqn
     | preceeding=expression NL* DOT NL* call=functionCall
     | call=functionCall
+    | newStatement
     | preceeding=expression NL* DOT NL* assignment
     | assignment
     | lhs=expression NL* (RANGE) NL* rhs=expression
@@ -76,6 +77,11 @@ functionParam
 type
     : primitiveType
     | fqn
+    | arrayType
+    ;
+
+arrayType
+    : (primitiveType | fqn) (NL* '[' NL* ']')+
     ;
 
 primitiveType
@@ -111,6 +117,10 @@ whileStatement
 
 returnStatement
     : RETURN expression?
+    ;
+
+newStatement
+    : NEW NL* fqn NL* LPAREN functionParamDefs? RPAREN
     ;
 
 forStatement
@@ -221,6 +231,7 @@ ZeroToThree
 IF      : 'if';
 IN      : 'in';
 DO      : 'do';
+NEW     : 'new';
 VAR     : 'var';
 VAL     : 'val';
 FOR     : 'for';
