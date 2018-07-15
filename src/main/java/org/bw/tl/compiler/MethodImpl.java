@@ -224,6 +224,64 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
         }
     }
 
+    private void andOperator(final Expression lhs, final Expression rhs, final Type leftType, final Type rightType) {
+        if (!leftType.equals(Type.BOOLEAN_TYPE)) {
+            ctx.reportError("Expected type: boolean but got: " + rightType.getClassName(), lhs);
+        }
+
+        if (!rightType.equals(Type.BOOLEAN_TYPE)) {
+            ctx.reportError("Expected type: boolean but got: " + rightType.getClassName(), rhs);
+        }
+
+        final Label trueLabel = new Label();
+        final Label falseLabel = new Label();
+
+        lhs.accept(this);
+        mv.visitJumpInsn(IFEQ, falseLabel);
+
+        rhs.accept(this);
+        mv.visitJumpInsn(IFEQ, falseLabel);
+
+        mv.visitInsn(ICONST_1);
+        mv.visitJumpInsn(GOTO, trueLabel);
+
+        mv.visitLabel(falseLabel);
+        mv.visitInsn(ICONST_0);
+
+        mv.visitLabel(trueLabel);
+    }
+
+    private void orOperator(final Expression lhs, final Expression rhs, final Type leftType, final Type rightType) {
+        if (!leftType.equals(Type.BOOLEAN_TYPE)) {
+            ctx.reportError("Expected type: boolean but got: " + rightType.getClassName(), lhs);
+        }
+
+        if (!rightType.equals(Type.BOOLEAN_TYPE)) {
+            ctx.reportError("Expected type: boolean but got: " + rightType.getClassName(), rhs);
+        }
+
+        final Label trueLabel = new Label();
+        final Label endLabel = new Label();
+        final Label falseLabel = new Label();
+
+        lhs.accept(this);
+        mv.visitJumpInsn(IFNE, trueLabel);
+
+        rhs.accept(this);
+        mv.visitJumpInsn(IFNE, trueLabel);
+
+        mv.visitJumpInsn(GOTO, falseLabel);
+
+        mv.visitLabel(trueLabel);
+        mv.visitInsn(ICONST_1);
+        mv.visitJumpInsn(GOTO, endLabel);
+
+        mv.visitLabel(falseLabel);
+        mv.visitInsn(ICONST_0);
+
+        mv.visitLabel(endLabel);
+    }
+
     @Override
     public void visitBinaryOp(final BinaryOp binaryOp) {
         final Expression lhs = binaryOp.getLeftSide();
@@ -241,11 +299,19 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
             return;
         }
 
+        if (binaryOp.getOperator().equals("&&")) {
+            andOperator(lhs, rhs, leftType, rightType);
+            return;
+        } else if (binaryOp.getOperator().equals("||")) {
+            orOperator(lhs, rhs, leftType, rightType);
+            return;
+        }
+
         final Operator op = Operator.getOperator(binaryOp.getOperator(), leftType, rightType);
 
         if (op == null) {
             ctx.reportError("No such operator (" + leftType.getClassName() + " " + binaryOp.getOperator() +
-                    " " + rightType.getClassName(), binaryOp);
+                    " " + rightType.getClassName() + ")", binaryOp);
         } else {
             lhs.accept(this);
 
