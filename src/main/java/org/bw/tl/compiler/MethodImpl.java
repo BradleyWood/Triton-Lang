@@ -97,6 +97,35 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
     }
 
     @Override
+    public void visitWhile(final WhileLoop whileLoop) {
+        final Expression condition = whileLoop.getCondition();
+        final Type type = condition.resolveType(ctx.getResolver());
+
+        if (type == null) {
+            ctx.reportError("Cannot resolve expression", condition);
+            return;
+        }
+
+        if (type.equals(Type.BOOLEAN_TYPE)) {
+            final Label conditionalLabel = new Label();
+            final Label endLabel = new Label();
+
+            mv.visitLabel(conditionalLabel);
+            condition.accept(this);
+            mv.visitJumpInsn(IFEQ, endLabel);
+
+            ctx.beginScope();
+            whileLoop.getBody().accept(this);
+            ctx.endScope();
+
+            mv.visitJumpInsn(GOTO, conditionalLabel);
+            mv.visitLabel(endLabel);
+        } else {
+            ctx.reportError("Expected boolean, found: " + type.getClassName(), condition);
+        }
+    }
+
+    @Override
     public void visitIf(final IfStatement ifStatement) {
         final Expression condition = ifStatement.getCondition();
         final Type type = condition.resolveType(ctx.getResolver());
