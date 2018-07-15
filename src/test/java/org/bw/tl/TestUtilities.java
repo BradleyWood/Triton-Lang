@@ -26,7 +26,7 @@ public class TestUtilities {
         if (module == null)
             return null;
 
-        return new SymbolResolver(Collections.singletonList(module), module);
+        return new SymbolResolver(Collections.singletonList(module), module, module.getFiles().get(0));
     }
 
     public static Module getModule(final String txt) {

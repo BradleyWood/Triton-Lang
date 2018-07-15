@@ -56,9 +56,9 @@ public @Data class Compiler {
 
         buildClassInitializer(cw, module);
 
-        final SymbolResolver symbolResolver = new SymbolResolver(modules, module);
-
         for (final File file : module.getFiles()) {
+            final SymbolResolver symbolResolver = new SymbolResolver(modules, module, file);
+
             for (final Field field : file.getFields()) {
                 final Type type = getType(file, field.getType());
                 if (type == null) {

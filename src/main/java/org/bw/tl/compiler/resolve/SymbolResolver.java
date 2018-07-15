@@ -29,6 +29,9 @@ public @Data class SymbolResolver {
     @NotNull
     private Module ctx;
 
+    @NotNull
+    private File file;
+
     @Nullable
     public SymbolContext resolveFunction(@NotNull Type owner, @NotNull String name, @NotNull final Type... parameterTypes) {
         for (final Module module : classpath) {
@@ -131,6 +134,9 @@ public @Data class SymbolResolver {
     public FieldContext resolveField(@NotNull final QualifiedName name) {
         final String[] names = name.getNames();
 
+        if (names.length == 0)
+            return null;
+
         if (names.length == 1) {
             final Field field = ctx.resolveField(name.toString());
 
@@ -141,22 +147,31 @@ public @Data class SymbolResolver {
         }
 
         outer:
-        for (final Module module : classpath) {
-            QualifiedName fqn = module.getModulePackage();
+        for (final QualifiedName imp : file.getImports()) {
+            QualifiedName fqn = imp;
+            int idx = fqn.length();
+
             for (final String n : names) {
                 if (fqn.beginsWith(n)) {
                     fqn = fqn.subname(1, fqn.length());
-
+                } else if (fqn.endsWith(n)) {
+                    idx = 1;
+                    break;
                 } else break outer;
             }
-            if (fqn.length() < name.length()) {
-                final Field field = ctx.resolveField(names[fqn.length()]);
 
-                if (field != null)
-                    return new FieldContext(field.getName(), module.getInternalName(), getTypeFromName(field.getType()),
-                            field.getAccessModifiers(), false);
-                // todo resolve deep
+            final Type type = resolveType(imp);
+
+            if (type == null)
+                break;
+
+            FieldContext fieldType = resolveField(type, names[idx]);
+
+            for (int i = idx + 1; i < names.length && fieldType != null; i++) {
+                fieldType = resolveField(fieldType.getTypeDescriptor(), names[i]);
             }
+
+            return fieldType;
         }
 
         try {

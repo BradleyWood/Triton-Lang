@@ -32,7 +32,7 @@ public @Data class MethodCtx {
 
     public SymbolResolver getSymbolResolver() {
         if (symbolResolver == null) {
-            symbolResolver = new SymbolResolver(classPath, module);
+            symbolResolver = new SymbolResolver(classPath, module, file);
         }
         return symbolResolver;
     }
