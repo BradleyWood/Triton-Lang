@@ -32,6 +32,13 @@ public class Scope {
         final Var var = new Var(name, type, idx, modifiers);
 
         scope.peek().add(var);
+
+        if (type.equals(Type.LONG_TYPE) || type.equals(Type.DOUBLE_TYPE)) {
+            final Var second = new Var(name + " _2", type, idx + 1, modifiers);
+            scope.peek().add(second);
+            // long, double use 2 local indices
+        }
+
         return true;
     }
 
