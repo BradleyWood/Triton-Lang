@@ -39,6 +39,8 @@ public class ExpressionVisitor extends GrammarBaseVisitor<Expression> {
             for (final Expression expr : expressionList) {
                 expr.setParent(expression);
             }
+        } else if (ctx.newStatement() != null) {
+            expression = ctx.newStatement().accept(NewVisitor.of(sourceFile));
         } else if (ctx.lhs != null && ctx.rhs != null) {
             final int start = ctx.lhs.getText().length();
             final int end = ctx.getText().length() - ctx.rhs.getText().length();

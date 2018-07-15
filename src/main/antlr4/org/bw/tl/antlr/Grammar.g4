@@ -120,7 +120,7 @@ returnStatement
     ;
 
 newStatement
-    : NEW NL* fqn NL* LPAREN functionParamDefs? RPAREN
+    : NEW NL* fqn NL* LPAREN (expression (NL* COMMA NL* expression)*)? NL* RPAREN
     ;
 
 forStatement
