@@ -28,4 +28,6 @@ public interface ASTVisitor {
 
     void visitAssignment(final Assignment assignment);
 
+    void visitNew(final New newExpr);
+
 }

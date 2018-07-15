@@ -66,4 +66,9 @@ public class ASTVisitorBase implements ASTVisitor {
     public void visitAssignment(final Assignment assignment) {
         throw new UnsupportedOperationException("Assignment not implemented");
     }
+
+    @Override
+    public void visitNew(New newExpr) {
+        throw new UnsupportedOperationException("New not implemented");
+    }
 }

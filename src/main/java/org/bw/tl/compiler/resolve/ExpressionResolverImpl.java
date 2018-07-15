@@ -143,6 +143,16 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         return new SymbolContext(function.getName(), module.getInternalName(), type, function.getAccessModifiers());
     }
 
+    @Override
+    public SymbolContext resolveConstructorContext(New newStmt) {
+        return null;
+    }
+
+    @Override
+    public Type resolveConstructor(New newStmt) {
+        return null;
+    }
+
     @Nullable
     @Override
     public FieldContext resolveFieldContext(@NotNull final QualifiedName name) {
