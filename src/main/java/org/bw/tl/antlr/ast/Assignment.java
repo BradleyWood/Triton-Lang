@@ -17,6 +17,6 @@ public @Data class Assignment extends Expression {
 
     @Override
     public void accept(final ASTVisitor visitor) {
-
+        visitor.visitAssignment(this);
     }
 }
