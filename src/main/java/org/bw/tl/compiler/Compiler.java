@@ -104,7 +104,7 @@ public @Data class Compiler {
         mv.visitCode();
 
         final List<Node> statements = module.getFields().stream()
-                .map(f -> new BinaryOp(new QualifiedName(f.getName()), "=", f.getInitialValue()))
+                .map(f -> new Assignment(null, f.getName(), f.getInitialValue()))
                 .collect(Collectors.toList());
 
         final Block block = new Block(statements);
