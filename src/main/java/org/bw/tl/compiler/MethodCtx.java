@@ -46,11 +46,11 @@ public @Data class MethodCtx {
     }
 
     public Type resolveFunction(final Call call) {
-        return resolver.resolveCall(call);
+        return getResolver().resolveCall(call);
     }
 
     public Type resolveType(final QualifiedName name) {
-        return symbolResolver.resolveType(name);
+        return getSymbolResolver().resolveType(name);
     }
 
     public boolean isInitializer() {
