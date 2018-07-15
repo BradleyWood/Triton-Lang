@@ -10,9 +10,9 @@ public class SymbolResolutionTest {
 
     @Test
     public void testResolveFunction() {
-        final SymbolResolver resolver = getResolver("package testModule; int testFunction() {}" +
-                "void anotherTest() {} \n" +
-                "void funWithParams(boolean a, int b) {}\n");
+        final SymbolResolver resolver = getResolver("package testModule; fun testFunction(): int {}" +
+                "fun anotherTest() {} \n" +
+                "fun funWithParams(boolean a, int b) {}\n");
 
         final Type modType = Type.getType("LtestModule;");
 

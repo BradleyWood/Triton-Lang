@@ -56,7 +56,7 @@ public class ExpressionResolutionTest {
             final SymbolResolver resolver = getResolver("package mod;" +
                     "float abc = 100\n" +
                     "java.lang.String str = \"a string lol\"\n" +
-                    "long add(int a, float b) {}");
+                    "fun add(int a, float b): long {}");
 
             final ExpressionResolverImpl expressionResolver = new ExpressionResolverImpl(resolver, resolver.getCtx(),
                     resolver.getCtx().getFiles().get(0), null);

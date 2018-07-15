@@ -63,7 +63,7 @@ functionCall
     ;
 
 functionDef
-    : (modifierList NL*)? (VOID_T | type) NL* IDENTIFIER NL* LPAREN functionParamDefs? RPAREN NL* block
+    : (modifierList NL*)? FUN NL* IDENTIFIER NL* LPAREN functionParamDefs? RPAREN NL* (':' NL* (VOID_T | type) NL*)? block
     ;
 
 functionParamDefs
@@ -232,6 +232,7 @@ IF      : 'if';
 IN      : 'in';
 DO      : 'do';
 NEW     : 'new';
+FUN     : 'fun';
 VAR     : 'var';
 VAL     : 'val';
 FOR     : 'for';
