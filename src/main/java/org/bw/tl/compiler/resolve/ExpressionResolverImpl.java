@@ -144,7 +144,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         if (scope != null) {
             Scope.Var var = scope.findVar(name.getNames()[0]);
             if (var != null) {
-                return new FieldContext(var.getName(), null, var.getType(), 0, true);
+                return new FieldContext(var.getName(), module.getInternalName(), var.getType(), var.getModifiers(), true);
             }
         }
 
