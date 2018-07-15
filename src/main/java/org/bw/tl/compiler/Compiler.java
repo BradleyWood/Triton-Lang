@@ -74,10 +74,10 @@ public @Data class Compiler {
 
                 function.accept(MethodImpl.of(mv, ctx));
 
+                errors.addAll(ctx.getErrors());
+
                 mv.visitMaxs(0, 0);
                 mv.visitEnd();
-
-                errors.addAll(ctx.getErrors());
             }
         }
 
@@ -102,6 +102,8 @@ public @Data class Compiler {
         final MethodCtx ctx = new MethodCtx(modules, init, module, null);
 
         init.accept(MethodImpl.of(mv, ctx));
+
+        errors.addAll(ctx.getErrors());
 
         mv.visitMaxs(0, 0);
         mv.visitEnd();
