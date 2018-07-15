@@ -2,14 +2,17 @@ package org.bw.tl.compiler;
 
 import lombok.Data;
 import org.bw.tl.Error;
+import org.bw.tl.ErrorType;
 import org.bw.tl.antlr.ast.*;
 import org.bw.tl.compiler.resolve.SymbolResolver;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.bw.tl.util.FileUtilities.getType;
 import static org.bw.tl.util.TypeUtilities.getFunctionDescriptor;
 import static org.objectweb.asm.ClassWriter.*;
 import static org.objectweb.asm.Opcodes.*;
@@ -56,6 +59,15 @@ public @Data class Compiler {
         final SymbolResolver symbolResolver = new SymbolResolver(modules, module);
 
         for (final File file : module.getFiles()) {
+            for (final Field field : file.getFields()) {
+                final Type type = getType(file, field.getType());
+                if (type == null) {
+                    errors.add(ErrorType.GENERAL_ERROR.newError("Cannot resolve type: " + field.getType(), field));
+                    continue;
+                }
+                cw.visitField(field.getAccessModifiers(), field.getName(), type.getDescriptor(), null, null);
+            }
+
             for (final Function function : file.getFunctions()) {
                 final String methodDescriptor = getFunctionDescriptor(symbolResolver, function.getType(),
                         function.getParameterTypes());
