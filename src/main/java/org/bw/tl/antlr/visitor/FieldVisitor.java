@@ -16,8 +16,11 @@ public class FieldVisitor extends GrammarBaseVisitor<Field> {
     @Override
     public Field visitVarDef(final GrammarParser.VarDefContext ctx) {
         final String name = ctx.IDENTIFIER().getText();
-        final Expression initialValue = ctx.expression().accept(ExpressionVisitor.of(sourceFile));
         final QualifiedName type = ctx.type() != null ? QualifiedName.of(ctx.type().getText()) : null;
+        Expression initialValue = null;
+
+        if (ctx.expression() != null)
+            initialValue = ctx.expression().accept(ExpressionVisitor.of(sourceFile));
 
         final Field field = new Field(name, type, initialValue);
 
@@ -29,7 +32,8 @@ public class FieldVisitor extends GrammarBaseVisitor<Field> {
             }
         }
 
-        initialValue.setParent(field);
+        if (initialValue != null)
+            initialValue.setParent(field);
 
         field.setText(ctx.getText());
         field.setLineNumber(ctx.start.getLine());

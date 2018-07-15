@@ -44,34 +44,39 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
     @Override
     public void visitField(final Field field) {
         final Type fieldType = ctx.resolveType(field.getType());
-        final Expression value = field.getInitialValue();
-        final Type valueType = value.resolveType(ctx.getResolver());
 
         if (fieldType == null) {
             ctx.reportError("Cannot resolve field type: " + field.getType(), field);
             return;
         }
 
-        if (valueType == null) {
-            ctx.reportError("Cannot resolve expression", value);
-            return;
-        }
-
-        final TypeHandler from = getTypeHandler(valueType);
-        final TypeHandler to = getTypeHandler(fieldType);
-
-        if (!valueType.equals(fieldType) && !isAssignableFrom(valueType, fieldType)) {
-            if (isAssignableWithImplicitCast(valueType, fieldType)) {
-                to.cast(mv, from);
-            } else {
-                ctx.reportError("Expected type: " + fieldType.getClassName() + " but got: " + valueType.getClassName(), value);
-                return;
-            }
-        }
-
         ctx.getScope().putVar(field.getName(), fieldType, field.getAccessModifiers());
 
-        value.accept(this);
+        final Expression value = field.getInitialValue();
+        final TypeHandler to = getTypeHandler(fieldType);
+
+        if (value != null) {
+            final Type valueType = value.resolveType(ctx.getResolver());
+
+            if (valueType == null) {
+                ctx.reportError("Cannot resolve expression", value);
+                return;
+            }
+
+            final TypeHandler from = getTypeHandler(valueType);
+
+            if (!valueType.equals(fieldType) && !isAssignableFrom(valueType, fieldType)) {
+                if (isAssignableWithImplicitCast(valueType, fieldType)) {
+                    to.cast(mv, from);
+                } else {
+                    ctx.reportError("Expected type: " + fieldType.getClassName() + " but got: " + valueType.getClassName(), value);
+                    return;
+                }
+            }
+            value.accept(this);
+        } else {
+            pushDefault(fieldType);
+        }
 
         to.store(mv, ctx.getScope().findVar(field.getName()).getIndex());
     }
@@ -431,6 +436,21 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
         }
 
         retTypeHandler.ret(mv);
+    }
+
+    private void pushDefault(final Type type) {
+        if (type.equals(Type.BOOLEAN_TYPE) || type.equals(Type.BYTE_TYPE) || type.equals(Type.CHAR_TYPE)
+                || type.equals(Type.SHORT_TYPE) || type.equals(Type.INT_TYPE)) {
+            mv.visitInsn(ICONST_0);
+        } else if (type.equals(Type.FLOAT_TYPE)) {
+            mv.visitInsn(FCONST_0);
+        } else if (type.equals(Type.DOUBLE_TYPE)) {
+            mv.visitInsn(DCONST_0);
+        } else if (type.equals(Type.LONG_TYPE)) {
+            mv.visitInsn(LCONST_0);
+        } else {
+            mv.visitInsn(ACONST_NULL);
+        }
     }
 
     private void pushFloat(final float value) {
