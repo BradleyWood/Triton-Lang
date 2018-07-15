@@ -132,6 +132,40 @@ public @Data class SymbolResolver {
     }
 
     @Nullable
+    public QualifiedName getImportFromName(@NotNull final String name) {
+        for (final QualifiedName qualifiedName : file.getImports()) {
+            if (qualifiedName.endsWith(name))
+                return qualifiedName;
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public FieldContext resolveField(@NotNull final Class<?> clazz, @NotNull final QualifiedName name) {
+        final String[] names = name.getNames();
+
+        if (names.length == 0)
+            return null;
+
+        Class<?> cl = clazz;
+
+        for (int i = 0; i < names.length && cl != null; i++) {
+            try {
+                cl = cl.getField(names[i]).getType();
+            } catch (final Throwable ignored) {
+                return null;
+            }
+        }
+
+        if (cl != null) {
+            return new FieldContext(names[names.length - 1], Type.getType(cl).getInternalName(), Type.getType(cl), cl.getModifiers(), false);
+        }
+
+        return null;
+    }
+
+    @Nullable
     public FieldContext resolveField(@NotNull final Class<?> clazz, @NotNull final String name) {
         try {
             java.lang.reflect.Field f = clazz.getDeclaredField(name);
@@ -168,13 +202,19 @@ public @Data class SymbolResolver {
                 } else if (fqn.endsWith(n)) {
                     idx = 1;
                     break;
-                } else break outer;
+                } else continue outer;
             }
 
             final Type type = resolveType(imp);
 
-            if (type == null)
+            if (type == null) {
+                try {
+                    return resolveField(Class.forName(imp.toString()), name.subname(idx, name.length()));
+                } catch (final ClassNotFoundException ignored) {
+                    ignored.printStackTrace();
+                }
                 break;
+            }
 
             FieldContext fieldType = resolveField(type, names[idx]);
 
