@@ -144,6 +144,11 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
         if (funCtx != null) {
             final List<Expression> expressions = call.getParameters();
             final Type[] argumentTypes = funCtx.getTypeDescriptor().getArgumentTypes();
+
+            if (!funCtx.isStatic()) {
+                call.getPrecedingExpr().accept(this);
+            }
+
             for (int i = 0; i < expressions.size(); i++) {
                 expressions.get(i).accept(this);
                 final Type exprType = expressions.get(i).resolveType(ctx.getResolver());
@@ -156,10 +161,6 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
             }
 
             int opcode = funCtx.isStatic() ? INVOKESTATIC : INVOKEVIRTUAL;
-
-            if (!funCtx.isStatic()) {
-                call.getPrecedingExpr().accept(this);
-            }
 
             mv.visitMethodInsn(opcode, funCtx.getOwner(), funCtx.getName(), funCtx.getTypeDescriptor().getDescriptor(), false);
 
