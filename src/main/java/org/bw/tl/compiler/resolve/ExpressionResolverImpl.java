@@ -37,6 +37,9 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
             return null;
         }
 
+        if (bop.getOperator().equals("&&") || bop.getOperator().equals("||"))
+            return Type.BOOLEAN_TYPE;
+
         final Operator operator = Operator.getOperator(bop.getOperator(), lhs, rhs);
 
         if (operator != null) {
