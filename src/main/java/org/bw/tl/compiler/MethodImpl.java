@@ -132,6 +132,35 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
     }
 
     @Override
+    public void visitNew(final New newExpr) {
+        final SymbolContext constructorCtx = ctx.getResolver().resolveConstructorContext(newExpr);
+        final List<Expression> parameters = newExpr.getParameters();
+
+        if (constructorCtx == null) {
+            ctx.reportError("Cannot resolve constructor", newExpr);
+            return;
+        }
+
+        mv.visitTypeInsn(NEW, constructorCtx.getOwner());
+
+        if (!newExpr.shouldPop())
+            mv.visitInsn(DUP);
+
+        final Type[] constructorArgTypes = constructorCtx.getTypeDescriptor().getArgumentTypes();
+        for (int i = 0; i < constructorArgTypes.length; i++) {
+            final TypeHandler to = getTypeHandler(constructorArgTypes[i]);
+            final Type paramType = parameters.get(i).resolveType(ctx.getResolver());
+            final TypeHandler from = getTypeHandler(paramType);
+
+            parameters.get(i).accept(this);
+            to.cast(mv, from);
+        }
+
+        mv.visitMethodInsn(INVOKESPECIAL, constructorCtx.getOwner(), constructorCtx.getName(),
+                constructorCtx.getTypeDescriptor().getDescriptor(), false);
+    }
+
+    @Override
     public void visitIf(final IfStatement ifStatement) {
         final Expression condition = ifStatement.getCondition();
         final Type type = condition.resolveType(ctx.getResolver());
