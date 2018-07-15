@@ -2,10 +2,7 @@ package org.bw.tl.compiler.resolve;
 
 import lombok.Data;
 import lombok.AllArgsConstructor;
-import org.bw.tl.antlr.ast.Field;
-import org.bw.tl.antlr.ast.Function;
-import org.bw.tl.antlr.ast.Module;
-import org.bw.tl.antlr.ast.QualifiedName;
+import org.bw.tl.antlr.ast.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
@@ -92,6 +89,42 @@ public @Data class SymbolResolver {
         }
 
         return getTypeFromName(name);
+    }
+
+    @Nullable
+    public FieldContext resolveField(@NotNull final Type owner, @NotNull final String name) {
+        for (final Module module : classpath) {
+            if (module.getModulePackage().toString().equals(owner.getClassName())) {
+                final Field field = module.resolveField(name);
+
+                if (field == null)
+                    continue;
+
+                final Type type = module.resolveFieldType(name);
+
+                if (type == null)
+                    return null;
+
+                return new FieldContext(field.getName(), module.getInternalName(), type, field.getAccessModifiers(), false);
+            }
+        }
+
+        try {
+            return resolveField(Class.forName(owner.getClassName()), name);
+        } catch (final ClassNotFoundException ignored) {
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public FieldContext resolveField(@NotNull final Class<?> clazz, @NotNull final String name) {
+        try {
+            java.lang.reflect.Field f = clazz.getDeclaredField(name);
+            return new FieldContext(name, Type.getType(clazz).getInternalName(), Type.getType(f.getType()), f.getModifiers(), false);
+        } catch (final NoSuchFieldException ignored) {
+        }
+        return null;
     }
 
     @Nullable
