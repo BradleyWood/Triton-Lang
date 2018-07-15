@@ -80,14 +80,25 @@ public @Data class SymbolResolver {
 
     @Nullable
     public Type resolveType(@NotNull final QualifiedName name) {
+        if (name.length() == 0)
+            return null;
+
+        QualifiedName typeName = name;
+
+        for (final QualifiedName imp : file.getImports()) {
+            if (imp.endsWith(name.getNames()[0])) {
+                typeName = imp;
+            }
+        }
+
         for (final Module module : classpath) {
-            if (module.getModulePackage().toString().equals(name.toString())) {
+            if (module.getModulePackage().toString().equals(typeName.toString())) {
                 return Type.getType(module.getModulePackage().getDesc());
             }
         }
 
         try {
-            return Type.getType(Class.forName(name.toString()));
+            return Type.getType(Class.forName(typeName.toString()));
         } catch (ClassNotFoundException ignored) {
         }
 
