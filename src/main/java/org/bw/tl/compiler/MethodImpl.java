@@ -6,7 +6,6 @@ import org.bw.tl.antlr.ast.*;
 import org.bw.tl.compiler.resolve.FieldContext;
 import org.bw.tl.compiler.resolve.Operator;
 import org.bw.tl.compiler.resolve.SymbolContext;
-import org.bw.tl.compiler.types.Primitive;
 import org.bw.tl.compiler.types.TypeHandler;
 import org.bw.tl.util.TypeUtilities;
 import org.jetbrains.annotations.NotNull;
@@ -17,9 +16,7 @@ import org.objectweb.asm.Type;
 
 import java.util.List;
 
-import static org.bw.tl.util.TypeUtilities.getTypeHandler;
-import static org.bw.tl.util.TypeUtilities.isAssignableFrom;
-import static org.bw.tl.util.TypeUtilities.isAssignableWithImplicitCast;
+import static org.bw.tl.util.TypeUtilities.*;
 
 @EqualsAndHashCode(callSuper = false)
 public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase implements Opcodes {
@@ -158,7 +155,11 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
                 }
             }
 
-            int opcode = ctx.isStatic() ? INVOKESTATIC : INVOKEVIRTUAL;
+            int opcode = funCtx.isStatic() ? INVOKESTATIC : INVOKEVIRTUAL;
+
+            if (!funCtx.isStatic()) {
+                call.getPrecedingExpr().accept(this);
+            }
 
             mv.visitMethodInsn(opcode, funCtx.getOwner(), funCtx.getName(), funCtx.getTypeDescriptor().getDescriptor(), false);
 
@@ -172,6 +173,53 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
             }
         } else {
             ctx.reportError("Cannot resolve function", call);
+        }
+    }
+
+    @Override
+    public void visitAssignment(final Assignment assignment) {
+        final FieldContext fieldCtx = ctx.getResolver().resolveFieldContext(assignment.getPrecedingExpr(), assignment.getName());
+        final Type valueType = assignment.resolveType(ctx.getResolver());
+
+        if (fieldCtx == null) {
+            ctx.reportError("Cannot resolve field", assignment);
+            return;
+        }
+
+        if (valueType == null) {
+            ctx.reportError("Cannot resolve expression", assignment.getValue());
+            return;
+        }
+
+        final TypeHandler to = getTypeHandler(fieldCtx.getTypeDescriptor());
+        final TypeHandler from = getTypeHandler(valueType);
+
+        assignment.getValue().accept(this);
+
+        if (!fieldCtx.getTypeDescriptor().equals(valueType) && !isAssignableFrom(valueType, fieldCtx.getTypeDescriptor())) {
+            if (isAssignableWithImplicitCast(valueType, fieldCtx.getTypeDescriptor())) {
+                to.cast(mv, from);
+            } else {
+                ctx.reportError("Expected type: " + fieldCtx.getTypeDescriptor().getClassName() + " but got: " +
+                        valueType.getClassName(), assignment.getValue());
+            }
+        }
+
+        if (fieldCtx.isLocal()) {
+            to.store(mv, ctx.getScope().findVar(fieldCtx.getName()).getIndex());
+        } else if (fieldCtx.isStatic()) {
+            mv.visitFieldInsn(PUTSTATIC, fieldCtx.getOwner(), fieldCtx.getName(), fieldCtx.getTypeDescriptor().getDescriptor());
+        } else {
+            if (!ctx.isStatic() && assignment.getPrecedingExpr() == null) {
+                mv.visitVarInsn(ALOAD, 0); // put this on stack
+            } else if (assignment.getPrecedingExpr() != null) {
+                assignment.getPrecedingExpr().accept(this);
+            } else if (ctx.isStatic()){
+                ctx.reportError("Cannot access non static field: " + assignment.getName() + " from static context",
+                        assignment);
+            }
+
+            mv.visitFieldInsn(PUTFIELD, fieldCtx.getOwner(), fieldCtx.getName(), fieldCtx.getTypeDescriptor().getDescriptor());
         }
     }
 
@@ -201,18 +249,18 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
             lhs.accept(this);
 
             if (!op.getLhs().equals(op.getResultType()) && isAssignableWithImplicitCast(op.getLhs(), op.getRhs())) {
-                final Primitive to = Primitive.getPrimitiveByDesc(op.getRhs().getDescriptor());
-                final Primitive from = Primitive.getPrimitiveByDesc(op.getLhs().getDescriptor());
-                to.getTypeHandler().cast(mv, from.getTypeHandler());
+                final TypeHandler to = getTypeHandler(rightType);
+                final TypeHandler from = getTypeHandler(leftType);
+                to.cast(mv, from);
                 // lhs must be cast
             }
 
             rhs.accept(this);
 
             if (!op.getRhs().equals(op.getResultType()) && isAssignableWithImplicitCast(op.getRhs(), op.getLhs())) {
-                final Primitive to = Primitive.getPrimitiveByDesc(op.getLhs().getDescriptor());
-                final Primitive from = Primitive.getPrimitiveByDesc(op.getRhs().getDescriptor());
-                to.getTypeHandler().cast(mv, from.getTypeHandler());
+                final TypeHandler to = getTypeHandler(leftType);
+                final TypeHandler from = getTypeHandler(rightType);
+                to.cast(mv, from);
                 // rhs must be cast
             }
 
@@ -239,7 +287,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
             final Object value = literal.getValue();
             if (value instanceof Long) {
                 long val = (Long) value;
-                if (val >= Short.MIN_VALUE && val <= Short.MAX_VALUE) {
+                if (val >= Integer.MIN_VALUE && val <= Integer.MAX_VALUE) {
                     pushInteger(((Long) value).intValue());
                 } else {
                     mv.visitLdcInsn(value);
@@ -262,6 +310,12 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
     public void visitReturn(final Return returnStmt) {
         final Expression expr = returnStmt.getExpression();
         final Type exprType = expr.resolveType(ctx.getResolver());
+
+        if (exprType == null) {
+            ctx.reportError("Cannot resolve expression", expr);
+            return;
+        }
+
         final Type returnType = ctx.getReturnType();
         final TypeHandler retTypeHandler = getTypeHandler(returnType);
 
