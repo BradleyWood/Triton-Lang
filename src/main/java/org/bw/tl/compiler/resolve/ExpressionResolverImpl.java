@@ -122,7 +122,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
             if (preceding instanceof QualifiedName) {
                 Type owner = resolveName((QualifiedName) preceding);
                 if (owner == null)
-                    owner = Type.getType(((QualifiedName) preceding).getDesc());
+                    owner = symbolResolver.resolveType((QualifiedName) preceding);
                 if (owner == null)
                     return null;
 
@@ -147,7 +147,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
 
     @Nullable
     @Override
-    public SymbolContext resolveConstructorContext(final New newStmt) {
+    public SymbolContext resolveConstructorContext(@NotNull final New newStmt) {
         final List<Expression> expressionList = newStmt.getParameters();
         final Type[] types = new Type[expressionList.size()];
 
@@ -162,7 +162,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
 
     @Nullable
     @Override
-    public Type resolveConstructor(final New newStmt) {
+    public Type resolveConstructor(@NotNull final New newStmt) {
         final SymbolContext ctx = resolveConstructorContext(newStmt);
         final Type type = symbolResolver.resolveType(newStmt.getType());
 
