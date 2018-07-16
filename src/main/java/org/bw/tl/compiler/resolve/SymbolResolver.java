@@ -282,6 +282,9 @@ public @Data class SymbolResolver {
             QualifiedName fqn = imp;
             int idx = fqn.length();
 
+            if (name.equals(imp)) // name is fqn not a field
+                return null;
+
             for (final String n : names) {
                 if (fqn.beginsWith(n)) {
                     fqn = fqn.subname(1, fqn.length());
