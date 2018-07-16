@@ -11,7 +11,7 @@ public @Data class TypeCast extends Expression {
 
     @Override
     public Type resolveType(final ExpressionResolver resolver) {
-        return null;
+        return resolver.resolveTypeCast(this);
     }
 
     @Override

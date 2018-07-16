@@ -174,6 +174,12 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
 
     @Nullable
     @Override
+    public Type resolveTypeCast(@NotNull final TypeCast typeCast) {
+        return symbolResolver.resolveType(typeCast.getType());
+    }
+
+    @Nullable
+    @Override
     public FieldContext resolveFieldContext(@NotNull final QualifiedName name) {
         if (scope != null) {
             Scope.Var var = scope.findVar(name.getNames()[0]);
