@@ -106,7 +106,8 @@ public class TypeUtilities {
         return Type.getMethodDescriptor(retType, parameterTypes);
     }
 
-    public static TypeHandler getTypeHandler(final Type type) {
+    @NotNull
+    public static TypeHandler getTypeHandler(@NotNull final Type type) {
         final String desc = type.getDescriptor();
         final Primitive primitive = Primitive.getPrimitiveByDesc(desc);
 

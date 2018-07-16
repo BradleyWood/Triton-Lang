@@ -45,6 +45,10 @@ public @Data class SymbolResolver {
                         return null;
 
                     final Type methodType = module.resolveFunctionType(fun);
+
+                    if (methodType == null)
+                        return null;
+
                     return new SymbolContext(fun.getName(), module.getInternalName(), methodType, fun.getAccessModifiers());
                 }
             }
@@ -265,7 +269,12 @@ public @Data class SymbolResolver {
             if (field == null)
                 return null;
 
-            return new FieldContext(field.getName(), ctx.getInternalName(), getTypeFromName(field.getType()), field.getAccessModifiers(), false);
+            final Type type = resolveType(field.getType());
+
+            if (type == null)
+                return null;
+
+            return new FieldContext(field.getName(), ctx.getInternalName(), type, field.getAccessModifiers(), false);
         }
 
         outer:
