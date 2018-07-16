@@ -32,7 +32,8 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
         final QualifiedName[] parameterTypes = function.getParameterTypes();
 
         for (int i = 0; i < function.getParameterNames().length; i++) {
-            ctx.getScope().putVar(parameterNames[i], ctx.resolveType(parameterTypes[i]), 0);
+            if (!ctx.getScope().putVar(parameterNames[i], ctx.resolveType(parameterTypes[i]), 0))
+                ctx.reportError("Duplicate function parameter names", function);
         }
 
         function.getBody().accept(this);
@@ -50,7 +51,8 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
             return;
         }
 
-        ctx.getScope().putVar(field.getName(), fieldType, field.getAccessModifiers());
+        if (!ctx.getScope().putVar(field.getName(), fieldType, field.getAccessModifiers()))
+            ctx.reportError("Field: " + field.getName() + " has already been defined", field);
 
         final Expression value = field.getInitialValue();
         final TypeHandler to = getTypeHandler(fieldType);
