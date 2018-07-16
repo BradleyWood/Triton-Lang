@@ -2,7 +2,6 @@ package org.bw.tl.compiler.types;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.bw.tl.util.TypeUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
