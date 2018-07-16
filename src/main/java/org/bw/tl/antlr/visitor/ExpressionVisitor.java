@@ -41,6 +41,8 @@ public class ExpressionVisitor extends GrammarBaseVisitor<Expression> {
             }
         } else if (ctx.newStatement() != null) {
             expression = ctx.newStatement().accept(NewVisitor.of(sourceFile));
+        } else if(ctx.typeCast() != null) {
+            expression = ctx.typeCast().accept(TypeCastVisitor.of(sourceFile));
         } else if (ctx.lhs != null && ctx.rhs != null) {
             final int start = ctx.lhs.getText().length();
             final int end = ctx.getText().length() - ctx.rhs.getText().length();
