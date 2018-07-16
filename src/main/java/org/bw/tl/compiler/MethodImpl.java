@@ -486,28 +486,37 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
     @Override
     public void visitReturn(final Return returnStmt) {
         final Expression expr = returnStmt.getExpression();
-        final Type exprType = expr.resolveType(ctx.getResolver());
 
-        if (exprType == null) {
-            ctx.reportError("Cannot resolve expression", expr);
-            return;
+        if (ctx.getReturnType() == Type.VOID_TYPE || expr == null) {
+            if (ctx.getReturnType() == Type.VOID_TYPE && expr == null) {
+                mv.visitInsn(RETURN);
+            } else {
+                ctx.reportError("Illegal return value", returnStmt.getExpression());
+            }
+        } else {
+            final Type exprType = expr.resolveType(ctx.getResolver());
+
+            if (exprType == null) {
+                ctx.reportError("Cannot resolve expression", expr);
+                return;
+            }
+
+            final Type returnType = ctx.getReturnType();
+            final TypeHandler retTypeHandler = getTypeHandler(returnType);
+
+            expr.accept(this);
+
+            if (isAssignableWithImplicitCast(exprType, returnType)) {
+                final TypeHandler from = getTypeHandler(exprType);
+                retTypeHandler.cast(mv, from);
+            } else if (!isAssignableFrom(exprType, returnType) && !exprType.equals(returnType)) {
+                ctx.reportError("Expected type: " + returnType.getClassName() + " but" +
+                        " got " + exprType.getClassName(), expr);
+                return;
+            }
+
+            retTypeHandler.ret(mv);
         }
-
-        final Type returnType = ctx.getReturnType();
-        final TypeHandler retTypeHandler = getTypeHandler(returnType);
-
-        expr.accept(this);
-
-        if (isAssignableWithImplicitCast(exprType, returnType)) {
-            final TypeHandler from = getTypeHandler(exprType);
-            retTypeHandler.cast(mv, from);
-        } else if (!isAssignableFrom(exprType, returnType) && !exprType.equals(returnType)) {
-            ctx.reportError("Expected type: " + returnType.getClassName() + " but" +
-                    " got " + exprType.getClassName(), expr);
-            return;
-        }
-
-        retTypeHandler.ret(mv);
     }
 
     private void pushDefault(final Type type) {
