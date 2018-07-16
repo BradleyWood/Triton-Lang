@@ -5,6 +5,8 @@ import org.bw.tl.Error;
 import org.bw.tl.ErrorType;
 import org.bw.tl.antlr.ast.*;
 import org.bw.tl.compiler.resolve.SymbolResolver;
+import org.bw.tl.verify.FunReturnVerifier;
+import org.bw.tl.verify.Verifiable;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
@@ -19,6 +21,7 @@ import static org.objectweb.asm.Opcodes.*;
 
 public @Data class Compiler {
 
+    private final Verifiable<Function> functionVerifiable = new FunReturnVerifier();
     private final List<Error> errors = new LinkedList<>();
     private final List<Module> modules;
 
@@ -72,9 +75,14 @@ public @Data class Compiler {
                 final String methodDescriptor = getFunctionDescriptor(symbolResolver, function.getType(),
                         function.getParameterTypes());
 
+                if (!functionVerifiable.isValid(function)) {
+                    errors.add(ErrorType.GENERAL_ERROR.newError("Missing return statement", function));
+                    continue;
+                }
+
                 if (methodDescriptor == null) {
-                    System.err.println("Cannot resolve method descriptor");
-                    return null;
+                    errors.add(ErrorType.GENERAL_ERROR.newError("Invalid method signature", function));
+                    continue;
                 }
 
                 final MethodVisitor mv = cw.visitMethod(function.getAccessModifiers(), function.getName(),
@@ -111,7 +119,7 @@ public @Data class Compiler {
         final Function init = new Function(new QualifiedName[0], new String[0], "<clinit>", block,
                 new QualifiedName("void"));
 
-        final MethodCtx ctx = new MethodCtx(modules, init, module, null);
+        final MethodCtx ctx = new MethodCtx(modules, init, module, module.getFiles().get(0));
 
         init.accept(MethodImpl.of(mv, ctx));
 
