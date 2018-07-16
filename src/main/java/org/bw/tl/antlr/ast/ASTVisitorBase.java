@@ -63,6 +63,11 @@ public class ASTVisitorBase implements ASTVisitor {
     }
 
     @Override
+    public void visitTypeCast(TypeCast cast) {
+        throw new UnsupportedOperationException("Type cast not implemented");
+    }
+
+    @Override
     public void visitAssignment(final Assignment assignment) {
         throw new UnsupportedOperationException("Assignment not implemented");
     }

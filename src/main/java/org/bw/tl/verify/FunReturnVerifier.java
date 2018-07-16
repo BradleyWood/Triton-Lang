@@ -82,6 +82,10 @@ public class FunReturnVerifier implements Verifiable<Function> {
         }
 
         @Override
+        public void visitTypeCast(TypeCast cast) {
+        }
+
+        @Override
         public void visitName(QualifiedName name) {
         }
 

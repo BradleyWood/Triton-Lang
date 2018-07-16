@@ -26,6 +26,8 @@ public interface ASTVisitor {
 
     void visitFor(final ForLoop forLoop);
 
+    void visitTypeCast(final TypeCast cast);
+
     void visitAssignment(final Assignment assignment);
 
     void visitNew(final New newExpr);
