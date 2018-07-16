@@ -31,6 +31,7 @@ expression
     | newStatement
     | preceeding=expression NL* DOT NL* assignment
     | assignment
+    | typeCast
     | lhs=expression NL* (RANGE) NL* rhs=expression
     | (PLUS | MINUS | NOT) NL* unaryOperand=expression
     | lhs=expression NL* (POW) NL* rhs=expression
@@ -52,6 +53,10 @@ assignment
         |   POW_EQ
         )
         NL* val=expression
+    ;
+
+typeCast
+    : '(' NL* type NL* ')' NL* expression
     ;
 
 varDef
