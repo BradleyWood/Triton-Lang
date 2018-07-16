@@ -1,12 +1,14 @@
 package org.bw.tl.compiler.types;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.bw.tl.util.TypeUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.MethodVisitor;
 
 import static org.objectweb.asm.Opcodes.*;
 
+@EqualsAndHashCode
 public abstract @Data class TypeHandler {
 
     @NotNull
@@ -28,6 +30,9 @@ public abstract @Data class TypeHandler {
     }
 
     public boolean cast(final MethodVisitor mv, final TypeHandler from) {
+        if(equals(from))
+            return true;
+
         if (!isPrimitive() && !from.isPrimitive() && TypeUtilities.isAssignableFrom(from.getDesc(), getDesc())) {
             mv.visitTypeInsn(CHECKCAST, from.getInternalName());
             return true;
