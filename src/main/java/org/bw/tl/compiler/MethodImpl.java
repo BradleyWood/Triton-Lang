@@ -42,9 +42,30 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
         ctx.endScope();
     }
 
+    private Type getImplicitType(final Expression expr) {
+        final Type type = expr.resolveType(ctx.getResolver());
+
+        if (isAssignableWithImplicitCast(type, Type.INT_TYPE))
+            return Type.INT_TYPE;
+
+        return type;
+    }
+
     @Override
     public void visitField(final Field field) {
-        final Type fieldType = ctx.resolveType(field.getType());
+        final Expression value = field.getInitialValue();
+        final Type fieldType;
+
+        if (field.getType() != null) {
+            fieldType = ctx.resolveType(field.getType());
+        } else {
+            fieldType = getImplicitType(value);
+
+            if (fieldType == null) {
+                ctx.reportError("Cannot infer type", field);
+                return;
+            }
+        }
 
         if (fieldType == null) {
             ctx.reportError("Cannot resolve field type: " + field.getType(), field);
@@ -54,7 +75,6 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
         if (!ctx.getScope().putVar(field.getName(), fieldType, field.getAccessModifiers()))
             ctx.reportError("Field: " + field.getName() + " has already been defined", field);
 
-        final Expression value = field.getInitialValue();
         final TypeHandler to = getTypeHandler(fieldType);
 
         if (value != null) {
