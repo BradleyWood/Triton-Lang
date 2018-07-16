@@ -1,10 +1,12 @@
 package org.bw.tl.compiler.types;
 
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
 
 import java.util.Arrays;
 import java.util.List;
 
+import static org.bw.tl.util.TypeUtilities.isAssignableWithImplicitCast;
 import static org.objectweb.asm.Opcodes.*;
 
 public class AnyTypeHandler extends TypeHandler {
@@ -30,10 +32,17 @@ public class AnyTypeHandler extends TypeHandler {
     @Override
     public boolean cast(final MethodVisitor mv, final TypeHandler from) {
         if (from.isPrimitive()) {
-            final Primitive fromPrimitive = Primitive.getPrimitiveByDesc(from.getDesc());
+            if (Type.getType(getDesc()).equals(Type.getType(Object.class))) {
+                return from.toObject(mv);
+            }
 
-            if (fromPrimitive != Primitive.VOID && getDesc().equals(fromPrimitive.getWrappedType())) {
-                mv.visitMethodInsn(INVOKESTATIC, getDesc(), "valueOf", "()" + fromPrimitive.getDesc(), false);
+            final Primitive fromPrimitive = Primitive.getPrimitiveByDesc(from.getDesc());
+            final Primitive thisPrimitive = Primitive.getPrimitiveFromWrapper(getDesc());
+
+            if (fromPrimitive != Primitive.VOID && thisPrimitive != null &&
+                    isAssignableWithImplicitCast(Type.getType(from.getDesc()), Type.getType(getDesc()))) {
+                thisPrimitive.getTypeHandler().cast(mv, from);
+                return from.toObject(mv);
             }
             return false;
         }

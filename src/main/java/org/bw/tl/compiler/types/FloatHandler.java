@@ -1,6 +1,7 @@
 package org.bw.tl.compiler.types;
 
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -97,7 +98,8 @@ public class FloatHandler extends TypeHandler {
 
     @Override
     public boolean cast(final MethodVisitor mv, final TypeHandler from) {
-        if (from.isPrimitive() && !(from instanceof VoidHandler) && !(from instanceof BoolHandler)) {
+        if (from.isPrimitive() && !(from instanceof VoidHandler) && !(from instanceof BoolHandler)
+                || Type.getType(from.getDesc()).equals(Type.getType(Float.class))) {
             return from.toFloat(mv);
         }
         return false;

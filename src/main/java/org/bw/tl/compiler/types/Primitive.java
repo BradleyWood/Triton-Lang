@@ -2,6 +2,7 @@ package org.bw.tl.compiler.types;
 
 
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public enum Primitive {
@@ -63,6 +64,17 @@ public enum Primitive {
 
         for (final Primitive primitive : values()) {
             if (internalName.equals(primitive.wrappedType)) {
+                return primitive;
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static Primitive getPrimitiveFromWrapper(@NotNull final String desc) {
+        for (final Primitive primitive : values()) {
+            if (desc.equals(primitive.wrappedType)) {
                 return primitive;
             }
         }

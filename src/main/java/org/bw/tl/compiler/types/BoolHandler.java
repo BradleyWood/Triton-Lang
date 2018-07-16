@@ -1,5 +1,6 @@
 package org.bw.tl.compiler.types;
 
+import jdk.internal.org.objectweb.asm.Type;
 import org.objectweb.asm.MethodVisitor;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -88,12 +89,11 @@ public class BoolHandler extends TypeHandler {
 
     @Override
     public boolean cast(final MethodVisitor mv, final TypeHandler from) {
-        if (from.getDesc().equals("Ljava/lang/Boolean;")) {
+        if (Type.getType(from.getDesc()).equals(Type.getType(Boolean.class))) {
             mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(), "booleanValue", "()Z", false);
             return true;
-        }
+        } else return from.equals(this);
 
-        return false;
     }
 
     public static final BoolHandler INSTANCE = new BoolHandler();

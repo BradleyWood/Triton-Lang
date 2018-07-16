@@ -46,6 +46,27 @@ public class TypeUtilities {
         final Primitive f = Primitive.getPrimitiveByDesc(from.getDescriptor());
         final Primitive t = Primitive.getPrimitiveByDesc(to.getDescriptor());
 
+        if (to.equals(Type.getType(Object.class)) && from != Type.VOID_TYPE)
+            return true;
+
+        if (f != null && t == null) {
+            final Primitive wrappedType = Primitive.getPrimitiveFromWrapper(to.getDescriptor());
+
+            if (wrappedType == null)
+                return false;
+
+            if (isAssignableFrom(from, Type.getType(wrappedType.getDesc())))
+                return true;
+        } else if (t != null && f == null) {
+            final Primitive wrappedType = Primitive.getPrimitiveFromWrapper(from.getDescriptor());
+
+            if (wrappedType == null)
+                return false;
+
+            if (isAssignableFrom(Type.getType(wrappedType.getDesc()), to))
+                return true;
+        }
+
         if (t == Primitive.DOUBLE && f != Primitive.VOID && f != Primitive.BOOL && f != Primitive.DOUBLE && f != null)
             return true;
         if (t == Primitive.FLOAT && f != Primitive.VOID && f != Primitive.BOOL && f != Primitive.DOUBLE && f != null)
