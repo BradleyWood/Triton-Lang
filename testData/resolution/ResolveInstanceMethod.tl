@@ -26,4 +26,5 @@ fun resolveFunctionOnFunctionExpr() {
 fun testFunctionOnObject() {
     Object o = ""
     o.getClass().toString()
+    "".toString()
 }
