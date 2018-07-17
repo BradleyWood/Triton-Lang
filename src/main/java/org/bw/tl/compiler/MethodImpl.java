@@ -6,6 +6,7 @@ import org.bw.tl.antlr.ast.*;
 import org.bw.tl.compiler.resolve.FieldContext;
 import org.bw.tl.compiler.resolve.Operator;
 import org.bw.tl.compiler.resolve.SymbolContext;
+import org.bw.tl.compiler.types.AnyTypeHandler;
 import org.bw.tl.compiler.types.TypeHandler;
 import org.bw.tl.util.TypeUtilities;
 import org.jetbrains.annotations.NotNull;
@@ -102,6 +103,128 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
         }
 
         to.store(mv, ctx.getScope().findVar(field.getName()).getIndex());
+    }
+
+    @Override
+    public void visitExpressionIndices(final ExpressionIndex expressionIndex) {
+        final Type resultType = expressionIndex.resolveType(ctx.getResolver());
+        final Expression value = expressionIndex.getValue();
+
+        if (resultType == null) {
+            ctx.reportError("Cannot resolve expression", expressionIndex);
+        } else {
+            if (value != null) {
+                visitAssignIdx(expressionIndex.getExpression(), resultType, expressionIndex.getIndices(), value,
+                        !expressionIndex.shouldPop());
+            } else {
+                if (expressionIndex.shouldPop()) {
+                    ctx.reportError("Not a statement", expressionIndex);
+                } else {
+                    visitIndex(expressionIndex.getExpression(), expressionIndex.getIndices());
+                }
+            }
+        }
+    }
+
+    private void visitAssignIdx(final Expression array, final Type resultType, final List<Expression> indices,
+                           final Expression value, final boolean duplicate) {
+        final Type valueType = value.resolveType(ctx.getResolver());
+
+        if (!valueType.equals(resultType) && !isAssignableFrom(valueType, resultType)) {
+            ctx.reportError("Expected type: " + resultType.getClassName() + " but got: " + valueType.getClassName(), value);
+            return;
+        }
+
+        array.accept(this);
+
+        final TypeHandler arrayHandler = new AnyTypeHandler("LJava/lang/Object;");
+
+        for (int i = 0; i + 1 < indices.size(); i++) {
+            final Expression index = indices.get(i);
+            final Type indexType = index.resolveType(ctx.getResolver());
+
+            if (indexType == null) {
+                ctx.reportError("Cannot resolve expression", index);
+            } else if (!isAssignableFrom(indexType, Type.INT_TYPE)) {
+                ctx.reportError("Expected type: int, but got: " + indexType.getClassName(), index);
+            }
+
+            index.accept(this);
+            arrayHandler.arrayLoad(mv);
+        }
+
+        final Expression lastIndex = indices.get(indices.size() - 1);
+        final Type lastIndexType = lastIndex.resolveType(ctx.getResolver());
+
+        if (lastIndexType == null) {
+            ctx.reportError("Cannot resolve expression", lastIndex);
+        } else if (!isAssignableFrom(lastIndexType, Type.INT_TYPE)) {
+            ctx.reportError("Expected type: int, but got: " + lastIndexType.getClassName(), lastIndex);
+        } else {
+            lastIndex.accept(this);
+
+            value.accept(this);
+
+            if (duplicate) {
+                if (valueType.equals(Type.LONG_TYPE) || valueType.equals(Type.DOUBLE_TYPE)) {
+                    mv.visitInsn(DUP2);
+                } else {
+                    mv.visitInsn(DUP);
+                }
+            }
+
+            if (getDim(resultType) > indices.size()) {
+                arrayHandler.arrayStore(mv);
+            } else {
+                getTypeHandler(resultType).arrayStore(mv);
+            }
+        }
+    }
+
+    private void visitIndex(final Expression lstArrayOrMap, final List<Expression> indices) {
+        final Type exprType = lstArrayOrMap.resolveType(ctx.getResolver());
+        if (exprType.getDescriptor().startsWith("[")) {
+            visitArrayIndex(lstArrayOrMap, exprType, indices);
+        } else {
+            ctx.reportError("Expected array type but got: " + exprType.getClassName(), lstArrayOrMap);
+        }
+    }
+
+    private void visitArrayIndex(final Expression array, final Type exprType, final List<Expression> indices) {
+        array.accept(this);
+
+        final TypeHandler arrayHandler = new AnyTypeHandler("LJava/lang/Object;");
+
+        for (int i = 0; i + 1 < indices.size(); i++) {
+            final Expression index = indices.get(i);
+            final Type indexType = index.resolveType(ctx.getResolver());
+
+            if (indexType == null) {
+                ctx.reportError("Cannot resolve expression", index);
+            } else if (!isAssignableFrom(indexType, Type.INT_TYPE)) {
+                ctx.reportError("Expected type: int, but got: " + indexType.getClassName(), index);
+            }
+
+            index.accept(this);
+            arrayHandler.arrayLoad(mv);
+        }
+
+        final Expression lastIndex = indices.get(indices.size() - 1);
+        final Type lastIndexType = lastIndex.resolveType(ctx.getResolver());
+
+        if (lastIndexType == null) {
+            ctx.reportError("Cannot resolve expression", lastIndex);
+        } else if (!isAssignableFrom(lastIndexType, Type.INT_TYPE)) {
+            ctx.reportError("Expected type: int, but got: " + lastIndexType.getClassName(), lastIndex);
+        } else {
+            lastIndex.accept(this);
+
+            if (getDim(exprType) > indices.size()) {
+                arrayHandler.arrayLoad(mv);
+            } else {
+                getTypeHandler(exprType.getElementType()).arrayLoad(mv);
+            }
+        }
     }
 
     @Override
