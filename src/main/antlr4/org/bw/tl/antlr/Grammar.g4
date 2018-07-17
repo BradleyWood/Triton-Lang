@@ -131,7 +131,7 @@ returnStatement
 
 newStatement
     : NEW NL* fqn NL* LPAREN (expression (NL* COMMA NL* expression)*)? NL* RPAREN
-    | array=NEW NL* fqn NL* ('[' NL* expression NL* ']')+
+    | array=NEW NL* (fqn | primitiveType) NL* ('[' NL* expression NL* ']')+
     ;
 
 forStatement

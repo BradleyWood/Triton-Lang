@@ -18,7 +18,7 @@ public class NewVisitor extends GrammarBaseVisitor<New> {
 
     @Override
     public New visitNewStatement(final GrammarParser.NewStatementContext ctx) {
-        final QualifiedName name = QualifiedName.of(ctx.fqn().getText());
+        final QualifiedName name = QualifiedName.of(ctx.fqn() != null ? ctx.fqn().getText() : ctx.primitiveType().getText());
         final List<Expression> expressions = new LinkedList<>();
 
         final New newStmt = new New(name, expressions, ctx.array != null);
