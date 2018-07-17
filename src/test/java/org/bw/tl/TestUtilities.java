@@ -69,4 +69,18 @@ public class TestUtilities {
 
         return null;
     }
+
+    public static Class<?> loadClass(final String name, final byte[] bytes) {
+        ClassLoader cl = new ClassLoader() {
+            @Override
+            public Class<?> findClass(String name) {
+                return defineClass(name, bytes, 0, bytes.length);
+            }
+        };
+        try {
+            return cl.loadClass(name);
+        } catch (final ClassNotFoundException ignored) {
+        }
+        return null;
+    }
 }
