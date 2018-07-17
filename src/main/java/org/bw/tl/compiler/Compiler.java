@@ -63,6 +63,10 @@ public @Data class Compiler {
             final SymbolResolver symbolResolver = new SymbolResolver(modules, module, file);
 
             for (final Field field : file.getFields()) {
+                if (field.getType() == null) {
+                    errors.add(ErrorType.GENERAL_ERROR.newError("Implicit typing is only supported for local variables", field));
+                    continue;
+                }
                 final Type type = getType(file, field.getType());
                 if (type == null) {
                     errors.add(ErrorType.GENERAL_ERROR.newError("Cannot resolve type: " + field.getType(), field));
@@ -111,7 +115,7 @@ public @Data class Compiler {
 
         mv.visitCode();
 
-        final List<Node> statements = module.getFields().stream()
+        final List<Node> statements = module.getFields().stream().filter(stmt -> stmt.getType() != null)
                 .map(f -> new Assignment(null, f.getName(), f.getInitialValue()))
                 .collect(Collectors.toList());
 
