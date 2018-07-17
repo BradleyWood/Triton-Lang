@@ -116,6 +116,9 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
 
         for (int i = 0; i < parameterTypes.length; i++) {
             parameterTypes[i] = call.getParameters().get(i).resolveType(this);
+            if (parameterTypes[i] == null) {
+                return null;
+            }
         }
 
         if (preceding != null) {
