@@ -6,6 +6,7 @@ import org.bw.tl.antlr.GrammarBaseVisitor;
 import org.bw.tl.antlr.GrammarParser;
 import org.bw.tl.antlr.ast.*;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,6 +42,14 @@ public class ExpressionVisitor extends GrammarBaseVisitor<Expression> {
             }
         } else if (ctx.newStatement() != null) {
             expression = ctx.newStatement().accept(NewVisitor.of(sourceFile));
+        } else if(ctx.indices() != null) {
+            final Expression lstMapOrArray = ctx.expression(0).accept(this);
+            final List<Expression> indices = new LinkedList<>();
+            final ExpressionIndex eIdx = new ExpressionIndex(lstMapOrArray, indices);
+            lstMapOrArray.setParent(eIdx);
+            ctx.indices().expression().stream().map(e -> e.accept(this)).peek(e -> e.setParent(eIdx))
+                    .forEach(indices::add);
+            expression = eIdx;
         } else if(ctx.typeCast() != null) {
             expression = ctx.typeCast().accept(TypeCastVisitor.of(sourceFile));
         } else if (ctx.lhs != null && ctx.rhs != null) {
