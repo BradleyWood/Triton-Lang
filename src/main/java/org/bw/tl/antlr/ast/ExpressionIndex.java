@@ -7,6 +7,8 @@ import org.objectweb.asm.Type;
 
 import java.util.List;
 
+import static org.bw.tl.util.TypeUtilities.getDim;
+
 @EqualsAndHashCode(callSuper = true)
 public @Data class ExpressionIndex extends Expression {
 
@@ -20,16 +22,7 @@ public @Data class ExpressionIndex extends Expression {
         if (expressionType == null)
             return null;
 
-        final char[] buf = expressionType.getDescriptor().toCharArray();
-
-        int dim = 0;
-
-        for (char ch : buf) {
-            if (ch == '[')
-                dim++;
-        }
-
-        if (indices.size() > dim || indices.isEmpty())
+        if (indices.size() > getDim(expressionType) || indices.isEmpty())
             return null;
 
         return Type.getType(expressionType.getDescriptor().substring(indices.size()));

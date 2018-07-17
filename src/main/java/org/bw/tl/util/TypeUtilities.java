@@ -144,6 +144,18 @@ public class TypeUtilities {
         return Type.getMethodDescriptor(retType, parameterTypes);
     }
 
+    public static int getDim(@NotNull final Type type) {
+        final String desc = type.getDescriptor();
+        int arrayDim = 0;
+
+        for (int i = 0; i < desc.length(); i++) {
+            if (desc.charAt(i) == '[')
+                arrayDim++;
+        }
+
+        return arrayDim;
+    }
+
     @NotNull
     public static TypeHandler getTypeHandler(@NotNull final Type type) {
         final String desc = type.getDescriptor();
