@@ -12,7 +12,7 @@ public class FunReturnVerifier implements Verifiable<Function> {
 
     @Override
     public boolean isValid(final Function fun) {
-        if (fun.getType().toString().endsWith("void"))
+        if (fun.getType().getName().equals("void"))
             return true;
 
         final NodeVisitor nv = new NodeVisitor();

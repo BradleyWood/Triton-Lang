@@ -6,7 +6,7 @@ import org.bw.tl.antlr.GrammarBaseVisitor;
 import org.bw.tl.antlr.GrammarParser;
 import org.bw.tl.antlr.ast.Expression;
 import org.bw.tl.antlr.ast.Field;
-import org.bw.tl.antlr.ast.QualifiedName;
+import org.bw.tl.antlr.ast.TypeName;
 
 @AllArgsConstructor(staticName = "of")
 public class FieldVisitor extends GrammarBaseVisitor<Field> {
@@ -16,7 +16,7 @@ public class FieldVisitor extends GrammarBaseVisitor<Field> {
     @Override
     public Field visitVarDef(final GrammarParser.VarDefContext ctx) {
         final String name = ctx.IDENTIFIER().getText();
-        final QualifiedName type = ctx.type() != null ? QualifiedName.of(ctx.type().getText()) : null;
+        final TypeName type = ctx.type() != null ? TypeName.of(ctx.type().getText()) : null;
         Expression initialValue = null;
 
         if (ctx.expression() != null)

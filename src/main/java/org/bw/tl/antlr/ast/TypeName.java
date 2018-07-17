@@ -27,19 +27,28 @@ public @Data class TypeName extends QualifiedName {
 
     @Override
     public Type resolveType(@NotNull final ExpressionResolver resolver) {
-        final Type componentType = super.resolveType(resolver);
+        return resolver.resolveTypeName(this);
+    }
 
-        if (dim == 0 || componentType == null)
-            return componentType;
-
-        final StringBuilder descBuilder = new StringBuilder();
-
-        for (int i = 0; i < dim; i++) {
-            descBuilder.append('[');
+    public static TypeName of(@NotNull final String name) {
+        int dim = 0;
+        for (char c : name.toCharArray()) {
+            if (c == '[') {
+                dim++;
+            }
         }
+        int idx = name.indexOf('[') >= 0 ? name.indexOf('[') : name.length();
 
-        descBuilder.append(componentType.getDescriptor());
+        return of(name.substring(0, idx), dim);
+    }
 
-        return Type.getType(descBuilder.toString());
+    public static TypeName of(@NotNull final String name, final int dim) {
+        final TypeName typeName;
+        if (name.contains(".")) {
+            typeName = new TypeName(dim, name.split("\\."));
+        } else {
+            typeName = new TypeName(dim, name);
+        }
+        return typeName;
     }
 }

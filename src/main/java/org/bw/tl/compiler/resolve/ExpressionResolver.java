@@ -19,6 +19,8 @@ public interface ExpressionResolver {
 
     Type resolveTypeCast(TypeCast typeCast);
 
+    Type resolveTypeName(TypeName typeName);
+
     SymbolContext resolveCallCtx(Call call);
 
     SymbolContext resolveConstructorContext(New newStmt);

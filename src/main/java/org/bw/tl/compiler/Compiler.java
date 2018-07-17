@@ -14,7 +14,6 @@ import org.objectweb.asm.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.bw.tl.util.FileUtilities.getType;
 import static org.bw.tl.util.TypeUtilities.getFunctionDescriptor;
 import static org.objectweb.asm.ClassWriter.*;
 import static org.objectweb.asm.Opcodes.*;
@@ -67,7 +66,7 @@ public @Data class Compiler {
                     errors.add(ErrorType.GENERAL_ERROR.newError("Implicit typing is only supported for local variables", field));
                     continue;
                 }
-                final Type type = getType(file, field.getType());
+                final Type type = symbolResolver.resolveType(file, field.getType());
                 if (type == null) {
                     errors.add(ErrorType.GENERAL_ERROR.newError("Cannot resolve type: " + field.getType(), field));
                     continue;
@@ -120,8 +119,8 @@ public @Data class Compiler {
                 .collect(Collectors.toList());
 
         final Block block = new Block(statements);
-        final Function init = new Function(new QualifiedName[0], new String[0], "<clinit>", block,
-                new QualifiedName("void"));
+        final Function init = new Function(new TypeName[0], new String[0], "<clinit>", block,
+                new TypeName("void"));
 
         final MethodCtx ctx = new MethodCtx(modules, init, module, module.getFiles().get(0));
 

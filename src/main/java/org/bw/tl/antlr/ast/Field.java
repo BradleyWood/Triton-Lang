@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 public @Data class Field extends ModifiableStatement {
 
     private final String name;
-    private final QualifiedName type;
+    private final TypeName type;
     private final Expression initialValue;
 
     private boolean isConstant = false;

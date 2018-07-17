@@ -6,7 +6,7 @@ import org.bw.tl.compiler.resolve.ExpressionResolver;
 import org.objectweb.asm.Type;
 import org.jetbrains.annotations.NotNull;
 
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true)
 public @Data class QualifiedName extends Expression {
 
     @NotNull
@@ -112,8 +112,7 @@ public @Data class QualifiedName extends Expression {
         return names.length;
     }
 
-    @Override
-    public String toString() {
+    public String getName() {
         final StringBuilder builder = new StringBuilder();
         for (int i = 0; i < names.length; i++) {
             builder.append(names[i]);
@@ -122,6 +121,11 @@ public @Data class QualifiedName extends Expression {
             }
         }
         return builder.toString();
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 
     public String toInternalName() {

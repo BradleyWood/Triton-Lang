@@ -9,6 +9,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class TypeUtilities {
 
     public static boolean isAssignableFrom(final String fromDesc, final String toDesc) {
@@ -85,14 +88,14 @@ public class TypeUtilities {
     @Nullable
     public static Type getTypeFromName(@NotNull final QualifiedName name) {
         if (name.length() == 1) {
-            final Primitive p = Primitive.getPrimitiveByName(name.toString());
+            final Primitive p = Primitive.getPrimitiveByName(name.getName());
             if (p != null) {
                 return Type.getType(p.getDesc());
             }
         }
 
         try {
-            return Type.getType(Class.forName(name.toString()));
+            return Type.getType(Class.forName(name.getName()));
         } catch (ClassNotFoundException ignored) {
         }
         return null;
@@ -107,6 +110,20 @@ public class TypeUtilities {
      */
     public static Type getTypeFromName(final String name) {
         return getTypeFromName(QualifiedName.of(name));
+    }
+
+    public static QualifiedName getNameFromImports(@NotNull final List<QualifiedName> imports, @NotNull final QualifiedName name) {
+        if (name.length() == 0)
+            return null;
+
+        for (final QualifiedName imp : imports) {
+
+            if (name.length() == 1 && imp.endsWith(name.getNames()[0]) || Arrays.equals(imp.getNames(), name.getNames())) {
+                return imp;
+            }
+        }
+
+        return name;
     }
 
     @Nullable

@@ -136,13 +136,8 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
                 return symbolResolver.resolveFunction(objType, call.getName(), parameterTypes);
             }
         }
-        final Function function = module.resolveFunction(call.getName(), parameterTypes);
-        final Type type = file.resolveFunction(function);
 
-        if (function == null || type == null)
-            return null;
-
-        return new SymbolContext(function.getName(), module.getInternalName(), type, function.getAccessModifiers());
+        return symbolResolver.resolveFunctionContext(module, call.getName(), parameterTypes);
     }
 
     @Nullable
@@ -191,6 +186,24 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     @Override
     public Type resolveTypeCast(@NotNull final TypeCast typeCast) {
         return symbolResolver.resolveType(typeCast.getType());
+    }
+
+    @Override
+    public Type resolveTypeName(final TypeName typeName) {
+        final Type componentType = symbolResolver.resolveType(typeName);
+
+        if (typeName.getDim() == 0 || componentType == null)
+            return componentType;
+
+        final StringBuilder descBuilder = new StringBuilder();
+
+        for (int i = 0; i < typeName.getDim(); i++) {
+            descBuilder.append('[');
+        }
+
+        descBuilder.append(componentType.getDescriptor());
+
+        return Type.getType(descBuilder.toString());
     }
 
     @Nullable

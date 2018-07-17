@@ -1,15 +1,8 @@
 package org.bw.tl.antlr.ast;
 
 import lombok.Data;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.objectweb.asm.Type;
 
 import java.util.*;
-
-import static org.bw.tl.util.FileUtilities.getType;
-import static org.bw.tl.util.TypeUtilities.isAssignableFrom;
-import static org.bw.tl.util.TypeUtilities.isAssignableWithImplicitCast;
 
 public @Data class Module {
 
@@ -41,106 +34,10 @@ public @Data class Module {
         return of(Arrays.asList(files));
     }
 
-    @Nullable
-    public Function resolveFunction(@NotNull final String name, @NotNull final Type... parameterTypes) {
-        final Function fun = resolveFunction(name, true, parameterTypes);
-
-        if (fun != null)
-            return fun;
-
-        return resolveFunction(name, false, parameterTypes);
-    }
-
-    @Nullable
-    public Function resolveFunction(@NotNull final String name, final boolean exactParams, @NotNull final Type... parameterTypes) {
-        for (final File file : files) {
-            fun:
-            for (final Function function : file.getFunctions()) {
-                final QualifiedName[] types = function.getParameterTypes();
-
-                if (types.length != parameterTypes.length || !function.getName().equals(name))
-                    continue;
-
-
-                for (int i = 0; i < types.length; i++) {
-                    final Type ti = getType(file, types[i]);
-
-                    if (ti == null)
-                        return null;
-
-                    if (!parameterTypes[i].equals(ti) && exactParams) {
-                        continue fun;
-                    } else if (!parameterTypes[i].equals(ti)) {
-                        if (!isAssignableFrom(parameterTypes[i], ti) && !isAssignableWithImplicitCast(parameterTypes[i], ti))
-                            continue fun;
-                    }
-
-                }
-
-                return function;
-            }
-        }
-
-        return null;
-    }
-
-    @Nullable
-    public Type resolveFunctionType(@NotNull final Function function) {
-        final Optional<File> file = files.stream().filter(f -> f.getFunctions().contains(function)).findFirst();
-
-        return file.map(f -> f.resolveFunction(function)).orElse(null);
-    }
-
-    @Nullable
-    public Type resolveFunctionType(@NotNull final String name, @NotNull final Type... parameterTypes) {
-        final Function fun = resolveFunction(name, parameterTypes);
-
-        if (fun == null)
-            return null;
-
-        return resolveFunctionType(fun);
-    }
-
-    @Nullable
-    public Type resolveFunctionReturnType(@NotNull final String name, @NotNull final Type... parameterTypes) {
-        final Function function = resolveFunction(name, parameterTypes);
-
-        if (function == null)
-            return null;
-
-        final Optional<File> file = files.stream().filter(f -> f.getFunctions().contains(function)).findFirst();
-
-        return file.map(f -> getType(f, function.getType())).orElse(null);
-    }
-
-    @Nullable
-    public Field resolveField(@NotNull final String name) {
-        for (final File file : files) {
-            for (final Field field : file.getFields()) {
-                if (field.getName().equals(name)) {
-                    return field;
-                }
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    public Type resolveFieldType(@NotNull final String name) {
-        final Field field = resolveField(name);
-
-        if (field == null)
-            return null;
-
-        final Optional<File> file = files.stream().filter(f -> f.getFields().contains(field)).findFirst();
-
-        return file.map(f -> getType(f, field.getType())).orElse(null);
-    }
-
     public String getModuleClassName() {
         if (modulePackage == null || modulePackage.length() == 0)
             return "default";
-        return modulePackage.append(modulePackage.getNames()[modulePackage.length() - 1]).toString();
+        return modulePackage.append(modulePackage.getNames()[modulePackage.length() - 1]).getName();
     }
 
     public String getInternalName() {

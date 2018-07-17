@@ -6,11 +6,11 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public @Data class Function extends ModifiableStatement {
 
-    private final QualifiedName[] parameterTypes;
+    private final TypeName[] parameterTypes;
     private final String[] parameterNames;
     private final String name;
     private final Block body;
-    private final QualifiedName type;
+    private final TypeName type;
 
     @Override
     public void accept(final ASTVisitor visitor) {

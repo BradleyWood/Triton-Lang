@@ -58,7 +58,7 @@ public @Data class MethodCtx {
      * @return The type descriptor of the return type if found, otherwise null
      */
     public Type getReturnType() {
-        return getSymbolResolver().resolveType(function.getType());
+        return function.getType().resolveType(getResolver());
     }
 
     /**
@@ -141,7 +141,7 @@ public @Data class MethodCtx {
      * @return True if this method a valid program entry point
      */
     public boolean isMain() {
-        return getMethodName().equals("main") && function.getType().toString().equals("void") &&
+        return getMethodName().equals("main") && function.getType().getName().equals("void") &&
                 function.getParameterTypes().length == 1 &&
                 function.getParameterTypes()[0].getDesc().equals(Type.getType(String[].class).getDescriptor());
     }
@@ -167,6 +167,6 @@ public @Data class MethodCtx {
      * @return The internal name of the class that contains this method
      */
     public String getInternalClassName() {
-        return module.getModulePackage().toString();
+        return module.getModulePackage().getName();
     }
 }

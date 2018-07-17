@@ -57,7 +57,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
         final Type fieldType;
 
         if (field.getType() != null) {
-            fieldType = ctx.resolveType(field.getType());
+            fieldType = field.getType().resolveType(ctx.getResolver());
         } else {
             fieldType = getImplicitType(value);
 
@@ -138,7 +138,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
             final TypeHandler handler = TypeUtilities.getTypeHandler(type);
 
             if (fieldCtx.isLocal()) {
-                handler.load(mv, ctx.getScope().findVar(name.toString()).getIndex());
+                handler.load(mv, ctx.getScope().findVar(name.getName()).getIndex());
             } else if (fieldCtx.isStatic()) {
                 mv.visitFieldInsn(GETSTATIC, fieldCtx.getOwner(), fieldCtx.getName(), fieldCtx.getTypeDescriptor().getDescriptor());
             } else {
