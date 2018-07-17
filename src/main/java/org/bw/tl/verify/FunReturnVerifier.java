@@ -106,6 +106,10 @@ public class FunReturnVerifier implements Verifiable<Function> {
         }
 
         @Override
+        public void visitExpressionIndices(ExpressionIndex expressionIndex) {
+        }
+
+        @Override
         public void visitWhile(final WhileLoop whileLoop) {
         }
 

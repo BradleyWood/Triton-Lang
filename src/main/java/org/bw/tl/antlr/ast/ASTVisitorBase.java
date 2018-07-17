@@ -76,4 +76,9 @@ public class ASTVisitorBase implements ASTVisitor {
     public void visitNew(New newExpr) {
         throw new UnsupportedOperationException("New not implemented");
     }
+
+    @Override
+    public void visitExpressionIndices(final ExpressionIndex expressionIndex) {
+        throw new UnsupportedOperationException("Expression indices not supported");
+    }
 }
