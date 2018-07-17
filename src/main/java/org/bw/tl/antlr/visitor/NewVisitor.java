@@ -21,7 +21,7 @@ public class NewVisitor extends GrammarBaseVisitor<New> {
         final QualifiedName name = QualifiedName.of(ctx.fqn().getText());
         final List<Expression> expressions = new LinkedList<>();
 
-        final New newStmt = new New(name, expressions);
+        final New newStmt = new New(name, expressions, ctx.array != null);
         name.setParent(newStmt);
 
         if (ctx.expression() != null) {

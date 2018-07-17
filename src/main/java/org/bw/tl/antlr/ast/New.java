@@ -10,6 +10,7 @@ public @Data class New extends Expression {
 
     private final QualifiedName type;
     private final List<Expression> parameters;
+    private final boolean isArray;
 
     @Override
     public void accept(final ASTVisitor visitor) {

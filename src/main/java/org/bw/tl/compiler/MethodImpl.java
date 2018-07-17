@@ -220,31 +220,64 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
 
     @Override
     public void visitNew(final New newExpr) {
-        final SymbolContext constructorCtx = ctx.getResolver().resolveConstructorContext(newExpr);
         final List<Expression> parameters = newExpr.getParameters();
+        final boolean isArray = newExpr.isArray();
 
-        if (constructorCtx == null) {
-            ctx.reportError("Cannot resolve constructor", newExpr);
-            return;
+        if (isArray) {
+            final Type componentType = ctx.getSymbolResolver().resolveType(newExpr.getType());
+
+            if (componentType == null) {
+                ctx.reportError("Cannot resolve type: " + newExpr.getType(), newExpr);
+            } else {
+                final TypeHandler handler = getTypeHandler(componentType);
+
+                for (final Expression parameter : parameters) {
+                    final Type parameterType = parameter.resolveType(ctx.getResolver());
+                    if (!isAssignableFrom(parameterType, Type.INT_TYPE)) {
+                        ctx.reportError("Expected type: int, but got: " + parameterType.getClassName(), parameter);
+                        return;
+                    }
+                    parameter.accept(this);
+                }
+
+                if (parameters.isEmpty()) {
+                    ctx.reportError("Cannot instantiate 0 dimensional array", newExpr);
+                } else if (parameters.size() == 1) {
+                    handler.newArray(mv);
+                } else {
+                    handler.muliNewArray(mv, parameters.size());
+                }
+                if (newExpr.shouldPop()) {
+                    ctx.reportError("Not a statement", newExpr);
+                }
+            }
+
+        } else {
+            final SymbolContext constructorCtx = ctx.getResolver().resolveConstructorContext(newExpr);
+
+            if (constructorCtx == null) {
+                ctx.reportError("Cannot resolve constructor", newExpr);
+                return;
+            }
+
+            mv.visitTypeInsn(NEW, constructorCtx.getOwner());
+
+            if (!newExpr.shouldPop())
+                mv.visitInsn(DUP);
+
+            final Type[] constructorArgTypes = constructorCtx.getTypeDescriptor().getArgumentTypes();
+            for (int i = 0; i < constructorArgTypes.length; i++) {
+                final TypeHandler to = getTypeHandler(constructorArgTypes[i]);
+                final Type paramType = parameters.get(i).resolveType(ctx.getResolver());
+                final TypeHandler from = getTypeHandler(paramType);
+
+                parameters.get(i).accept(this);
+                to.cast(mv, from);
+            }
+
+            mv.visitMethodInsn(INVOKESPECIAL, constructorCtx.getOwner(), constructorCtx.getName(),
+                    constructorCtx.getTypeDescriptor().getDescriptor(), false);
         }
-
-        mv.visitTypeInsn(NEW, constructorCtx.getOwner());
-
-        if (!newExpr.shouldPop())
-            mv.visitInsn(DUP);
-
-        final Type[] constructorArgTypes = constructorCtx.getTypeDescriptor().getArgumentTypes();
-        for (int i = 0; i < constructorArgTypes.length; i++) {
-            final TypeHandler to = getTypeHandler(constructorArgTypes[i]);
-            final Type paramType = parameters.get(i).resolveType(ctx.getResolver());
-            final TypeHandler from = getTypeHandler(paramType);
-
-            parameters.get(i).accept(this);
-            to.cast(mv, from);
-        }
-
-        mv.visitMethodInsn(INVOKESPECIAL, constructorCtx.getOwner(), constructorCtx.getName(),
-                constructorCtx.getTypeDescriptor().getDescriptor(), false);
     }
 
     @Override

@@ -41,6 +41,22 @@ public abstract @Data class TypeHandler {
         return false;
     }
 
+    public boolean muliNewArray(final MethodVisitor mv, final int d) {
+        if (Type.getType(desc).equals(Type.VOID_TYPE))
+            return false;
+
+        final StringBuilder type = new StringBuilder();
+
+        for (int i = 0; i < d; i++) {
+            type.append('[');
+        }
+        type.append(getDesc());
+
+        mv.visitMultiANewArrayInsn(type.toString(), d);
+
+        return true;
+    }
+
     public abstract boolean toInt(final MethodVisitor mv);
 
     public abstract boolean toShort(final MethodVisitor mv);

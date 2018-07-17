@@ -163,6 +163,21 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     @Nullable
     @Override
     public Type resolveConstructor(@NotNull final New newStmt) {
+        if (newStmt.isArray()) {
+            final Type componentType = symbolResolver.resolveType(newStmt.getType());
+
+            if (componentType == null)
+                return null;
+
+            final StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < newStmt.getParameters().size(); i++) {
+                sb.append('[');
+            }
+
+            sb.append(componentType.getDescriptor());
+            return Type.getType(sb.toString());
+        }
+
         final SymbolContext ctx = resolveConstructorContext(newStmt);
         final Type type = symbolResolver.resolveType(newStmt.getType());
 
