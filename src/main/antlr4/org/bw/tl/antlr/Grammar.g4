@@ -32,6 +32,7 @@ expression
     | preceeding=expression NL* DOT NL* assignment
     | assignment
     | typeCast
+    | expression indices
     | lhs=expression NL* (RANGE) NL* rhs=expression
     | (PLUS | MINUS | NOT) NL* unaryOperand=expression
     | lhs=expression NL* (POW) NL* rhs=expression
@@ -39,6 +40,10 @@ expression
     | lhs=expression NL* (PLUS | MINUS) NL* rhs=expression
     | lhs=expression NL* (GT | LT | GTE | LTE | EQUALS | NOT_EQ) NL* rhs=expression
     | lhs=expression NL* (AND | OR) NL* rhs=expression
+    ;
+
+indices
+    :   (NL* '[' NL* expression NL* ']')+
     ;
 
 assignment
