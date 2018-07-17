@@ -105,6 +105,31 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
     }
 
     @Override
+    public void visitTypeCast(final TypeCast cast) {
+        final Type type = cast.resolveType(ctx.getResolver());
+        final Type exprType = cast.getExpression().resolveType(ctx.getResolver());
+
+        if (type == null) {
+            ctx.reportError("Cannot resolve type: " + cast.getType(), cast.getType());
+        } else if(exprType == null) {
+            ctx.reportError("Cannot resolve type: " + cast.getType(), cast.getExpression());
+        } else {
+            cast.getExpression().accept(this);
+            final TypeHandler to = getTypeHandler(type);
+            final TypeHandler from = getTypeHandler(exprType);
+
+            if (!to.cast(mv, from)) {
+                if (isAssignableFrom(type, exprType)) {
+                    mv.visitTypeInsn(CHECKCAST, to.getInternalName());
+                } else {
+                    ctx.reportError("Cast can never succeed from type: " + exprType.getClassName() + " to type: " +
+                            type.getClassName(), cast);
+                }
+            }
+        }
+    }
+
+    @Override
     public void visitName(final QualifiedName name) {
         final FieldContext fieldCtx = ctx.getResolver().resolveFieldContext(name);
 
