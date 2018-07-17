@@ -12,6 +12,7 @@ public @Data class ExpressionIndex extends Expression {
 
     private final Expression expression;
     private final List<Expression> indices;
+    private final Expression value;
 
     @Override
     public Type resolveType(final ExpressionResolver resolver) {

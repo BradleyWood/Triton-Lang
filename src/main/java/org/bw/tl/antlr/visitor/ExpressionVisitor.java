@@ -45,7 +45,8 @@ public class ExpressionVisitor extends GrammarBaseVisitor<Expression> {
         } else if(ctx.indices() != null) {
             final Expression lstMapOrArray = ctx.expression(0).accept(this);
             final List<Expression> indices = new LinkedList<>();
-            final ExpressionIndex eIdx = new ExpressionIndex(lstMapOrArray, indices);
+            final Expression value = ctx.assign != null ? ctx.assign.accept(this) : null;
+            final ExpressionIndex eIdx = new ExpressionIndex(lstMapOrArray, indices, value);
             lstMapOrArray.setParent(eIdx);
             ctx.indices().expression().stream().map(e -> e.accept(this)).peek(e -> e.setParent(eIdx))
                     .forEach(indices::add);
