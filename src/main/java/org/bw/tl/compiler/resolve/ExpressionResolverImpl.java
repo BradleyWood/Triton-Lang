@@ -324,7 +324,11 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     @Override
     public FieldContext resolveFieldContext(@Nullable final Expression preceding, @NotNull final String name) {
         if (preceding != null) {
-            final Type type = preceding.resolveType(this);
+            Type type = preceding.resolveType(this);
+
+            if (type == null && preceding instanceof QualifiedName) {
+                type = symbolResolver.resolveType((QualifiedName) preceding);
+            }
 
             if (type != null) {
                 return symbolResolver.resolveField(type, name);

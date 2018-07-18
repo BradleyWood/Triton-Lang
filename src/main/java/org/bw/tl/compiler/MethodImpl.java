@@ -536,12 +536,20 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
             return;
         }
 
-        if (precedingExpr != null)
+        if (precedingExpr != null && !fieldCtx.isStatic())
             precedingExpr.accept(this);
 
         final TypeHandler to = getTypeHandler(fieldCtx.getTypeDescriptor());
 
         assignment.getValue().accept(this);
+
+        if (!assignment.shouldPop()) {
+            if (valueType.equals(Type.LONG_TYPE) || valueType.equals(Type.DOUBLE_TYPE)) {
+                mv.visitInsn(DUP2);
+            } else {
+                mv.visitInsn(DUP);
+            }
+        }
 
         if (!fieldCtx.getTypeDescriptor().equals(valueType) && !isAssignableFrom(valueType, fieldCtx.getTypeDescriptor())) {
             if (isAssignableWithImplicitCast(valueType, fieldCtx.getTypeDescriptor())) {
