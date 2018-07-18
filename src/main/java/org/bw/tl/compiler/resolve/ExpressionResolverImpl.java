@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.bw.tl.util.TypeUtilities.isMethodType;
@@ -100,12 +101,12 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     @Nullable
     @Override
     public Type resolveName(@NotNull final QualifiedName name) {
-        final FieldContext ctx = resolveFieldContext(name);
+        final FieldContext[] ctx = resolveFieldContext(name);
 
         if (ctx == null)
             return null;
 
-        return ctx.getTypeDescriptor();
+        return ctx[ctx.length - 1].getTypeDescriptor();
     }
 
     @Nullable
@@ -211,29 +212,135 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
 
     @Nullable
     @Override
-    public FieldContext resolveFieldContext(@NotNull final QualifiedName name) {
+    public FieldContext[] resolveFieldContext(@NotNull final QualifiedName name) {
+        final FieldContext[] localCtx = resolveFieldFromLocalVar(name);
+
+        if (localCtx != null) {
+            return localCtx;
+        }
+
+        final FieldContext[] localFieldCtx = resolveFieldFromLocalField(name);
+
+        if (localFieldCtx != null)
+            return localFieldCtx;
+
+        return resolveExternalField(name);
+    }
+
+    private FieldContext[] resolveExternalField(@NotNull final QualifiedName name) {
+        if (name.length() <= 1)
+            return null;
+
+        final List<FieldContext> ctxList = new LinkedList<>();
+        final String[] names = name.getNames();
+
+        outer:
+        for (final QualifiedName imp : file.getImports()) {
+            int idx = imp.length();
+
+            if (name.equals(imp)) // name is fqn not a field
+                return null;
+
+            if (name.length() <= imp.length() || !imp.equals(name.subname(0, imp.length()))) {
+                if (imp.endsWith(names[0])) {
+                    idx = 1;
+                } else {
+                    continue;
+                }
+            }
+
+            Type type = symbolResolver.resolveType(imp);
+
+            if (type == null)
+                return null;
+
+            for (int i = idx; i < names.length; i++) {
+                final FieldContext ctx = symbolResolver.resolveField(type, names[i]);
+
+                if (ctx == null)
+                    return null;
+
+                ctxList.add(ctx);
+                type = ctx.getTypeDescriptor();
+            }
+
+            return ctxList.toArray(new FieldContext[0]);
+        }
+
+        return null;
+    }
+
+    private FieldContext[] resolveFieldFromLocalVar(@NotNull final QualifiedName fqn) {
+        final List<FieldContext> ctxList = new LinkedList<>();
+
         if (scope != null) {
-            Scope.Var var = scope.findVar(name.getNames()[0]);
+            Scope.Var var = scope.findVar(fqn.getNames()[0]);
             if (var != null) {
-                return new FieldContext(var.getName(), module.getInternalName(), var.getType(), var.getModifiers(), true);
+                ctxList.add(new FieldContext(var.getName(), module.getInternalName(), var.getType(), var.getModifiers(), true));
+
+                if (fqn.length() > 1) {
+                    final String[] names = fqn.subname(1, fqn.length()).getNames();
+                    Type type = var.getType();
+                    for (final String n : names) {
+                        final FieldContext ctxN = symbolResolver.resolveField(type, n);
+                        if (ctxN == null)
+                            return null;
+                        ctxList.add(ctxN);
+                        type = ctxN.getTypeDescriptor();
+                    }
+                }
+
+                return ctxList.toArray(new FieldContext[0]);
             }
         }
 
-        return symbolResolver.resolveField(name);
+        return null;
+    }
+
+    private FieldContext[] resolveFieldFromLocalField(@NotNull final QualifiedName fqn) {
+        final List<FieldContext> ctxList = new LinkedList<>();
+        final String[] names = fqn.getNames();
+
+        FieldContext ctx = symbolResolver.resolveField(Type.getType(module.getDescriptor()), names[0]);
+
+        if (ctx == null)
+            return null;
+
+        ctxList.add(ctx);
+
+        for (int i = 1; i < names.length; i++) {
+            ctx = symbolResolver.resolveField(ctx.getTypeDescriptor(), names[i]);
+
+            if (ctx == null)
+                return null;
+
+            ctxList.add(ctx);
+        }
+
+        return ctxList.toArray(new FieldContext[0]);
     }
 
     @Nullable
     @Override
     public FieldContext resolveFieldContext(@Nullable final Expression preceding, @NotNull final String name) {
-        if (preceding == null)
-            return resolveFieldContext(QualifiedName.of(name));
+        if (preceding != null) {
+            final Type type = preceding.resolveType(this);
 
-        final Type type = preceding.resolveType(this);
+            if (type != null) {
+                return symbolResolver.resolveField(type, name);
+            }
 
-        if (type != null) {
-            return symbolResolver.resolveField(type, name);
+            return null;
         }
 
-        return null;
+        if (scope != null) {
+            final Scope.Var var = scope.findVar(name);
+
+            if (var != null) {
+                return new FieldContext(var.getName(), module.getInternalName(), var.getType(), var.getModifiers(), true);
+            }
+        }
+
+        return symbolResolver.resolveField(Type.getType(module.getDescriptor()), name);
     }
 }

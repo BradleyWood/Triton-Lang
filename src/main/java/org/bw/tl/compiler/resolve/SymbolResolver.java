@@ -188,7 +188,7 @@ public @Data class SymbolResolver {
     @Nullable
     public FieldContext resolveField(@NotNull final Type owner, @NotNull final String name) {
         for (final Module module : classpath) {
-            if (module.getModulePackage().getName().equals(owner.getClassName())) {
+            if (Type.getType(module.getDescriptor()).equals(owner)) {
                 final Field field = resolveField(module, name);
 
                 if (field == null)
@@ -212,111 +212,11 @@ public @Data class SymbolResolver {
     }
 
     @Nullable
-    public QualifiedName getImportFromName(@NotNull final String name) {
-        for (final QualifiedName qualifiedName : file.getImports()) {
-            if (qualifiedName.endsWith(name))
-                return qualifiedName;
-        }
-
-        return null;
-    }
-
-    @Nullable
-    public FieldContext resolveField(@NotNull final Class<?> clazz, @NotNull final QualifiedName name) {
-        final String[] names = name.getNames();
-
-        if (names.length == 0)
-            return null;
-
-        Class<?> cl = clazz;
-
-        for (int i = 0; i < names.length && cl != null; i++) {
-            try {
-                cl = cl.getField(names[i]).getType();
-            } catch (final Throwable ignored) {
-                return null;
-            }
-        }
-
-        if (cl != null) {
-            return new FieldContext(names[names.length - 1], Type.getType(cl).getInternalName(), Type.getType(cl), cl.getModifiers(), false);
-        }
-
-        return null;
-    }
-
-    @Nullable
     public FieldContext resolveField(@NotNull final Class<?> clazz, @NotNull final String name) {
         try {
             java.lang.reflect.Field f = clazz.getDeclaredField(name);
             return new FieldContext(name, Type.getType(clazz).getInternalName(), Type.getType(f.getType()), f.getModifiers(), false);
         } catch (final NoSuchFieldException ignored) {
-        }
-        return null;
-    }
-
-    @Nullable
-    public FieldContext resolveField(@NotNull final QualifiedName name) {
-        final String[] names = name.getNames();
-
-        if (names.length == 0)
-            return null;
-
-        if (names.length == 1) {
-            final Field field = resolveField(ctx, name.getName());
-
-            if (field == null)
-                return null;
-
-            final Type type = resolveType(field.getType());
-
-            if (type == null)
-                return null;
-
-            return new FieldContext(field.getName(), ctx.getInternalName(), type, field.getAccessModifiers(), false);
-        }
-
-        outer:
-        for (final QualifiedName imp : file.getImports()) {
-            QualifiedName fqn = imp;
-            int idx = fqn.length();
-
-            if (name.equals(imp)) // name is fqn not a field
-                return null;
-
-            for (final String n : names) {
-                if (fqn.beginsWith(n)) {
-                    fqn = fqn.subname(1, fqn.length());
-                } else if (fqn.endsWith(n)) {
-                    idx = 1;
-                    break;
-                } else continue outer;
-            }
-
-            final Type type = resolveType(imp);
-
-            if (type == null) {
-                try {
-                    return resolveField(Class.forName(imp.getName()), name.subname(idx, name.length()));
-                } catch (final ClassNotFoundException ignored) {
-                    ignored.printStackTrace();
-                }
-                break;
-            }
-
-            FieldContext fieldType = resolveField(type, names[idx]);
-
-            for (int i = idx + 1; i < names.length && fieldType != null; i++) {
-                fieldType = resolveField(fieldType.getTypeDescriptor(), names[i]);
-            }
-
-            return fieldType;
-        }
-
-        try {
-            final Class<?> clazz = Class.forName(name.subname(0, name.length() - 1).getName());
-            return resolveField(clazz, names[names.length - 1]);
-        } catch (final ClassNotFoundException ignored) {
         }
         return null;
     }
@@ -424,18 +324,6 @@ public @Data class SymbolResolver {
             return null;
 
         return resolveFunctionType(module, fun);
-    }
-
-    @Nullable
-    public Type resolveFunctionReturnType(@NotNull final Module module, @NotNull final String name, @NotNull final Type... parameterTypes) {
-        final Function function = resolveFunction(module, name, parameterTypes);
-
-        if (function == null)
-            return null;
-
-        final Optional<File> file = module.getFiles().stream().filter(f -> f.getFunctions().contains(function)).findFirst();
-
-        return file.map(f -> resolveType(f, function.getType())).orElse(null);
     }
 
     @Nullable

@@ -25,7 +25,7 @@ public interface ExpressionResolver {
 
     SymbolContext resolveConstructorContext(New newStmt);
 
-    FieldContext resolveFieldContext(QualifiedName name);
+    FieldContext[] resolveFieldContext(QualifiedName name);
 
     FieldContext resolveFieldContext(Expression preceding, String name);
 }

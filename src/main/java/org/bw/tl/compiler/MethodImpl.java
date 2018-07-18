@@ -127,7 +127,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
     }
 
     private void visitAssignIdx(final Expression array, final Type resultType, final List<Expression> indices,
-                           final Expression value, final boolean duplicate) {
+                                final Expression value, final boolean duplicate) {
         final Type valueType = value.resolveType(ctx.getResolver());
 
         if (!valueType.equals(resultType) && !isAssignableFrom(valueType, resultType)) {
@@ -234,7 +234,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
 
         if (type == null) {
             ctx.reportError("Cannot resolve type: " + cast.getType(), cast.getType());
-        } else if(exprType == null) {
+        } else if (exprType == null) {
             ctx.reportError("Cannot resolve type: " + cast.getType(), cast.getExpression());
         } else {
             cast.getExpression().accept(this);
@@ -254,18 +254,20 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
 
     @Override
     public void visitName(final QualifiedName name) {
-        final FieldContext fieldCtx = ctx.getResolver().resolveFieldContext(name);
+        final FieldContext[] ctxList = ctx.getResolver().resolveFieldContext(name);
 
-        if (fieldCtx != null) {
-            final Type type = fieldCtx.getTypeDescriptor();
-            final TypeHandler handler = TypeUtilities.getTypeHandler(type);
+        if (ctxList != null) {
+            for (final FieldContext fieldCtx : ctxList) {
+                final Type type = fieldCtx.getTypeDescriptor();
+                final TypeHandler handler = TypeUtilities.getTypeHandler(type);
 
-            if (fieldCtx.isLocal()) {
-                handler.load(mv, ctx.getScope().findVar(name.getName()).getIndex());
-            } else if (fieldCtx.isStatic()) {
-                mv.visitFieldInsn(GETSTATIC, fieldCtx.getOwner(), fieldCtx.getName(), fieldCtx.getTypeDescriptor().getDescriptor());
-            } else {
-                mv.visitFieldInsn(GETFIELD, fieldCtx.getOwner(), fieldCtx.getName(), fieldCtx.getTypeDescriptor().getDescriptor());
+                if (fieldCtx.isLocal()) {
+                    handler.load(mv, ctx.getScope().findVar(fieldCtx.getName()).getIndex());
+                } else if (fieldCtx.isStatic()) {
+                    mv.visitFieldInsn(GETSTATIC, fieldCtx.getOwner(), fieldCtx.getName(), fieldCtx.getTypeDescriptor().getDescriptor());
+                } else {
+                    mv.visitFieldInsn(GETFIELD, fieldCtx.getOwner(), fieldCtx.getName(), fieldCtx.getTypeDescriptor().getDescriptor());
+                }
             }
         } else {
             ctx.reportError("Cannot resolve field: " + name, name);
@@ -490,21 +492,28 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
 
     @Override
     public void visitAssignment(final Assignment assignment) {
-        final FieldContext fieldCtx = ctx.getResolver().resolveFieldContext(assignment.getPrecedingExpr(), assignment.getName());
+        final Expression precedingExpr = assignment.getPrecedingExpr();
         final Type valueType = assignment.resolveType(ctx.getResolver());
 
-        if (fieldCtx == null) {
-            ctx.reportError("Cannot resolve field", assignment);
-            return;
-        }
 
         if (valueType == null) {
             ctx.reportError("Cannot resolve expression", assignment.getValue());
             return;
         }
 
-        final TypeHandler to = getTypeHandler(fieldCtx.getTypeDescriptor());
         final TypeHandler from = getTypeHandler(valueType);
+
+        final FieldContext fieldCtx = ctx.getResolver().resolveFieldContext(precedingExpr, assignment.getName());
+
+        if (fieldCtx == null) {
+            ctx.reportError("Cannot resolve field: " + assignment.getName(), assignment);
+            return;
+        }
+
+        if (precedingExpr != null)
+            precedingExpr.accept(this);
+
+        final TypeHandler to = getTypeHandler(fieldCtx.getTypeDescriptor());
 
         assignment.getValue().accept(this);
 
@@ -526,7 +535,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
                 mv.visitVarInsn(ALOAD, 0); // put this on stack
             } else if (assignment.getPrecedingExpr() != null) {
                 assignment.getPrecedingExpr().accept(this);
-            } else if (ctx.isStatic()){
+            } else if (ctx.isStatic()) {
                 ctx.reportError("Cannot access non static field: " + assignment.getName() + " from static context",
                         assignment);
             }
