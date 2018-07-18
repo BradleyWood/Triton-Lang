@@ -32,3 +32,13 @@ fun testLoadAndStore() {
     objArray[0] = "Hello World"
     Assert.assertEquals("Hello World", objArray[0])
 }
+
+fun arrayLengthTest() {
+    int[] ia = new int[10]
+    Assert.assertEquals(10, ia.length)
+
+    int[][] ia2d = new int[10][100]
+    Assert.assertEquals(10, ia2d.length)
+    Assert.assertEquals(100, ia2d[0].length)
+    Assert.assertEquals(10, (new int[10]).length);
+}
