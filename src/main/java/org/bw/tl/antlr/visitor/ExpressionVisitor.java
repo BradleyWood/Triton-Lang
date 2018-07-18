@@ -23,6 +23,10 @@ public class ExpressionVisitor extends GrammarBaseVisitor<Expression> {
             expression = ctx.wrapped.accept(this);
         } else if (ctx.literal() != null) {
             expression = ctx.literal().accept(LiteralVisitor.of(sourceFile));
+        } else if (ctx.id != null) {
+            final Expression preceding = ctx.expression(0).accept(this);
+            expression = new ExpressionFieldAccess(preceding, ctx.id.getText());
+            preceding.setParent(expression);
         } else if (ctx.name != null) {
             expression = ctx.name.accept(FQNVisitor.of(sourceFile));
         } else if (ctx.call != null) {

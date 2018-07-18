@@ -8,6 +8,11 @@ public class ASTVisitorBase implements ASTVisitor {
     }
 
     @Override
+    public void visitExpressionFieldAccess(final ExpressionFieldAccess fa) {
+        throw new UnsupportedOperationException("Expression.FieldAccess not implemented");
+    }
+
+    @Override
     public void visitAnnotation(final Annotation annotation) {
         throw new UnsupportedOperationException("Annotations not implemented");
     }

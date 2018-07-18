@@ -24,7 +24,7 @@ statement
 expression
     : LPAREN NL* wrapped=expression NL* RPAREN
     | literal
-    | expression NL* DOT NL* name=fqn
+    | preceeding=expression NL* DOT NL* id=IDENTIFIER
     | name=fqn
     | preceeding=expression NL* DOT NL* call=functionCall
     | call=functionCall

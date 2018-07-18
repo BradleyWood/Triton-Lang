@@ -13,9 +13,13 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.bw.tl.util.TypeUtilities.*;
+import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 
 @AllArgsConstructor
 public @Data class SymbolResolver {
+
+    public static FieldContext ARRAY_LENGTH = new FieldContext("length", "java/lang/Object",
+            Type.INT_TYPE, ACC_PUBLIC, false);
 
     /**
      * All classpath in the classpath
@@ -187,6 +191,9 @@ public @Data class SymbolResolver {
 
     @Nullable
     public FieldContext resolveField(@NotNull final Type owner, @NotNull final String name) {
+        if (owner.getDescriptor().startsWith("[") && name.equals("length"))
+            return ARRAY_LENGTH;
+
         for (final Module module : classpath) {
             if (Type.getType(module.getDescriptor()).equals(owner)) {
                 final Field field = resolveField(module, name);
@@ -213,6 +220,9 @@ public @Data class SymbolResolver {
 
     @Nullable
     public FieldContext resolveField(@NotNull final Class<?> clazz, @NotNull final String name) {
+        if (clazz.isArray() && name.equals("length"))
+            return ARRAY_LENGTH;
+
         try {
             java.lang.reflect.Field f = clazz.getDeclaredField(name);
             return new FieldContext(name, Type.getType(clazz).getInternalName(), Type.getType(f.getType()), f.getModifiers(), false);

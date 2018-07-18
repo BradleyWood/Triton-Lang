@@ -4,6 +4,8 @@ public interface ASTVisitor {
 
     void visitName(final QualifiedName name);
 
+    void visitExpressionFieldAccess(final ExpressionFieldAccess fa);
+
     void visitAnnotation(final Annotation annotation);
 
     void visitField(final Field field);

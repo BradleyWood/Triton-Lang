@@ -6,6 +6,7 @@ import org.bw.tl.antlr.ast.*;
 import org.bw.tl.compiler.resolve.FieldContext;
 import org.bw.tl.compiler.resolve.Operator;
 import org.bw.tl.compiler.resolve.SymbolContext;
+import org.bw.tl.compiler.resolve.SymbolResolver;
 import org.bw.tl.compiler.types.AnyTypeHandler;
 import org.bw.tl.compiler.types.TypeHandler;
 import org.bw.tl.util.TypeUtilities;
@@ -252,22 +253,47 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
         }
     }
 
+    private void loadField(final FieldContext fieldCtx) {
+        final Type type = fieldCtx.getTypeDescriptor();
+        final TypeHandler handler = TypeUtilities.getTypeHandler(type);
+
+        if (fieldCtx == SymbolResolver.ARRAY_LENGTH) {
+            mv.visitInsn(ARRAYLENGTH);
+        } else if (fieldCtx.isLocal()) {
+            handler.load(mv, ctx.getScope().findVar(fieldCtx.getName()).getIndex());
+        } else if (fieldCtx.isStatic()) {
+            mv.visitFieldInsn(GETSTATIC, fieldCtx.getOwner(), fieldCtx.getName(), fieldCtx.getTypeDescriptor().getDescriptor());
+        } else {
+            mv.visitFieldInsn(GETFIELD, fieldCtx.getOwner(), fieldCtx.getName(), fieldCtx.getTypeDescriptor().getDescriptor());
+        }
+    }
+
+    @Override
+    public void visitExpressionFieldAccess(final ExpressionFieldAccess fa) {
+        final Type precedingType = fa.getPrecedingExpr().resolveType(ctx.getResolver());
+        final FieldContext fieldCtx = ctx.getResolver().resolveFieldContext(fa.getPrecedingExpr(), fa.getFieldName());
+
+        if (precedingType == null) {
+            ctx.reportError("Cannot resolve expression", fa.getPrecedingExpr());
+            return;
+        }
+
+        if (fieldCtx == null) {
+            ctx.reportError("Cannot resolve field: " + fa.getFieldName(), fa);
+            return;
+        }
+
+        fa.getPrecedingExpr().accept(this);
+        loadField(fieldCtx);
+    }
+
     @Override
     public void visitName(final QualifiedName name) {
         final FieldContext[] ctxList = ctx.getResolver().resolveFieldContext(name);
 
         if (ctxList != null) {
             for (final FieldContext fieldCtx : ctxList) {
-                final Type type = fieldCtx.getTypeDescriptor();
-                final TypeHandler handler = TypeUtilities.getTypeHandler(type);
-
-                if (fieldCtx.isLocal()) {
-                    handler.load(mv, ctx.getScope().findVar(fieldCtx.getName()).getIndex());
-                } else if (fieldCtx.isStatic()) {
-                    mv.visitFieldInsn(GETSTATIC, fieldCtx.getOwner(), fieldCtx.getName(), fieldCtx.getTypeDescriptor().getDescriptor());
-                } else {
-                    mv.visitFieldInsn(GETFIELD, fieldCtx.getOwner(), fieldCtx.getName(), fieldCtx.getTypeDescriptor().getDescriptor());
-                }
+                loadField(fieldCtx);
             }
         } else {
             ctx.reportError("Cannot resolve field: " + name, name);
@@ -526,7 +552,9 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
             }
         }
 
-        if (fieldCtx.isLocal()) {
+        if (fieldCtx == SymbolResolver.ARRAY_LENGTH) {
+            ctx.reportError("Cannot modify array length", assignment);
+        } else if (fieldCtx.isLocal()) {
             to.store(mv, ctx.getScope().findVar(fieldCtx.getName()).getIndex());
         } else if (fieldCtx.isStatic()) {
             mv.visitFieldInsn(PUTSTATIC, fieldCtx.getOwner(), fieldCtx.getName(), fieldCtx.getTypeDescriptor().getDescriptor());

@@ -90,6 +90,10 @@ public class FunReturnVerifier implements Verifiable<Function> {
         }
 
         @Override
+        public void visitExpressionFieldAccess(ExpressionFieldAccess fa) {
+        }
+
+        @Override
         public void visitAnnotation(Annotation annotation) {
         }
 
