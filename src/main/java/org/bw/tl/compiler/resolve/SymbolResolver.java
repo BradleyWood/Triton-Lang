@@ -3,12 +3,16 @@ package org.bw.tl.compiler.resolve;
 import lombok.Data;
 import lombok.AllArgsConstructor;
 import org.bw.tl.antlr.ast.*;
+import org.bw.tl.compiler.types.Primitive;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,45 +70,67 @@ public @Data class SymbolResolver {
     }
 
     @Nullable
-    public SymbolContext resolveFunction(final @NotNull Class<?> clazz, final @NotNull String name,
-                                         final boolean exactParams, @NotNull final Type... parameterTypes) {
-        next:
+    public SymbolContext resolveFunction(final @NotNull Class<?> clazz, @NotNull final String name, @NotNull final Type... parameterTypes) {
+        final List<Executable> candidates = new LinkedList<>();
+
         for (final Method method : clazz.getMethods()) {
             if (method.getName().equals(name)) {
                 final Class<?>[] types = method.getParameterTypes();
 
-                if (types.length != parameterTypes.length)
+                if (!method.getName().equals(name) || types.length != parameterTypes.length)
                     continue;
 
-                for (int i = 0; i < types.length; i++) {
-                    final Type funParamType = Type.getType(types[i]);
-
-                    if (!parameterTypes[i].equals(funParamType) && exactParams) {
-                        continue next;
-                    } else if (!parameterTypes[i].equals(funParamType)) {
-                        if (!isAssignableFrom(parameterTypes[i], funParamType)
-                                && !isAssignableWithImplicitCast(parameterTypes[i], funParamType)) {
-                            continue next;
-                        }
-                    }
-                }
-
-                return new SymbolContext(name, clazz.getName().replace(".", "/"), Type.getType(method),
-                        method.getModifiers());
+                candidates.add(method);
             }
         }
+
+        int best = selectExecutable(candidates, parameterTypes);
+        if (best != -1) {
+            final Method method = (Method) candidates.get(best);
+            return new SymbolContext(name, clazz.getName().replace(".", "/"), Type.getType(method),
+                    method.getModifiers());
+        }
+
         return null;
     }
 
-    @Nullable
-    public SymbolContext resolveFunction(final @NotNull Class<?> clazz, final @NotNull String name,
-                                         @NotNull final Type... parameterTypes) {
-        final SymbolContext ctx = resolveFunction(clazz, name, true, parameterTypes);
+    private int rateParameters(final Type[] parameterTypes, final Type[] requiredTypes) {
+        if (parameterTypes == null)
+            return -1;
 
-        if (ctx != null)
-            return ctx;
+        final List<Type> DISCRETE_TYPES = Arrays.asList(Type.BYTE_TYPE, Type.SHORT_TYPE, Type.INT_TYPE, Type.LONG_TYPE);
+        final List<Type> CONTINUOUS_TYPES = Arrays.asList(Type.FLOAT_TYPE, Type.DOUBLE_TYPE);
 
-        return resolveFunction(clazz, name, false, parameterTypes);
+        int rating = 0;
+
+        for (int i = 0; i < parameterTypes.length; i++) {
+            if (!parameterTypes[i].equals(requiredTypes[i])) {
+                if (DISCRETE_TYPES.contains(parameterTypes[i]) && DISCRETE_TYPES.contains(requiredTypes[i])) {
+                    if (DISCRETE_TYPES.indexOf(requiredTypes[i]) < DISCRETE_TYPES.indexOf(parameterTypes[i]))
+                        return -1;
+                } else if (CONTINUOUS_TYPES.contains(parameterTypes[i]) && CONTINUOUS_TYPES.contains(requiredTypes[i])) {
+                    if (!parameterTypes[i].equals(requiredTypes[i]) && requiredTypes[i] == Type.FLOAT_TYPE)
+                        return -1;
+                } else {
+                    final Primitive parameterType = Primitive.getPrimitiveByDesc(parameterTypes[i].getDescriptor());
+                    final Primitive requiredType = Primitive.getPrimitiveByDesc(requiredTypes[i].getDescriptor());
+
+                    if ((parameterType == null || parameterType != requiredType) && (parameterType == null && requiredType == null)) {
+                        if (!isAssignableFrom(parameterTypes[i], requiredTypes[i])) {
+                            if (isAssignableWithImplicitCast(parameterTypes[i], requiredTypes[i])) {
+                                rating += 2;
+                            } else {
+                                return -1;
+                            }
+                        }
+                    } else {
+                        return -1;
+                    }
+                }
+            }
+        }
+
+        return rating;
     }
 
     @Nullable
@@ -146,43 +172,28 @@ public @Data class SymbolResolver {
 
     @Nullable
     public SymbolContext resolveConstructor(@NotNull final Type owner, @NotNull final Type... parameterTypes) {
-        final SymbolContext ctx = resolveConstructor(owner, true, parameterTypes);
-
-        if (ctx == null)
-            return resolveConstructor(owner, false, parameterTypes);
-
-        return ctx;
-    }
-
-    @Nullable
-    public SymbolContext resolveConstructor(@NotNull final Type owner, final boolean exactParams,
-                                            @NotNull final Type... parameterTypes) {
         try {
             final Class<?> clazz = Class.forName(owner.getClassName());
+            final List<Executable> constructorList = new LinkedList<>();
 
-            next:
             for (final Constructor<?> constructor : clazz.getConstructors()) {
                 final Class<?>[] types = constructor.getParameterTypes();
 
                 if (types.length != parameterTypes.length)
                     continue;
 
-                for (int i = 0; i < types.length; i++) {
-                    final Type funParamType = Type.getType(types[i]);
-
-                    if (!parameterTypes[i].equals(funParamType) && exactParams) {
-                        continue next;
-                    } else if (!parameterTypes[i].equals(funParamType)) {
-                        if (!isAssignableFrom(parameterTypes[i], funParamType)
-                                && !isAssignableWithImplicitCast(parameterTypes[i], funParamType)) {
-                            continue next;
-                        }
-                    }
-                }
-
-                return new SymbolContext("<init>", owner.getInternalName(), Type.getType(constructor),
-                        constructor.getModifiers());
+                constructorList.add(constructor);
             }
+
+            int best = selectExecutable(constructorList, parameterTypes);
+
+            if (best == -1)
+                return null;
+
+            final Constructor constructor = (Constructor) constructorList.get(best);
+
+            return new SymbolContext("<init>", owner.getInternalName(), Type.getType(constructor),
+                    constructor.getModifiers());
         } catch (final ClassNotFoundException ignored) {
         }
 
@@ -224,21 +235,11 @@ public @Data class SymbolResolver {
             return ARRAY_LENGTH;
 
         try {
-            java.lang.reflect.Field f = clazz.getDeclaredField(name);
+            java.lang.reflect.Field f = clazz.getField(name);
             return new FieldContext(name, Type.getType(clazz).getInternalName(), Type.getType(f.getType()), f.getModifiers(), false);
         } catch (final NoSuchFieldException ignored) {
         }
         return null;
-    }
-
-    @Nullable
-    public Function resolveFunction(@NotNull final Module module, @NotNull final String name, @NotNull final Type... parameterTypes) {
-        final Function fun = resolveFunction(module, name, true, parameterTypes);
-
-        if (fun != null)
-            return fun;
-
-        return resolveFunction(module, name, false, parameterTypes);
     }
 
     @Nullable
@@ -248,7 +249,6 @@ public @Data class SymbolResolver {
         if (function == null)
             return null;
 
-        resolveFunctionType(module, name, parameterTypes);
         final Type type = resolveFunctionType(module, function);
 
         if (type == null)
@@ -257,36 +257,64 @@ public @Data class SymbolResolver {
         return new SymbolContext(function.getName(), module.getInternalName(), type, function.getAccessModifiers());
     }
 
+    public int selectFun(@NotNull final List<Type[]> functionArgList, @NotNull final Type... parameterTypes) {
+        final int[] ratings = new int[functionArgList.size()];
+
+        for (int i = 0; i < ratings.length; i++) {
+            ratings[i] = rateParameters(parameterTypes, functionArgList.get(i));
+        }
+
+        int best = -1;
+
+        for (int i = 0; i < ratings.length; i++) {
+            if (ratings[i] != -1 && (best == -1 || ratings[i] < ratings[best]))
+                best = i;
+        }
+
+        return best;
+    }
+
+    public int selectExecutable(@NotNull final List<Executable> executables, @NotNull final Type... parameterTypes) {
+        final LinkedList<Type[]> executableParamList = new LinkedList<>();
+
+        for (final Executable executable : executables) {
+            final Class<?>[] classes = executable.getParameterTypes();
+            final Type[] types = new Type[classes.length];
+
+            for (int i = 0; i < types.length; i++) {
+                types[i] = Type.getType(classes[i]);
+            }
+            executableParamList.add(types);
+        }
+
+        return selectFun(executableParamList, parameterTypes);
+    }
+
     @Nullable
-    public Function resolveFunction(@NotNull final Module module, @NotNull final String name, final boolean exactParams,
-                                    @NotNull final Type... parameterTypes) {
+    public Function resolveFunction(@NotNull final Module module, @NotNull final String name, @NotNull final Type... parameterTypes) {
+        final List<Type[]> functionTypeList = new LinkedList<>();
+        final List<Function> functionList = new LinkedList<>();
+
         for (final File file : module.getFiles()) {
-            fun:
             for (final Function function : file.getFunctions()) {
                 final QualifiedName[] types = function.getParameterTypes();
 
-                if (types.length != parameterTypes.length || !function.getName().equals(name))
+                if (!function.getName().equals(name) || types.length != parameterTypes.length)
                     continue;
 
+                final Type type = resolveFunction(file, function);
 
-                for (int i = 0; i < types.length; i++) {
-                    final Type ti = resolveType(file, types[i]);
-
-                    if (ti == null)
-                        return null;
-
-                    if (!parameterTypes[i].equals(ti) && exactParams) {
-                        continue fun;
-                    } else if (!parameterTypes[i].equals(ti)) {
-                        if (!isAssignableFrom(parameterTypes[i], ti) && !isAssignableWithImplicitCast(parameterTypes[i], ti))
-                            continue fun;
-                    }
-
+                if (type != null) {
+                    functionTypeList.add(type.getArgumentTypes());
+                    functionList.add(function);
                 }
-
-                return function;
             }
         }
+
+        int idx = selectFun(functionTypeList, parameterTypes);
+
+        if (idx != -1)
+            return functionList.get(idx);
 
         return null;
     }
