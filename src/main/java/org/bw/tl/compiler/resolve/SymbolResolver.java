@@ -297,7 +297,7 @@ public @Data class SymbolResolver {
 
         for (final File file : module.getFiles()) {
             for (final Function function : file.getFunctions()) {
-                final QualifiedName[] types = function.getParameterTypes();
+                final TypeName[] types = function.getParameterTypes();
 
                 if (!function.getName().equals(name) || types.length != parameterTypes.length)
                     continue;
@@ -327,18 +327,31 @@ public @Data class SymbolResolver {
     }
 
     @Nullable
-    public Type resolveType(@NotNull final File file, final QualifiedName name) {
+    public Type resolveType(@NotNull final File file, final TypeName name) {
         final QualifiedName imp = getNameFromImports(file.getImports(), name);
 
         if (imp == null)
             return null;
 
-        return resolveType(name);
+        final Type type = resolveType(imp);
+
+        if (type == null)
+            return null;
+
+        final StringBuilder builder = new StringBuilder();
+
+        for (int i = 0; i < name.getDim(); i++) {
+            builder.append("[");
+        }
+
+        builder.append(type.getDescriptor());
+
+        return Type.getType(builder.toString());
     }
 
     @Nullable
     public Type resolveFunction(@NotNull final File file, @NotNull final Function function) {
-        final QualifiedName[] parameterTypes = function.getParameterTypes();
+        final TypeName[] parameterTypes = function.getParameterTypes();
         final Type retType = resolveType(file, function.getType());
         final Type[] paramTypes = new Type[parameterTypes.length];
 
