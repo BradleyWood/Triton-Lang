@@ -7,7 +7,6 @@ import org.bw.tl.antlr.GrammarLexer;
 import org.bw.tl.antlr.GrammarParser;
 import org.bw.tl.antlr.ast.Expression;
 import org.bw.tl.antlr.ast.Clazz;
-import org.bw.tl.antlr.ast.Module;
 import org.bw.tl.antlr.visitor.ExpressionVisitor;
 import org.bw.tl.antlr.visitor.FileVisitor;
 import org.bw.tl.compiler.resolve.SymbolResolver;

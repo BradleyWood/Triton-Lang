@@ -2,7 +2,7 @@ package org.bw.tl;
 
 import lombok.Data;
 import org.bw.tl.antlr.ast.Clazz;
-import org.bw.tl.antlr.ast.Module;
+import org.bw.tl.antlr.ast.QualifiedName;
 import org.bw.tl.primer.ModifierPrimer;
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,6 +47,7 @@ public @Data class RuntimeTest {
                     .collect(Collectors.toList());
 
             for (final Clazz clazz : moduleList) {
+                clazz.getStaticImports().add(QualifiedName.of("org.bw.tl.Builtin"));
                 final Compiler compiler = new Compiler(clazz);
                 final Map<String, byte[]> classMap = compiler.compile();
                 for (final Error error : compiler.getErrors()) {
