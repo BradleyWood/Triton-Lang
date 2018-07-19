@@ -13,7 +13,12 @@ import org.bw.tl.primer.Primer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,15 +35,37 @@ public class CompileUtilities {
     public static final List<Primer> PRIMERS = Arrays.asList(new ModifierPrimer());
 
     @Nullable
-    public static Map<String, byte[]> compile(@NotNull final String directory) throws IOException {
-        final List<String> files = Files.walk(Paths.get(directory)).filter(path -> path.toString().endsWith(FILE_EXTENSION))
-                .map(Path::toString).collect(Collectors.toList());
-
-        return compile(files);
+    public static Map<String, byte[]> compile(@NotNull final String directory, @NotNull final String... classpath)
+            throws IOException {
+        return compile(directory, Arrays.asList(classpath));
     }
 
     @Nullable
-    public static Map<String, byte[]> compile(@NotNull final List<String> files) throws IOException {
+    public static Map<String, byte[]> compile(@NotNull final String directory, @NotNull final List<String> classpath)
+            throws IOException {
+        final List<String> files = Files.walk(Paths.get(directory)).filter(path -> path.toString().endsWith(FILE_EXTENSION))
+                .map(Path::toString).collect(Collectors.toList());
+
+        return compile(files, classpath);
+    }
+
+    @Nullable
+    public static Map<String, byte[]> compile(@NotNull final List<String> files, @NotNull final String... classpath)
+            throws IOException {
+        return compile(files, Arrays.asList(classpath));
+    }
+
+    @Nullable
+    public static Map<String, byte[]> compile(@NotNull final List<String> files, @NotNull final List<String> classpath)
+            throws IOException {
+
+        for (final String path : classpath) {
+            if (!addToClasspath(path)) {
+                System.err.println("Failure reading: " + path);
+                return null;
+            }
+        }
+
         final List<Clazz> classes = new LinkedList<>();
 
         for (final String file : files) {
@@ -47,6 +74,7 @@ public class CompileUtilities {
                 return null;
 
             PRIMERS.forEach(p -> p.prime(cl));
+            classes.add(cl);
         }
 
         final Compiler compiler = new Compiler(classes);
@@ -79,4 +107,33 @@ public class CompileUtilities {
 
         return null;
     }
+
+    private static boolean addToClasspath(@NotNull final String s) throws IOException {
+        return addToClasspath(new File(s).toURI().toURL());
+    }
+
+    private static boolean addToClasspath(@NotNull final URL u) {
+        if (!(ClassLoader.getSystemClassLoader() instanceof URLClassLoader)) {
+            return false;
+        } else if (addUrlMethod == null) {
+            try {
+                addUrlMethod = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+                addUrlMethod.setAccessible(true);
+            } catch (NoSuchMethodException e) {
+                return false;
+            }
+        }
+        if (addUrlMethod == null) {
+            return false;
+        }
+
+        try {
+            addUrlMethod.invoke(ClassLoader.getSystemClassLoader(), u);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            return false;
+        }
+        return true;
+    }
+
+    private static Method addUrlMethod = null;
 }
