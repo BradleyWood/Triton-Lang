@@ -140,7 +140,12 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
             }
         }
 
-        return symbolResolver.resolveFunctionContext(call.getName(), parameterTypes);
+        final SymbolContext ctx = symbolResolver.resolveFunctionContext(call.getName(), parameterTypes);
+
+        if (ctx != null)
+            return ctx;
+
+        return symbolResolver.resolveCallFromStaticImports(call.getName(), parameterTypes);
     }
 
     @Nullable
@@ -300,6 +305,9 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         final String[] names = fqn.getNames();
 
         FieldContext ctx = symbolResolver.resolveField(Type.getType(clazz.getDescriptor()), names[0]);
+
+        if (ctx == null)
+            ctx = symbolResolver.resolveFieldFromStaticImports(names[0]);
 
         if (ctx == null)
             return null;

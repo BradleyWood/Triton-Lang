@@ -14,7 +14,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.bw.tl.util.TypeUtilities.*;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
@@ -352,6 +351,36 @@ class SymbolResolver {
             return null;
 
         return Type.getMethodType(retType, paramTypes);
+    }
+
+    public SymbolContext resolveCallFromStaticImports(@NotNull final String name, @NotNull final Type... parameterTypes) {
+        for (final QualifiedName staticImp : clazz.getStaticImports()) {
+            final Type type = resolveType(staticImp);
+
+            if (type != null) {
+                final SymbolContext ctx = resolveFunction(type, name, parameterTypes);
+
+                if (ctx != null && ctx.isStatic())
+                    return ctx;
+            }
+        }
+
+        return null;
+    }
+
+    public FieldContext resolveFieldFromStaticImports(@NotNull final String name) {
+        for (final QualifiedName staticImp : clazz.getStaticImports()) {
+            final Type type = resolveType(staticImp);
+
+            if (type != null) {
+                final FieldContext ctx = resolveField(type, name);
+
+                if (ctx != null && ctx.isStatic())
+                    return ctx;
+            }
+        }
+
+        return null;
     }
 
     @Nullable
