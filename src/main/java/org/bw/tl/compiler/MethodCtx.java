@@ -150,7 +150,7 @@ public @Data class MethodCtx {
      * @return True if the method is static
      */
     public boolean isStatic() {
-        return true;
+        return function.hasModifier(Modifier.STATIC);
     }
 
     /**
