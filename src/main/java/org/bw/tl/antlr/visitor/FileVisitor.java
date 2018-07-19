@@ -10,7 +10,7 @@ import org.bw.tl.antlr.ast.Function;
 import org.bw.tl.antlr.ast.QualifiedName;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.LinkedList;
 
 @RequiredArgsConstructor(staticName = "of")
 public class FileVisitor extends GrammarBaseVisitor<Clazz> {
@@ -45,6 +45,6 @@ public class FileVisitor extends GrammarBaseVisitor<Clazz> {
             }
         }
 
-        return new Clazz(packageName, imports, Collections.emptyList(), fields, functions, sourceFile);
+        return new Clazz(packageName, imports, new LinkedList<>(), fields, functions, sourceFile);
     }
 }
