@@ -7,19 +7,19 @@ import java.util.*;
 public @Data class Module {
 
     private final QualifiedName modulePackage;
-    private final List<File> files;
+    private final List<Clazz> clazzes;
 
     /**
      * Creates the representation of a module
      *
-     * @param files The files that make up the module
+     * @param clazzes The clazzes that make up the module
      * @return The module, if valid
      */
-    public static Module of(final List<File> files) {
-        if (files == null || files.isEmpty())
+    public static Module of(final List<Clazz> clazzes) {
+        if (clazzes == null || clazzes.isEmpty())
             return null;
 
-        final Iterator<File> it = files.iterator();
+        final Iterator<Clazz> it = clazzes.iterator();
         final QualifiedName packageName = it.next().getPackageName();
 
         while (it.hasNext()) {
@@ -27,11 +27,11 @@ public @Data class Module {
                 return null;
         }
 
-        return new Module(packageName, files);
+        return new Module(packageName, clazzes);
     }
 
-    public static Module of(final File... files) {
-        return of(Arrays.asList(files));
+    public static Module of(final Clazz... clazzes) {
+        return of(Arrays.asList(clazzes));
     }
 
     public String getModuleClassName() {
@@ -56,7 +56,7 @@ public @Data class Module {
      */
     public List<Field> getFields() {
         final List<Field> fields = new LinkedList<>();
-        files.forEach(file -> fields.addAll(file.getFields()));
+        clazzes.forEach(file -> fields.addAll(file.getFields()));
         return fields;
     }
 
@@ -68,7 +68,7 @@ public @Data class Module {
      */
     public List<Function> getFunctions() {
         final List<Function> fields = new LinkedList<>();
-        files.forEach(file -> fields.addAll(file.getFunctions()));
+        clazzes.forEach(file -> fields.addAll(file.getFunctions()));
         return fields;
     }
 }

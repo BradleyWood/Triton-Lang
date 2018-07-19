@@ -48,10 +48,8 @@ public class ModifierPrimer extends ASTVisitorBase implements Primer {
     }
 
     @Override
-    public void prime(final Module module) {
-        module.getFiles().forEach(file -> {
-            file.getFields().forEach(field -> field.accept(this));
-            file.getFunctions().forEach(fun -> fun.accept(this));
-        });
+    public void prime(final Clazz clazz) {
+        clazz.getFields().forEach(field -> field.accept(this));
+        clazz.getFunctions().forEach(fun -> fun.accept(this));
     }
 }

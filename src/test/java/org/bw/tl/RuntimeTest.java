@@ -1,6 +1,7 @@
 package org.bw.tl;
 
 import lombok.Data;
+import org.bw.tl.antlr.ast.Clazz;
 import org.bw.tl.antlr.ast.Module;
 import org.bw.tl.primer.ModifierPrimer;
 import org.junit.Assert;
@@ -38,15 +39,15 @@ public @Data class RuntimeTest {
         try {
             final ModifierPrimer mp = new ModifierPrimer();
 
-            final List<Module> moduleList = Files.walk(Paths.get("testData/rt_tests/"))
+            final List<Clazz> moduleList = Files.walk(Paths.get("testData/rt_tests/"))
                     .filter(p -> p.toString().endsWith(".tl"))
                     .map(Path::toString)
-                    .map(TestUtilities::getModuleFromFile)
+                    .map(TestUtilities::getClazzFromFile)
                     .peek(mp::prime)
                     .collect(Collectors.toList());
 
-            for (final Module module : moduleList) {
-                final Compiler compiler = new Compiler(module);
+            for (final Clazz clazz : moduleList) {
+                final Compiler compiler = new Compiler(clazz);
                 final Map<String, byte[]> classMap = compiler.compile();
                 for (final Error error : compiler.getErrors()) {
                     error.print();

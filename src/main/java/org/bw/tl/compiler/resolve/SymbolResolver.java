@@ -20,7 +20,8 @@ import static org.bw.tl.util.TypeUtilities.*;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 
 @AllArgsConstructor
-public @Data class SymbolResolver {
+public @Data
+class SymbolResolver {
 
     public static FieldContext ARRAY_LENGTH = new FieldContext("length", "java/lang/Object",
             Type.INT_TYPE, ACC_PUBLIC, false);
@@ -29,29 +30,23 @@ public @Data class SymbolResolver {
      * All classpath in the classpath
      */
     @NotNull
-    private final List<Module> classpath;
-
-    /**
-     * The local module that is attempting to make a resolution
-     */
-    @NotNull
-    private Module ctx;
+    private final List<Clazz> classpath;
 
     @NotNull
-    private File file;
+    private Clazz clazz;
 
     @Nullable
     public SymbolContext resolveFunction(@NotNull final Type owner, @NotNull final String name, @NotNull final Type... parameterTypes) {
-        for (final Module module : classpath) {
-            if (module.getModulePackage().getName().equals(owner.getClassName())) {
-                final Function fun = resolveFunction(module, name, parameterTypes);
+        for (final Clazz module : classpath) {
+            if (module.getPackageName().getName().equals(owner.getClassName())) {
+                final Function fun = resolveFunction(name, parameterTypes);
                 if (fun != null) {
                     final Type retType = getTypeFromName(fun.getType());
 
                     if (retType == null)
                         return null;
 
-                    final Type methodType = resolveFunctionType(module, fun);
+                    final Type methodType = resolveFunction(clazz, fun);
 
                     if (methodType == null)
                         return null;
@@ -140,15 +135,15 @@ public @Data class SymbolResolver {
 
         QualifiedName typeName = name;
 
-        for (final QualifiedName imp : file.getImports()) {
+        for (final QualifiedName imp : clazz.getImports()) {
             if (imp.endsWith(name.getNames()[0])) {
                 typeName = imp;
             }
         }
 
-        for (final Module module : classpath) {
-            if (module.getModulePackage().getName().equals(typeName.getName())) {
-                return Type.getType(module.getModulePackage().getDesc());
+        for (final Clazz module : classpath) {
+            if (module.getPackageName().getName().equals(typeName.getName())) {
+                return Type.getType(module.getPackageName().getDesc());
             }
         }
 
@@ -205,7 +200,7 @@ public @Data class SymbolResolver {
         if (owner.getDescriptor().startsWith("[") && name.equals("length"))
             return ARRAY_LENGTH;
 
-        for (final Module module : classpath) {
+        for (final Clazz module : classpath) {
             if (Type.getType(module.getDescriptor()).equals(owner)) {
                 final Field field = resolveField(module, name);
 
@@ -243,18 +238,18 @@ public @Data class SymbolResolver {
     }
 
     @Nullable
-    public SymbolContext resolveFunctionContext(@NotNull final Module module, @NotNull final String name, @NotNull final Type... parameterTypes) {
-        final Function function = resolveFunction(module, name, parameterTypes);
+    public SymbolContext resolveFunctionContext(@NotNull final String name, @NotNull final Type... parameterTypes) {
+        final Function function = resolveFunction(name, parameterTypes);
 
         if (function == null)
             return null;
 
-        final Type type = resolveFunctionType(module, function);
+        final Type type = resolveFunction(clazz, function);
 
         if (type == null)
             return null;
 
-        return new SymbolContext(function.getName(), module.getInternalName(), type, function.getAccessModifiers());
+        return new SymbolContext(function.getName(), clazz.getInternalName(), type, function.getAccessModifiers());
     }
 
     public int selectFun(@NotNull final List<Type[]> functionArgList, @NotNull final Type... parameterTypes) {
@@ -291,24 +286,23 @@ public @Data class SymbolResolver {
     }
 
     @Nullable
-    public Function resolveFunction(@NotNull final Module module, @NotNull final String name, @NotNull final Type... parameterTypes) {
+    public Function resolveFunction(@NotNull final String name, @NotNull final Type... parameterTypes) {
         final List<Type[]> functionTypeList = new LinkedList<>();
         final List<Function> functionList = new LinkedList<>();
 
-        for (final File file : module.getFiles()) {
-            for (final Function function : file.getFunctions()) {
-                final TypeName[] types = function.getParameterTypes();
+        for (final Function function : clazz.getFunctions()) {
+            final TypeName[] types = function.getParameterTypes();
 
-                if (!function.getName().equals(name) || types.length != parameterTypes.length)
-                    continue;
+            if (!function.getName().equals(name) || types.length != parameterTypes.length)
+                continue;
 
-                final Type type = resolveFunction(file, function);
+            final Type type = resolveFunction(clazz, function);
 
-                if (type != null) {
-                    functionTypeList.add(type.getArgumentTypes());
-                    functionList.add(function);
-                }
+            if (type != null) {
+                functionTypeList.add(type.getArgumentTypes());
+                functionList.add(function);
             }
+
         }
 
         int idx = selectFun(functionTypeList, parameterTypes);
@@ -320,15 +314,8 @@ public @Data class SymbolResolver {
     }
 
     @Nullable
-    public Type resolveFunctionType(@NotNull final Module module, @NotNull final Function function) {
-        final Optional<File> file = module.getFiles().stream().filter(f -> f.getFunctions().contains(function)).findFirst();
-
-        return file.map(f -> resolveFunction(f, function)).orElse(null);
-    }
-
-    @Nullable
-    public Type resolveType(@NotNull final File file, final TypeName name) {
-        final QualifiedName imp = getNameFromImports(file.getImports(), name);
+    public Type resolveType(@NotNull final Clazz clazz, final TypeName name) {
+        final QualifiedName imp = getNameFromImports(clazz.getImports(), name);
 
         if (imp == null)
             return null;
@@ -350,13 +337,13 @@ public @Data class SymbolResolver {
     }
 
     @Nullable
-    public Type resolveFunction(@NotNull final File file, @NotNull final Function function) {
+    public Type resolveFunction(@NotNull final Clazz clazz, @NotNull final Function function) {
         final TypeName[] parameterTypes = function.getParameterTypes();
-        final Type retType = resolveType(file, function.getType());
+        final Type retType = resolveType(clazz, function.getType());
         final Type[] paramTypes = new Type[parameterTypes.length];
 
         for (int i = 0; i < parameterTypes.length; i++) {
-            paramTypes[i] = resolveType(file, parameterTypes[i]);
+            paramTypes[i] = resolveType(clazz, parameterTypes[i]);
             if (paramTypes[i] == null)
                 return null;
         }
@@ -368,36 +355,32 @@ public @Data class SymbolResolver {
     }
 
     @Nullable
-    public Type resolveFunctionType(@NotNull final Module module, @NotNull final String name, @NotNull final Type... parameterTypes) {
-        final Function fun = resolveFunction(module, name, parameterTypes);
+    public Type resolveFunctionType(@NotNull final String name, @NotNull final Type... parameterTypes) {
+        final Function fun = resolveFunction(name, parameterTypes);
 
         if (fun == null)
             return null;
 
-        return resolveFunctionType(module, fun);
+        return resolveFunction(clazz, fun);
     }
 
     @Nullable
-    public Field resolveField(@NotNull final Module module, @NotNull final String name) {
-        for (final File file : module.getFiles()) {
-            for (final Field field : file.getFields()) {
-                if (field.getName().equals(name)) {
-                    return field;
-                }
+    public Field resolveField(@NotNull final Clazz clazz, @NotNull final String name) {
+        for (final Field field : clazz.getFields()) {
+            if (field.getName().equals(name)) {
+                return field;
             }
         }
         return null;
     }
 
     @Nullable
-    public Type resolveFieldType(@NotNull final Module module, @NotNull final String name) {
-        final Field field = resolveField(module, name);
+    public Type resolveFieldType(@NotNull final Clazz clazz, @NotNull final String name) {
+        final Field field = resolveField(clazz, name);
 
         if (field == null)
             return null;
 
-        final Optional<File> file = module.getFiles().stream().filter(f -> f.getFields().contains(field)).findFirst();
-
-        return file.map(f -> resolveType(f, field.getType())).orElse(null);
+        return resolveType(clazz, field.getType());
     }
 }

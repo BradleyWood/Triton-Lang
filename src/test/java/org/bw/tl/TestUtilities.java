@@ -6,7 +6,7 @@ import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.bw.tl.antlr.GrammarLexer;
 import org.bw.tl.antlr.GrammarParser;
 import org.bw.tl.antlr.ast.Expression;
-import org.bw.tl.antlr.ast.File;
+import org.bw.tl.antlr.ast.Clazz;
 import org.bw.tl.antlr.ast.Module;
 import org.bw.tl.antlr.visitor.ExpressionVisitor;
 import org.bw.tl.antlr.visitor.FileVisitor;
@@ -21,15 +21,15 @@ import java.util.Collections;
 public class TestUtilities {
 
     public static SymbolResolver getResolver(final String txt) {
-        final Module module = getModule(txt);
+        final Clazz clazz = getClazz(txt);
 
-        if (module == null)
+        if (clazz == null)
             return null;
 
-        return new SymbolResolver(Collections.singletonList(module), module, module.getFiles().get(0));
+        return new SymbolResolver(Collections.singletonList(clazz), clazz);
     }
 
-    public static Module getModule(final String txt) {
+    public static Clazz getClazz(final String txt, final String srcFile) {
         final GrammarLexer lexer = new GrammarLexer(CharStreams.fromString(txt));
         final CommonTokenStream ts = new CommonTokenStream(lexer);
         final GrammarParser p = new GrammarParser(ts);
@@ -39,15 +39,18 @@ public class TestUtilities {
         GrammarParser.FileContext fc = p.file();
 
         if (p.getNumberOfSyntaxErrors() == 0) {
-            final File file = fc.accept(FileVisitor.of("<test>"));
-            return Module.of(file);
+            return fc.accept(FileVisitor.of(srcFile));
         }
         return null;
     }
 
-    public static Module getModuleFromFile(final String file) {
+    public static Clazz getClazz(final String txt) {
+        return getClazz(txt, "<test>");
+    }
+
+    public static Clazz getClazzFromFile(final String file) {
         try {
-            return getModule(new String(Files.readAllBytes(Paths.get(file))));
+            return getClazz(new String(Files.readAllBytes(Paths.get(file))), file);
         } catch (IOException e) {
         }
         return null;

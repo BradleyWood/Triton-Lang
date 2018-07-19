@@ -113,9 +113,6 @@ public class TypeUtilities {
     }
 
     public static QualifiedName getNameFromImports(@NotNull final List<QualifiedName> imports, @NotNull final QualifiedName name) {
-        if (name.length() == 0)
-            return null;
-
         for (final QualifiedName imp : imports) {
 
             if (name.length() == 1 && imp.endsWith(name.getNames()[0]) || Arrays.equals(imp.getNames(), name.getNames())) {

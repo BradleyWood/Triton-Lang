@@ -22,22 +22,22 @@ public @Data class Compiler {
 
     private final Verifiable<Function> functionVerifiable = new FunReturnVerifier();
     private final List<Error> errors = new LinkedList<>();
-    private final List<Module> modules;
+    private final List<Clazz> classes;
 
-    public Compiler(final List<Module> modules) {
-        this.modules = modules;
+    public Compiler(final List<Clazz> classes) {
+        this.classes = classes;
     }
 
-    public Compiler(final Module... modules) {
-        this(Arrays.asList(modules));
+    public Compiler(final Clazz... classes) {
+        this(Arrays.asList(classes));
     }
 
     public Map<String, byte[]> compile() {
         final HashMap<String, byte[]> classMap = new HashMap<>();
 
-        for (final Module module : modules) {
+        for (final Clazz clazz : classes) {
             try {
-                classMap.put(module.getModuleClassName(), build(module));
+                classMap.put(clazz.getModuleClassName(), build(clazz));
             } catch (final Throwable throwable) {
                 throwable.printStackTrace();
                 return null;
@@ -50,71 +50,71 @@ public @Data class Compiler {
         return classMap;
     }
 
-    private byte[] build(final Module module) {
+    private byte[] build(final Clazz clazz) {
         final ClassWriter cw = new ClassWriter(COMPUTE_FRAMES + COMPUTE_MAXS);
 
-        cw.visit(V1_8, ACC_PUBLIC + ACC_SUPER, module.getInternalName(), null,
+        cw.visit(V1_8, ACC_PUBLIC + ACC_SUPER, clazz.getInternalName(), null,
                 "java/lang/Object", null);
 
-        buildClassInitializer(cw, module);
+        buildClassInitializer(cw, clazz);
 
-        for (final File file : module.getFiles()) {
-            final SymbolResolver symbolResolver = new SymbolResolver(modules, module, file);
 
-            for (final Field field : file.getFields()) {
-                if (field.getType() == null) {
-                    errors.add(ErrorType.GENERAL_ERROR.newError("Implicit typing is only supported for local variables", field));
-                    continue;
-                }
-                final Type type = symbolResolver.resolveType(file, field.getType());
-                if (type == null) {
-                    errors.add(ErrorType.GENERAL_ERROR.newError("Cannot resolve type: " + field.getType(), field));
-                    continue;
-                }
-                cw.visitField(field.getAccessModifiers(), field.getName(), type.getDescriptor(), null, null);
+        final SymbolResolver symbolResolver = new SymbolResolver(classes, clazz);
+
+        for (final Field field : clazz.getFields()) {
+            if (field.getType() == null) {
+                errors.add(ErrorType.GENERAL_ERROR.newError("Implicit typing is only supported for local variables", field));
+                continue;
+            }
+            final Type type = symbolResolver.resolveType(clazz, field.getType());
+            if (type == null) {
+                errors.add(ErrorType.GENERAL_ERROR.newError("Cannot resolve type: " + field.getType(), field));
+                continue;
+            }
+            cw.visitField(field.getAccessModifiers(), field.getName(), type.getDescriptor(), null, null);
+        }
+
+        for (final Function function : clazz.getFunctions()) {
+            final String methodDescriptor = getFunctionDescriptor(symbolResolver, function.getType(),
+                    function.getParameterTypes());
+
+            if (!functionVerifiable.isValid(function)) {
+                errors.add(ErrorType.GENERAL_ERROR.newError("Missing return statement", function));
+                continue;
             }
 
-            for (final Function function : file.getFunctions()) {
-                final String methodDescriptor = getFunctionDescriptor(symbolResolver, function.getType(),
-                        function.getParameterTypes());
-
-                if (!functionVerifiable.isValid(function)) {
-                    errors.add(ErrorType.GENERAL_ERROR.newError("Missing return statement", function));
-                    continue;
-                }
-
-                if (methodDescriptor == null) {
-                    errors.add(ErrorType.GENERAL_ERROR.newError("Invalid method signature", function));
-                    continue;
-                }
-
-                final MethodVisitor mv = cw.visitMethod(function.getAccessModifiers(), function.getName(),
-                        methodDescriptor, null, null);
-
-                mv.visitCode();
-
-                final MethodCtx ctx = new MethodCtx(modules, function, module, file);
-
-                function.accept(MethodImpl.of(mv, ctx));
-
-                errors.addAll(ctx.getErrors());
-
-                mv.visitMaxs(0, 0);
-                mv.visitEnd();
+            if (methodDescriptor == null) {
+                errors.add(ErrorType.GENERAL_ERROR.newError("Invalid method signature", function));
+                continue;
             }
+
+            final MethodVisitor mv = cw.visitMethod(function.getAccessModifiers(), function.getName(),
+                    methodDescriptor, null, null);
+
+            mv.visitCode();
+
+            final MethodCtx ctx = new MethodCtx(classes, function, clazz);
+
+            function.accept(MethodImpl.of(mv, ctx));
+
+            errors.addAll(ctx.getErrors());
+
+            mv.visitMaxs(0, 0);
+            mv.visitEnd();
+
         }
 
         return cw.toByteArray();
     }
 
-    private void buildClassInitializer(final ClassWriter cw, final Module module) {
+    private void buildClassInitializer(final ClassWriter cw, final Clazz clazz) {
 
         final MethodVisitor mv = cw.visitMethod(ACC_PUBLIC + ACC_STATIC, "<clinit>", "()V",
                 null, null);
 
         mv.visitCode();
 
-        final List<Node> statements = module.getFields().stream().filter(stmt -> stmt.getType() != null)
+        final List<Node> statements = clazz.getFields().stream().filter(stmt -> stmt.getType() != null)
                 .map(f -> new Assignment(null, f.getName(), f.getInitialValue()))
                 .collect(Collectors.toList());
 
@@ -122,7 +122,7 @@ public @Data class Compiler {
         final Function init = new Function(new TypeName[0], new String[0], "<clinit>", block,
                 new TypeName("void"));
 
-        final MethodCtx ctx = new MethodCtx(modules, init, module, module.getFiles().get(0));
+        final MethodCtx ctx = new MethodCtx(classes, init, clazz);
 
         init.accept(MethodImpl.of(mv, ctx));
 

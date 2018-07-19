@@ -4,21 +4,22 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.bw.tl.antlr.GrammarBaseVisitor;
 import org.bw.tl.antlr.GrammarParser;
+import org.bw.tl.antlr.ast.Clazz;
 import org.bw.tl.antlr.ast.Field;
-import org.bw.tl.antlr.ast.File;
 import org.bw.tl.antlr.ast.Function;
 import org.bw.tl.antlr.ast.QualifiedName;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 @RequiredArgsConstructor(staticName = "of")
-public class FileVisitor extends GrammarBaseVisitor<File> {
+public class FileVisitor extends GrammarBaseVisitor<Clazz> {
 
     private final @Getter String sourceFile;
 
     @Override
-    public File visitFile(final GrammarParser.FileContext ctx) {
-        QualifiedName packageName = new QualifiedName(new String[]{"default"});
+    public Clazz visitFile(final GrammarParser.FileContext ctx) {
+        QualifiedName packageName = new QualifiedName("default");
         final ArrayList<QualifiedName> imports = new ArrayList<>();
         final ArrayList<Field> fields = new ArrayList<>();
         final ArrayList<Function> functions = new ArrayList<>();
@@ -44,6 +45,6 @@ public class FileVisitor extends GrammarBaseVisitor<File> {
             }
         }
 
-        return new File(packageName, imports, fields, functions, sourceFile);
+        return new Clazz(packageName, imports, Collections.emptyList(), fields, functions, sourceFile);
     }
 }

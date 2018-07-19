@@ -15,8 +15,7 @@ import static org.bw.tl.util.TypeUtilities.isMethodType;
 public @Data class ExpressionResolverImpl implements ExpressionResolver {
 
     private final SymbolResolver symbolResolver;
-    private final Module module;
-    private final File file;
+    private final Clazz clazz;
     private final Scope scope;
 
     @Nullable
@@ -141,7 +140,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
             }
         }
 
-        return symbolResolver.resolveFunctionContext(module, call.getName(), parameterTypes);
+        return symbolResolver.resolveFunctionContext(call.getName(), parameterTypes);
     }
 
     @Nullable
@@ -234,8 +233,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         final List<FieldContext> ctxList = new LinkedList<>();
         final String[] names = name.getNames();
 
-        outer:
-        for (final QualifiedName imp : file.getImports()) {
+        for (final QualifiedName imp : clazz.getImports()) {
             int idx = imp.length();
 
             if (name.equals(imp)) // name is fqn not a field
@@ -276,7 +274,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         if (scope != null) {
             Scope.Var var = scope.findVar(fqn.getNames()[0]);
             if (var != null) {
-                ctxList.add(new FieldContext(var.getName(), module.getInternalName(), var.getType(), var.getModifiers(), true));
+                ctxList.add(new FieldContext(var.getName(), clazz.getInternalName(), var.getType(), var.getModifiers(), true));
 
                 if (fqn.length() > 1) {
                     final String[] names = fqn.subname(1, fqn.length()).getNames();
@@ -301,7 +299,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         final List<FieldContext> ctxList = new LinkedList<>();
         final String[] names = fqn.getNames();
 
-        FieldContext ctx = symbolResolver.resolveField(Type.getType(module.getDescriptor()), names[0]);
+        FieldContext ctx = symbolResolver.resolveField(Type.getType(clazz.getDescriptor()), names[0]);
 
         if (ctx == null)
             return null;
@@ -341,10 +339,10 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
             final Scope.Var var = scope.findVar(name);
 
             if (var != null) {
-                return new FieldContext(var.getName(), module.getInternalName(), var.getType(), var.getModifiers(), true);
+                return new FieldContext(var.getName(), clazz.getInternalName(), var.getType(), var.getModifiers(), true);
             }
         }
 
-        return symbolResolver.resolveField(Type.getType(module.getDescriptor()), name);
+        return symbolResolver.resolveField(Type.getType(clazz.getDescriptor()), name);
     }
 }
