@@ -117,6 +117,8 @@ class SymbolResolver {
                                 return -1;
                             }
                         }
+                    } else if (isAssignableWithImplicitCast(parameterTypes[i], requiredTypes[i])) {
+                        rating += 2;
                     } else {
                         return -1;
                     }
