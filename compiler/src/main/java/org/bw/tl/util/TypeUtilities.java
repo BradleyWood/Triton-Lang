@@ -1,6 +1,8 @@
 package org.bw.tl.util;
 
+import org.bw.tl.antlr.ast.Function;
 import org.bw.tl.antlr.ast.QualifiedName;
+import org.bw.tl.antlr.ast.TypeName;
 import org.bw.tl.compiler.resolve.SymbolResolver;
 import org.bw.tl.compiler.types.AnyTypeHandler;
 import org.bw.tl.compiler.types.Primitive;
@@ -121,24 +123,6 @@ public class TypeUtilities {
         }
 
         return name;
-    }
-
-    @Nullable
-    public static String getFunctionDescriptor(@NotNull final SymbolResolver resolver, @NotNull final QualifiedName returnType,
-                                               @NotNull final QualifiedName... parameterTypeNames) {
-        final Type retType = resolver.resolveType(returnType);
-        final Type[] parameterTypes = new Type[parameterTypeNames.length];
-
-        for (int i = 0; i < parameterTypes.length; i++) {
-            parameterTypes[i] = resolver.resolveType(parameterTypeNames[i]);
-            if (parameterTypes[i] == null)
-                return null;
-        }
-
-        if (retType == null)
-            return null;
-
-        return Type.getMethodDescriptor(retType, parameterTypes);
     }
 
     public static int getDim(@NotNull final Type type) {

@@ -14,7 +14,6 @@ import org.objectweb.asm.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.bw.tl.util.TypeUtilities.getFunctionDescriptor;
 import static org.objectweb.asm.ClassWriter.*;
 import static org.objectweb.asm.Opcodes.*;
 
@@ -75,8 +74,7 @@ public @Data class Compiler {
         }
 
         for (final Function function : clazz.getFunctions()) {
-            final String methodDescriptor = getFunctionDescriptor(symbolResolver, function.getType(),
-                    function.getParameterTypes());
+            final Type methodDescriptor = symbolResolver.resolveFunction(clazz, function);
 
             if (!functionVerifiable.isValid(function)) {
                 errors.add(ErrorType.GENERAL_ERROR.newError("Missing return statement", function));
@@ -89,7 +87,7 @@ public @Data class Compiler {
             }
 
             final MethodVisitor mv = cw.visitMethod(function.getAccessModifiers(), function.getName(),
-                    methodDescriptor, null, null);
+                    methodDescriptor.getDescriptor(), null, null);
 
             mv.visitCode();
 
