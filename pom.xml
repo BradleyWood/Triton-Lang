@@ -120,6 +120,7 @@
     <modules>
         <module>compiler</module>
         <module>maven-plugin</module>
+        <module>examples</module>
     </modules>
 
 </project>
