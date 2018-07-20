@@ -6,6 +6,7 @@ import org.bw.tl.Error;
 import org.bw.tl.antlr.GrammarLexer;
 import org.bw.tl.antlr.GrammarParser;
 import org.bw.tl.antlr.ast.Clazz;
+import org.bw.tl.antlr.ast.QualifiedName;
 import org.bw.tl.antlr.visitor.FileVisitor;
 import org.bw.tl.compiler.Compiler;
 import org.bw.tl.primer.ModifierPrimer;
@@ -33,6 +34,34 @@ public class CompileUtilities {
     public static final String FILE_EXTENSION = ".tl";
 
     public static final List<Primer> PRIMERS = Arrays.asList(new ModifierPrimer());
+
+    public static final List<String> DEFAULT_IMPORTS = Arrays.asList(
+            "java.lang.System",
+            "java.lang.Throwable",
+            "java.lang.Thread",
+            "java.lang.Object",
+            "java.lang.Class",
+            "java.lang.String",
+            "java.lang.Math",
+            "java.lang.StrictMath",
+            "java.lang.StackTraceElement",
+            "java.lang.SecurityManager",
+            "java.lang.Runtime",
+            "java.lang.Iterable",
+            "java.lang.Comparable",
+            "java.lang.CharSequence",
+            "java.lang.Cloneable",
+            "java.lang.Number",
+            "java.lang.Integer",
+            "java.lang.Long",
+            "java.lang.Float",
+            "java.lang.Double",
+            "java.lang.Byte",
+            "java.lang.Short",
+            "java.lang.Boolean",
+            "java.lang.Character",
+            "java.lang.Void"
+    );
 
     @Nullable
     public static Map<String, byte[]> compile(@NotNull final String directory, @NotNull final String... classpath)
@@ -73,6 +102,7 @@ public class CompileUtilities {
             if (cl == null)
                 return null;
 
+            DEFAULT_IMPORTS.forEach(imp -> cl.getImports().add(QualifiedName.of(imp)));
             PRIMERS.forEach(p -> p.prime(cl));
             classes.add(cl);
         }
