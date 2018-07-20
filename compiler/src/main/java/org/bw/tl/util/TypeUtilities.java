@@ -151,4 +151,13 @@ public class TypeUtilities {
     public static boolean isMethodType(final Type type) {
         return type.getDescriptor().contains("(");
     }
+
+    public static boolean isInterface(final String type) {
+        try {
+            return Class.forName(type.replace("/", ".")).isInterface();
+        } catch (final ClassNotFoundException e) {
+        }
+
+        return false;
+    }
 }

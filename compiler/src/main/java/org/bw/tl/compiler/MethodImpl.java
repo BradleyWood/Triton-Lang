@@ -499,9 +499,13 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
                 }
             }
 
+            boolean itf = isInterface(funCtx.getOwner());
             int opcode = funCtx.isStatic() ? INVOKESTATIC : INVOKEVIRTUAL;
 
-            mv.visitMethodInsn(opcode, funCtx.getOwner(), funCtx.getName(), funCtx.getTypeDescriptor().getDescriptor(), false);
+            if (itf)
+                opcode = INVOKEINTERFACE;
+
+            mv.visitMethodInsn(opcode, funCtx.getOwner(), funCtx.getName(), funCtx.getTypeDescriptor().getDescriptor(), itf);
 
             if (call.shouldPop() && !funCtx.getTypeDescriptor().getReturnType().equals(Type.VOID_TYPE)) {
                 final Type retType = funCtx.getTypeDescriptor().getReturnType();
