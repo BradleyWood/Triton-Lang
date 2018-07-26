@@ -69,7 +69,7 @@ varDef
     ;
 
 functionCall
-    : IDENTIFIER NL* LPAREN (expression (NL* COMMA NL* expression)*)? NL* RPAREN
+    : IDENTIFIER NL* LPAREN (NL* expression (NL* COMMA NL* expression)*)? NL* RPAREN
     ;
 
 functionDef
