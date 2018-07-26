@@ -540,6 +540,11 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
             return;
         }
 
+        if (fieldCtx.isFinal() && !ctx.isInitializer()) {
+            ctx.reportError("Cannot assign value to final field", assignment);
+            return;
+        }
+
         if (precedingExpr != null && !fieldCtx.isStatic())
             precedingExpr.accept(this);
 
