@@ -6,6 +6,7 @@ import org.bw.tl.antlr.GrammarBaseVisitor;
 import org.bw.tl.antlr.GrammarParser;
 import org.bw.tl.antlr.ast.Expression;
 import org.bw.tl.antlr.ast.Field;
+import org.bw.tl.antlr.ast.Modifier;
 import org.bw.tl.antlr.ast.TypeName;
 
 @AllArgsConstructor(staticName = "of")
@@ -23,6 +24,9 @@ public class FieldVisitor extends GrammarBaseVisitor<Field> {
             initialValue = ctx.expression().accept(ExpressionVisitor.of(sourceFile));
 
         final Field field = new Field(name, type, initialValue);
+
+        if (ctx.VAL() != null)
+            field.addModifiers(Modifier.FINAL);
 
         field.setConstant(ctx.VAL() != null);
 
