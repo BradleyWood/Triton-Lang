@@ -9,6 +9,7 @@ public @Data class ForEachLoop extends Node {
 
     private final @NotNull Field field;
     private final @NotNull Expression iterableExpression;
+    private final Node body;
 
     @Override
     public void accept(final ASTVisitor visitor) {
