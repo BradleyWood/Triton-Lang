@@ -367,6 +367,11 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
     }
 
     @Override
+    public void visitFor(final ForLoop forLoop) {
+
+    }
+
+    @Override
     public void visitNew(final New newExpr) {
         final List<Expression> parameters = newExpr.getParameters();
         final boolean isArray = newExpr.isArray();

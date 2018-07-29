@@ -28,6 +28,8 @@ public interface ASTVisitor {
 
     void visitFor(final ForLoop forLoop);
 
+    void visitForEach(final ForEachLoop forEachLoop);
+
     void visitTypeCast(final TypeCast cast);
 
     void visitAssignment(final Assignment assignment);

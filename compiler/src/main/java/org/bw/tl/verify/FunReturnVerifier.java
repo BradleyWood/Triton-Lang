@@ -82,6 +82,10 @@ public class FunReturnVerifier implements Verifiable<Function> {
         }
 
         @Override
+        public void visitForEach(ForEachLoop forEachLoop) {
+        }
+
+        @Override
         public void visitTypeCast(TypeCast cast) {
         }
 

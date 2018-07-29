@@ -68,6 +68,11 @@ public class ASTVisitorBase implements ASTVisitor {
     }
 
     @Override
+    public void visitForEach(final ForEachLoop forEachLoop) {
+        throw new UnsupportedOperationException("Foreach not implemented");
+    }
+
+    @Override
     public void visitTypeCast(TypeCast cast) {
         throw new UnsupportedOperationException("Type cast not implemented");
     }
