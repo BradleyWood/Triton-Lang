@@ -9,10 +9,8 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public @Data class ForLoop extends Node {
 
-    private final Node init;
-    private final Expression condition;
+    private final ForControl forControl;
     private final Node body;
-    private final List<Expression> update;
 
     @Override
     public void accept(final ASTVisitor visitor) {
