@@ -1,6 +1,7 @@
 package org.bw.tl.compiler.resolve;
 
 import org.bw.tl.antlr.ast.*;
+import org.bw.tl.compiler.Scope;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -11,9 +12,7 @@ import org.objectweb.asm.Type;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static org.bw.tl.TestUtilities.getResolver;
 import static org.bw.tl.TestUtilities.parseExpression;
@@ -29,7 +28,7 @@ public class ExpressionResolutionTest {
         @Test
         public void testResolveBinaryOpByte() {
             final ExpressionResolverImpl expressionResolver = new ExpressionResolverImpl(null,
-                    null, null);
+                    Collections.emptyList(), new Scope());
             final BinaryOp bop = new BinaryOp(new Literal<>(100), "*", new Literal<>(5));
             final Type type = bop.resolveType(expressionResolver);
 
@@ -42,7 +41,7 @@ public class ExpressionResolutionTest {
         @Test
         public void testResolveBinaryOpInt() {
             final ExpressionResolverImpl expressionResolver = new ExpressionResolverImpl(null,
-                    null, null);
+                    Collections.emptyList(), new Scope());
             final BinaryOp bop = new BinaryOp(new Literal<>(100000), "*", new Literal<>(5));
             final Type type = bop.resolveType(expressionResolver);
 
@@ -53,13 +52,13 @@ public class ExpressionResolutionTest {
 
         @Test
         public void resolveExpression() {
-            final SymbolResolver resolver = getResolver("package mod;" +
+            final ExpressionResolverImpl resolver = getResolver("package mod;" +
                     "float abc = 100\n" +
                     "java.lang.String str = \"a string lol\"\n" +
                     "fun add(int a, float b): long {}");
 
-            final ExpressionResolverImpl expressionResolver = new ExpressionResolverImpl(resolver,
-                    resolver.getClazz(), null);
+            final ExpressionResolverImpl expressionResolver = new ExpressionResolverImpl(resolver.getClazz(),
+                    Collections.singletonList(resolver.getClazz()), new Scope());
 
             // expr = abc * add(60000, abc)
             // F    = F   * L(INT, FLOAT)
@@ -90,7 +89,8 @@ public class ExpressionResolutionTest {
 
         @Test
         public void resolveTest() {
-            final ExpressionResolverImpl resolver = new ExpressionResolverImpl(null, null, null);
+            final ExpressionResolverImpl resolver = new ExpressionResolverImpl(null, Collections.emptyList(),
+                    new Scope());
 
             final Expression expression = parseExpression(expr);
             final Type resolvedType = expression.resolveType(resolver);

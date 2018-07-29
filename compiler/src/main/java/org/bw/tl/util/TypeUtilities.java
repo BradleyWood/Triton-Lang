@@ -1,9 +1,6 @@
 package org.bw.tl.util;
 
-import org.bw.tl.antlr.ast.Function;
 import org.bw.tl.antlr.ast.QualifiedName;
-import org.bw.tl.antlr.ast.TypeName;
-import org.bw.tl.compiler.resolve.SymbolResolver;
 import org.bw.tl.compiler.types.AnyTypeHandler;
 import org.bw.tl.compiler.types.Primitive;
 import org.bw.tl.compiler.types.TypeHandler;

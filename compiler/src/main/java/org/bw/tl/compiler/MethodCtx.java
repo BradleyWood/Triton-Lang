@@ -6,7 +6,6 @@ import org.bw.tl.ErrorType;
 import org.bw.tl.antlr.ast.*;
 import org.bw.tl.compiler.resolve.ExpressionResolver;
 import org.bw.tl.compiler.resolve.ExpressionResolverImpl;
-import org.bw.tl.compiler.resolve.SymbolResolver;
 import org.objectweb.asm.Type;
 
 import java.util.LinkedList;
@@ -17,7 +16,6 @@ public @Data class MethodCtx {
     private final List<Error> errors = new LinkedList<>();
     private final Scope scope = new Scope();
     private ExpressionResolver resolver;
-    private SymbolResolver symbolResolver;
     private final List<Clazz> classPath;
     private final Function function;
     private final Clazz clazz;
@@ -32,23 +30,9 @@ public @Data class MethodCtx {
      */
     public ExpressionResolver getResolver() {
         if (resolver == null) {
-            resolver = new ExpressionResolverImpl(getSymbolResolver(), clazz, scope);
+            resolver = new ExpressionResolverImpl(clazz, classPath, scope);
         }
         return resolver;
-    }
-
-    /**
-     * Returns the symbol resolver for clazz that defined this method.
-     * The resolver is capable of resolving any type that has been imported
-     * in the class that defined this method or it is fully qualified
-     *
-     * @return The symbol resolver for this class
-     */
-    public SymbolResolver getSymbolResolver() {
-        if (symbolResolver == null) {
-            symbolResolver = new SymbolResolver(classPath, clazz);
-        }
-        return symbolResolver;
     }
 
     /**
@@ -69,7 +53,7 @@ public @Data class MethodCtx {
      * @return The type descriptor if the type is found, otherwise null
      */
     public Type resolveType(final QualifiedName name) {
-        return getSymbolResolver().resolveType(name);
+        return getResolver().resolveType(name);
     }
 
     /**

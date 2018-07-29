@@ -3,10 +3,7 @@ package org.bw.tl.compiler;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.bw.tl.antlr.ast.*;
-import org.bw.tl.compiler.resolve.FieldContext;
-import org.bw.tl.compiler.resolve.Operator;
-import org.bw.tl.compiler.resolve.SymbolContext;
-import org.bw.tl.compiler.resolve.SymbolResolver;
+import org.bw.tl.compiler.resolve.*;
 import org.bw.tl.compiler.types.AnyTypeHandler;
 import org.bw.tl.compiler.types.TypeHandler;
 import org.bw.tl.util.TypeUtilities;
@@ -257,7 +254,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
         final Type type = fieldCtx.getTypeDescriptor();
         final TypeHandler handler = TypeUtilities.getTypeHandler(type);
 
-        if (fieldCtx == SymbolResolver.ARRAY_LENGTH) {
+        if (fieldCtx == ExpressionResolverImpl.ARRAY_LENGTH) {
             mv.visitInsn(ARRAYLENGTH);
         } else if (fieldCtx.isLocal()) {
             handler.load(mv, ctx.getScope().findVar(fieldCtx.getName()).getIndex());
@@ -375,7 +372,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
         final boolean isArray = newExpr.isArray();
 
         if (isArray) {
-            final Type componentType = ctx.getSymbolResolver().resolveType(newExpr.getType());
+            final Type componentType = ctx.getResolver().resolveType(newExpr.getType());
 
             if (componentType == null) {
                 ctx.reportError("Cannot resolve type: " + newExpr.getType(), newExpr);
@@ -569,7 +566,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
             }
         }
 
-        if (fieldCtx == SymbolResolver.ARRAY_LENGTH) {
+        if (fieldCtx == ExpressionResolverImpl.ARRAY_LENGTH) {
             ctx.reportError("Cannot modify array length", assignment);
         } else if (fieldCtx.isLocal()) {
             to.store(mv, ctx.getScope().findVar(fieldCtx.getName()).getIndex());

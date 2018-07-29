@@ -9,7 +9,9 @@ import org.bw.tl.antlr.ast.Expression;
 import org.bw.tl.antlr.ast.Clazz;
 import org.bw.tl.antlr.visitor.ExpressionVisitor;
 import org.bw.tl.antlr.visitor.FileVisitor;
-import org.bw.tl.compiler.resolve.SymbolResolver;
+import org.bw.tl.compiler.Scope;
+
+import org.bw.tl.compiler.resolve.ExpressionResolverImpl;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -19,13 +21,13 @@ import java.util.Collections;
 
 public class TestUtilities {
 
-    public static SymbolResolver getResolver(final String txt) {
+    public static ExpressionResolverImpl getResolver(final String txt) {
         final Clazz clazz = getClazz(txt);
 
         if (clazz == null)
             return null;
 
-        return new SymbolResolver(Collections.singletonList(clazz), clazz);
+        return new ExpressionResolverImpl(clazz, Collections.singletonList(clazz), new Scope());
     }
 
     public static Clazz getClazz(final String txt, final String srcFile) {

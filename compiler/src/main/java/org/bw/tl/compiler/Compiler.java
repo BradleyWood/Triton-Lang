@@ -4,7 +4,8 @@ import lombok.Data;
 import org.bw.tl.Error;
 import org.bw.tl.ErrorType;
 import org.bw.tl.antlr.ast.*;
-import org.bw.tl.compiler.resolve.SymbolResolver;
+import org.bw.tl.compiler.resolve.ExpressionResolver;
+import org.bw.tl.compiler.resolve.ExpressionResolverImpl;
 import org.bw.tl.verify.FunReturnVerifier;
 import org.bw.tl.verify.Verifiable;
 import org.objectweb.asm.ClassWriter;
@@ -57,15 +58,14 @@ public @Data class Compiler {
 
         buildClassInitializer(cw, clazz);
 
-
-        final SymbolResolver symbolResolver = new SymbolResolver(classes, clazz);
+        final ExpressionResolver resolver = new ExpressionResolverImpl(clazz, classes, null);
 
         for (final Field field : clazz.getFields()) {
             if (field.getType() == null) {
                 errors.add(ErrorType.GENERAL_ERROR.newError("Implicit typing is only supported for local variables", field));
                 continue;
             }
-            final Type type = symbolResolver.resolveType(clazz, field.getType());
+            final Type type = resolver.resolveType(clazz, field.getType());
             if (type == null) {
                 errors.add(ErrorType.GENERAL_ERROR.newError("Cannot resolve type: " + field.getType(), field));
                 continue;
@@ -74,7 +74,7 @@ public @Data class Compiler {
         }
 
         for (final Function function : clazz.getFunctions()) {
-            final Type methodDescriptor = symbolResolver.resolveFunction(clazz, function);
+            final Type methodDescriptor = resolver.resolveFunction(clazz, function);
 
             if (!functionVerifiable.isValid(function)) {
                 errors.add(ErrorType.GENERAL_ERROR.newError("Missing return statement", function));
