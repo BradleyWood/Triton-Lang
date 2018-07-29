@@ -23,7 +23,7 @@ public class StatementVisitor extends GrammarBaseVisitor<Node> {
         } else if (ctx.whileStatement() != null) {
             stmt = ctx.whileStatement().accept(WhileVisitor.of(sourceFile));
         } else if (ctx.forStatement() != null) {
-            // todo;
+            stmt = ctx.forStatement().accept(ForLoopVisitor.of(sourceFile));
         } else if (ctx.expression() != null) {
             stmt = ctx.expression().accept(ExpressionVisitor.of(sourceFile));
             ((Expression) stmt).setPop(true);
