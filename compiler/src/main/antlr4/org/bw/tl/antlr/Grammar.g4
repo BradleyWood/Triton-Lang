@@ -140,7 +140,8 @@ forStatement
 
 forControl
     : (modifierList NL*)? (type | VAR | VAL) NL* IDENTIFIER NL* COLON NL* expression
-    ; // todo;
+    | ((varDef | expression) NL*)? SEMICOLON NL* condition=expression NL* SEMICOLON (NL* expression (NL* COMMA NL* expression)*)?
+    ;
 
 localVariable
     : type localVarDefList
