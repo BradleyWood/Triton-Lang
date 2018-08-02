@@ -81,7 +81,10 @@ public class ExpressionVisitor extends GrammarBaseVisitor<Expression> {
             final int end = ctx.assignment().getText().length() - ctx.assignment().val.getText().length();
             final String op = ctx.assignment().getText().substring(start, end);
             if (!op.equals("=")) {
-                rhs = new BinaryOp(lhs, op.substring(0, 1), rhs);
+                final Expression fa = lhs != null ? new ExpressionFieldAccess(lhs, ctx.assignment().IDENTIFIER().getText()) :
+                        QualifiedName.of(ctx.assignment().IDENTIFIER().getText());
+
+                rhs = new BinaryOp(fa, op.substring(0, 1), rhs);
             }
 
             expression = new Assignment(lhs, ctx.assignment().IDENTIFIER().getText(), rhs);
