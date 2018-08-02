@@ -6,6 +6,9 @@ import org.bw.tl.antlr.GrammarBaseVisitor;
 import org.bw.tl.antlr.GrammarParser;
 import org.bw.tl.antlr.ast.*;
 
+import java.util.LinkedList;
+import java.util.List;
+
 @RequiredArgsConstructor(staticName = "of")
 public class ForLoopVisitor extends GrammarBaseVisitor<Node> {
 
@@ -33,9 +36,22 @@ public class ForLoopVisitor extends GrammarBaseVisitor<Node> {
 
             return new ForEachLoop(field, iterableExpression, body);
         } else { // for i
-            // todo;
-        }
+            Node init = null;
 
-        return null;
+            if (fctx.init != null) {
+                init = fctx.init.accept(ExpressionVisitor.of(sourceFile));
+            } else if (fctx.varDef() != null) {
+                init = fctx.varDef().accept(FieldVisitor.of(sourceFile));
+            }
+
+            final Expression condition = fctx.condition != null ? fctx.condition.accept(ExpressionVisitor.of(sourceFile)) : null;
+            final List<Expression> update = new LinkedList<>();
+
+            if (fctx.expressionList() != null) {
+                fctx.expressionList().expression().forEach(e -> update.add(e.accept(ExpressionVisitor.of(sourceFile))));
+            }
+
+            return new ForLoop(init, condition, update, body);
+        }
     }
 }
