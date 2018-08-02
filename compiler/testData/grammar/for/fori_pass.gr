@@ -32,4 +32,10 @@
     for (i = 10; i < 100; i += 1);
 
     for (i = 10; i < 100; i += 1, j += 2, test());
+
+    for {
+        test()
+    }
+
+    for test()
 }
