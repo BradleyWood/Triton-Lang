@@ -31,10 +31,16 @@ public class ForLoopVisitor extends GrammarBaseVisitor<Node> {
                 }
             }
 
+            final ForEachLoop loop = new ForEachLoop(field, iterableExpression, body);
+
             if (fctx.VAL() != null)
                 field.addModifiers(Modifier.FINAL);
 
-            return new ForEachLoop(field, iterableExpression, body);
+            field.setParent(loop);
+            iterableExpression.setParent(loop);
+            body.setParent(loop);
+
+            return loop;
         } else { // for i
             Node init = null;
 
@@ -47,11 +53,19 @@ public class ForLoopVisitor extends GrammarBaseVisitor<Node> {
             final Expression condition = fctx.condition != null ? fctx.condition.accept(ExpressionVisitor.of(sourceFile)) : null;
             final List<Expression> update = new LinkedList<>();
 
-            if (fctx.expressionList() != null) {
-                fctx.expressionList().expression().forEach(e -> update.add(e.accept(ExpressionVisitor.of(sourceFile))));
-            }
+            final ForLoop loop = new ForLoop(init, condition, update, body);
 
-            return new ForLoop(init, condition, update, body);
+            if (fctx.expressionList() != null)
+                fctx.expressionList().expression().forEach(e -> update.add(e.accept(ExpressionVisitor.of(sourceFile))));
+
+            if (init != null)
+                init.setParent(loop);
+
+            body.setParent(loop);
+            update.forEach(e -> e.setParent(loop));
+            update.forEach(e -> e.setPop(true));
+
+            return loop;
         }
     }
 }
