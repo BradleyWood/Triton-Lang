@@ -136,6 +136,7 @@ newStatement
 
 forStatement
     : FOR NL* LPAREN NL* forControl NL* RPAREN NL* ((statement semi?) | SEMICOLON)
+    | FOR NL* statement
     ;
 
 forControl

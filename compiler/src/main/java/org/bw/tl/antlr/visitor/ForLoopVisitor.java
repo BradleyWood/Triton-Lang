@@ -6,6 +6,7 @@ import org.bw.tl.antlr.GrammarBaseVisitor;
 import org.bw.tl.antlr.GrammarParser;
 import org.bw.tl.antlr.ast.*;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -41,7 +42,7 @@ public class ForLoopVisitor extends GrammarBaseVisitor<Node> {
             body.setParent(loop);
 
             return loop;
-        } else { // for i
+        } else if (fctx != null) { // for i
             Node init = null;
 
             if (fctx.init != null) {
@@ -64,6 +65,11 @@ public class ForLoopVisitor extends GrammarBaseVisitor<Node> {
             body.setParent(loop);
             update.forEach(e -> e.setParent(loop));
             update.forEach(e -> e.setPop(true));
+
+            return loop;
+        } else { // infinite loop
+            final ForLoop loop = new ForLoop(null, null, Collections.emptyList(), body);
+            body.setParent(loop);
 
             return loop;
         }
