@@ -3,6 +3,7 @@ package org.bw.tl.util;
 import org.bw.tl.antlr.ast.QualifiedName;
 import org.junit.Assert;
 import org.junit.Test;
+import org.objectweb.asm.Type;
 
 import static org.bw.tl.util.TypeUtilities.getTypeFromName;
 
@@ -68,5 +69,17 @@ public class TypeUtilitiesTest {
         Assert.assertFalse(TypeUtilities.isAssignableWithImplicitCast(getTypeFromName("double"), getTypeFromName("double")));
         Assert.assertFalse(TypeUtilities.isAssignableWithImplicitCast(getTypeFromName("int"), getTypeFromName("int")));
         Assert.assertFalse(TypeUtilities.isAssignableWithImplicitCast(getTypeFromName("byte"), getTypeFromName("byte")));
+    }
+
+    @Test
+    public void setDimTest() {
+        final Type type = Type.getType(String.class);
+        final Type arrayType2d = Type.getType(String[][].class);
+        final Type arrayType3d = Type.getType(String[][][].class);
+
+        Assert.assertEquals(arrayType3d, TypeUtilities.setDim(type, 3));
+        Assert.assertEquals(arrayType2d, TypeUtilities.setDim(arrayType2d, 2));
+
+        Assert.assertEquals(type, TypeUtilities.setDim(arrayType2d, 0));
     }
 }

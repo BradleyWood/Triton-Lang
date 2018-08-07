@@ -134,6 +134,25 @@ public class TypeUtilities {
         return arrayDim;
     }
 
+    public static Type setDim(@NotNull final Type type, final int dim) {
+        if (dim < 0)
+            throw new IllegalArgumentException("Negative array dimension");
+
+        final StringBuilder stringBuilder = new StringBuilder();
+
+        for (int i = 0; i < dim; i++) {
+            stringBuilder.append('[');
+        }
+
+        if (getDim(type) > 0) {
+            stringBuilder.append(type.getElementType().getDescriptor());
+        } else {
+            stringBuilder.append(type.getDescriptor());
+        }
+
+        return Type.getType(stringBuilder.toString());
+    }
+
     @NotNull
     public static TypeHandler getTypeHandler(@NotNull final Type type) {
         final String desc = type.getDescriptor();
