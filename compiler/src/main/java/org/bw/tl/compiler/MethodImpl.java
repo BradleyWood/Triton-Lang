@@ -405,6 +405,85 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
     }
 
     @Override
+    public void visitForEach(final ForEachLoop forEachLoop) {
+        ctx.beginScope();
+
+        final Expression iterable = forEachLoop.getIterableExpression();
+        final Type iterableType = iterable.resolveType(ctx.getResolver());
+
+        if (iterableType == null) {
+            ctx.reportError("Cannot resolve expression", iterable);
+            return;
+        }
+
+        int dim = TypeUtilities.getDim(iterableType);
+
+        if (dim == 0) {
+            ctx.reportError("Expected array type but got " + iterableType.getClassName(), iterable);
+            return;
+        }
+
+        final Field field = forEachLoop.getField();
+        final Type expectedType = TypeUtilities.setDim(iterableType, dim - 1);
+        Type fieldType = expectedType;
+
+        if (field.getType() != null) {
+            fieldType = field.getType().resolveType(ctx.getResolver());
+
+            if (fieldType == null) {
+                ctx.reportError("Cannot resolve type: " + field.getType(), field);
+                return;
+            }
+
+            if (!expectedType.equals(fieldType)) {
+                ctx.reportError("Expected type " + expectedType.getClassName() + " but got " + fieldType.getClassName(), field);
+                return;
+            }
+        }
+
+        ctx.getScope().putVar(" __ITERABLE__ ", iterableType, 0);
+        iterable.accept(this);
+        mv.visitVarInsn(ASTORE, ctx.getScope().findVar(" __ITERABLE__ ").getIndex());
+
+        ctx.getScope().putVar(" __COUNTER__ ", Type.INT_TYPE, 0);
+        mv.visitInsn(ICONST_0);
+        mv.visitVarInsn(ISTORE, ctx.getScope().findVar(" __COUNTER__ ").getIndex());
+
+        final Label conditionalLabel = new Label();
+        final Label endLabel = new Label();
+
+        mv.visitLabel(conditionalLabel);
+
+        mv.visitVarInsn(ILOAD, ctx.getScope().findVar(" __COUNTER__ ").getIndex());
+        mv.visitVarInsn(ALOAD, ctx.getScope().findVar(" __ITERABLE__ ").getIndex());
+        mv.visitInsn(ARRAYLENGTH);
+
+        final Operator operator = Operator.getOperator("<", Type.INT_TYPE, Type.INT_TYPE);
+        operator.applyCmp(mv, endLabel);
+
+        ctx.beginScope();
+
+        ctx.getScope().putVar(field.getName(), fieldType, 0);
+
+        final TypeHandler fieldTypeHandler = TypeUtilities.getTypeHandler(fieldType);
+        mv.visitVarInsn(ALOAD, ctx.getScope().findVar(" __ITERABLE__ ").getIndex());
+        mv.visitVarInsn(ILOAD, ctx.getScope().findVar(" __COUNTER__ ").getIndex());
+        fieldTypeHandler.arrayLoad(mv);
+
+        fieldTypeHandler.store(mv, ctx.getScope().findVar(field.getName()).getIndex());
+
+        forEachLoop.getBody().accept(this);
+        mv.visitIincInsn(ctx.getScope().findVar(" __COUNTER__ ").getIndex(), 1);
+
+        ctx.endScope();
+
+        mv.visitJumpInsn(GOTO, conditionalLabel);
+        mv.visitLabel(endLabel);
+
+        ctx.endScope();
+    }
+
+    @Override
     public void visitNew(final New newExpr) {
         final List<Expression> parameters = newExpr.getParameters();
         final boolean isArray = newExpr.isArray();
