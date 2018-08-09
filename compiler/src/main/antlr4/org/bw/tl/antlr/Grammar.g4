@@ -29,6 +29,7 @@ expression
     | preceeding=expression NL* DOT NL* call=functionCall
     | call=functionCall
     | newStatement
+    | listDef
     | preceeding=expression NL* DOT NL* assignment
     | assignment
     | typeCast
@@ -67,6 +68,10 @@ typeArguments
 typeArgument
     : fqn
     | arrayType
+    ;
+
+listDef
+    : (typeArguments NL*)? '[' NL* (expressionList NL*)? ']'
     ;
 
 typeCast
