@@ -1,0 +1,5 @@
+{
+new int[10]
+new String[10]
+new LinkedList()
+}
