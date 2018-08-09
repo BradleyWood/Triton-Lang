@@ -1,0 +1,8 @@
+{
+[10, 50, 95, 12]
+<Integer> [ 10, 29, 95, 20]
+<Integer[]> []
+<java.lang.Integer[]> []
+<String> ["a", "b", "c", "d"]
+<> ["a", 5, 5+1]
+}
