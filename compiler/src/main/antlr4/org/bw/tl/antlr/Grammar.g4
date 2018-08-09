@@ -60,6 +60,15 @@ assignment
         NL* val=expression
     ;
 
+typeArguments
+    : '<' NL* (typeArgument (NL* ',' typeArgument)* NL*)? '>'
+    ;
+
+typeArgument
+    : fqn
+    | arrayType
+    ;
+
 typeCast
     : '(' NL* type NL* ')' NL* expression
     ;
@@ -86,7 +95,7 @@ functionParam
 
 type
     : primitiveType
-    | fqn
+    | fqn typeArguments?
     | arrayType
     ;
 
