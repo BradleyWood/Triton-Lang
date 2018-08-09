@@ -1,0 +1,5 @@
+{
+LinkedList<String> abc
+LinkedList<Object> def
+LinkedList ghi
+}
