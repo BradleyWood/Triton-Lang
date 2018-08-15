@@ -16,7 +16,7 @@ import java.util.Map;
 @Mojo(name = "compile", defaultPhase = LifecyclePhase.COMPILE, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class CompileMojo extends AbstractMojo {
 
-    @Parameter(name = "sourceDirectory", defaultValue = "${project.basedir}/src/main/raven")
+    @Parameter(name = "sourceDirectory", defaultValue = "${project.basedir}/src/main/triton")
     private String sourceDirectory;
 
     @Parameter(defaultValue = "${project.compileClasspathElements}", required = true, readonly = true)
