@@ -39,7 +39,7 @@
         </dependency>
         <dependency>
             <groupId>com.github.bradleywood</groupId>
-            <artifactId>compiler</artifactId>
+            <artifactId>triton-compiler</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
