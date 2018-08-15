@@ -8,14 +8,10 @@ public class ModifierVisitor extends GrammarBaseVisitor<Modifier> {
 
     @Override
     public Modifier visitModifier(final GrammarParser.ModifierContext ctx) {
-        Modifier modifier = null;
-
-        if (ctx.visibilityModifier() != null) {
-            modifier = Modifier.valueOf(ctx.visibilityModifier().getText().toUpperCase());
-        }
+        final Modifier modifier = Modifier.valueOf(ctx.getText().toUpperCase());
 
         if (modifier == null)
-            throw new IllegalStateException("Unimplemented modifier type");
+            throw new IllegalStateException("Unimplemented modifier type: " + ctx.getText());
 
         return modifier;
     }

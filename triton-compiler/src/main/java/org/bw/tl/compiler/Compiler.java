@@ -117,7 +117,7 @@ public @Data class Compiler {
                 .collect(Collectors.toList());
 
         final Block block = new Block(statements);
-        final Function init = new Function(new TypeName[0], new String[0], "<clinit>", block,
+        final Function init = new Function(new TypeName[0], new String[0], new List[0], "<clinit>", block,
                 new TypeName("void"));
 
         final MethodCtx ctx = new MethodCtx(classes, init, clazz);

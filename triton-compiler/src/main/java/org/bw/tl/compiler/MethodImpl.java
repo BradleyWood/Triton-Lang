@@ -28,16 +28,40 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
         ctx.beginScope();
 
         final String[] parameterNames = function.getParameterNames();
-        final QualifiedName[] parameterTypes = function.getParameterTypes();
+        final TypeName[] parameterTypes = function.getParameterTypes();
+        final List<Modifier>[] parameterModifiers = function.getParameterModifiers();
+
+        final Label[] varEndLabels = new Label[parameterModifiers.length];
 
         for (int i = 0; i < function.getParameterNames().length; i++) {
-            if (!ctx.getScope().putVar(parameterNames[i], ctx.resolveType(parameterTypes[i]), 0))
+            final int modifiers = parameterModifiers[i].stream().mapToInt(Modifier::getValue).sum();
+            final Label startLabel = new Label();
+            mv.visitLabel(startLabel);
+
+            varEndLabels[i] = new Label();
+
+            if (!ctx.getScope().putVar(parameterNames[i], ctx.resolveType(parameterTypes[i]), modifiers)) {
                 ctx.reportError("Duplicate function parameter names", function);
+            } else {
+                final int idx = ctx.getScope().findVar(parameterNames[i]).getIndex();
+                final Type type = parameterTypes[i].resolveType(ctx.getResolver());
+
+                if (type != null) {
+                    mv.visitLocalVariable(parameterNames[i], type.getDescriptor(), null, startLabel, varEndLabels[i], idx);
+                } else {
+                    ctx.reportError("Cannot resolve symbol", parameterTypes[i]);
+                }
+            }
         }
 
         function.getBody().accept(this);
 
         mv.visitInsn(RETURN);
+
+        for (final Label varEndLabel : varEndLabels) {
+            mv.visitLabel(varEndLabel);
+        }
+
         ctx.endScope();
     }
 
