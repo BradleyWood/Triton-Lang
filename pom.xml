@@ -121,6 +121,7 @@
         <module>triton-compiler</module>
         <module>triton-maven-plugin</module>
         <module>triton-examples</module>
+        <module>triton-stdlib</module>
     </modules>
 
 </project>
