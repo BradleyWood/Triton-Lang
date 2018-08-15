@@ -257,7 +257,6 @@ ZeroToThree
     ;
 
 IF      : 'if';
-IN      : 'in';
 DO      : 'do';
 NEW     : 'new';
 FUN     : 'fun';
