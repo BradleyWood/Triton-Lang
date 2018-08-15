@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.bradleywood</groupId>
-    <artifactId>test-lang</artifactId>
+    <artifactId>triton-lang</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>test-lang</name>
+    <name>triton-lang</name>
     <description>An experimental language for the jvm</description>
     <url>https://github.com/BradleyWood/test-lang</url>
 
@@ -118,9 +118,9 @@
     </build>
 
     <modules>
-        <module>compiler</module>
-        <module>maven-plugin</module>
-        <module>examples</module>
+        <module>triton-compiler</module>
+        <module>triton-maven-plugin</module>
+        <module>triton-examples</module>
     </modules>
 
 </project>
