@@ -23,6 +23,8 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
     private final @NotNull MethodVisitor mv;
     private final @NotNull MethodCtx ctx;
 
+    private final Label endOfFunctionLabel = new Label();
+
     @Override
     public void visitFunction(final Function function) {
         ctx.beginScope();
@@ -31,14 +33,11 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
         final TypeName[] parameterTypes = function.getParameterTypes();
         final List<Modifier>[] parameterModifiers = function.getParameterModifiers();
 
-        final Label[] varEndLabels = new Label[parameterModifiers.length];
-
         for (int i = 0; i < function.getParameterNames().length; i++) {
             final int modifiers = parameterModifiers[i].stream().mapToInt(Modifier::getValue).sum();
             final Label startLabel = new Label();
-            mv.visitLabel(startLabel);
 
-            varEndLabels[i] = new Label();
+            mv.visitLabel(startLabel);
 
             if (!ctx.getScope().putVar(parameterNames[i], ctx.resolveType(parameterTypes[i]), modifiers)) {
                 ctx.reportError("Duplicate function parameter names", function);
@@ -47,7 +46,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
                 final Type type = parameterTypes[i].resolveType(ctx.getResolver());
 
                 if (type != null) {
-                    mv.visitLocalVariable(parameterNames[i], type.getDescriptor(), null, startLabel, varEndLabels[i], idx);
+                    mv.visitLocalVariable(parameterNames[i], type.getDescriptor(), null, startLabel, endOfFunctionLabel, idx);
                 } else {
                     ctx.reportError("Cannot resolve symbol", parameterTypes[i]);
                 }
@@ -58,9 +57,8 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
 
         mv.visitInsn(RETURN);
 
-        for (final Label varEndLabel : varEndLabels) {
-            mv.visitLabel(varEndLabel);
-        }
+        mv.visitLabel(endOfFunctionLabel);
+
 
         ctx.endScope();
     }
