@@ -204,6 +204,7 @@ modifierList
 
 modifier
     : visibilityModifier
+    | 'final'
     ;
 
 visibilityModifier

@@ -6,19 +6,19 @@ import java.util.Collections
 
 private Scanner scanner = new Scanner(System.in)
 
-fun println(String msg) {
+fun println(final String msg) {
     System.out.println(msg)
 }
 
-fun println(Object obj) {
+fun println(final Object obj) {
     System.out.println(obj)
 }
 
-fun println(long l) {
+fun println(final long l) {
     System.out.println(l)
 }
 
-fun println(double d) {
+fun println(final double d) {
     System.out.println(d)
 }
 
@@ -26,23 +26,23 @@ fun println() {
     System.out.println()
 }
 
-fun print(String msg) {
+fun print(final String msg) {
     System.out.print(msg)
 }
 
-fun print(Object obj) {
+fun print(final Object obj) {
     System.out.print(obj)
 }
 
-fun print(long l) {
+fun print(final long l) {
     System.out.print(l)
 }
 
-fun print(double d) {
+fun print(final double d) {
     System.out.print(d)
 }
 
-fun sort(List list): List {
+fun sort(final List list): List {
     Collections.sort(list)
     return list
 }
