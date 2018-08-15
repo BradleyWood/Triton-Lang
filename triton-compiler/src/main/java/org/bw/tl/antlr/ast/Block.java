@@ -14,7 +14,7 @@ public @Data class Block extends Node {
 
     private final List<Node> statements;
 
-    public Block(final Node[] statements) {
+    public Block(final Node... statements) {
         this(new ArrayList<>(Arrays.asList(statements)));
     }
 

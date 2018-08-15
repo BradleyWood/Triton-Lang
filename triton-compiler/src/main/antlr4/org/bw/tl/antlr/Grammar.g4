@@ -87,7 +87,8 @@ functionCall
     ;
 
 functionDef
-    : (modifierList NL*)? FUN NL* IDENTIFIER NL* LPAREN functionParamDefs? RPAREN NL* (':' NL* (VOID_T | type) NL*)? block
+    : (modifierList NL*)? FUN NL* IDENTIFIER NL* LPAREN functionParamDefs? RPAREN NL* (':' NL* (VOID_T | type) NL*)?
+    (block? | ('=' NL* expression))
     ;
 
 functionParamDefs

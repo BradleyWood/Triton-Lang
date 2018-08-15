@@ -4,10 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.bw.tl.antlr.GrammarBaseVisitor;
 import org.bw.tl.antlr.GrammarParser;
-import org.bw.tl.antlr.ast.Block;
-import org.bw.tl.antlr.ast.Function;
-import org.bw.tl.antlr.ast.QualifiedName;
-import org.bw.tl.antlr.ast.TypeName;
+import org.bw.tl.antlr.ast.*;
 
 @RequiredArgsConstructor(staticName = "of")
 public class FunctionVisitor extends GrammarBaseVisitor<Function> {
@@ -19,8 +16,14 @@ public class FunctionVisitor extends GrammarBaseVisitor<Function> {
         final TypeName type = ctx.type() != null ? TypeName.of(ctx.type().getText()) :
                 TypeName.of("void");
 
-        final Block block = ctx.block().accept(BlockVisitor.of(sourceFile));
         final String name = ctx.IDENTIFIER().getText();
+        final Block body;
+
+        if (ctx.block() != null) {
+            body = ctx.block().accept(BlockVisitor.of(sourceFile));
+        } else {
+            body = new Block(new Return(ctx.expression().accept(ExpressionVisitor.of(sourceFile))));
+        }
 
         TypeName[] paramTypes = new TypeName[0];
         String[] paramNames = new String[0];
@@ -32,7 +35,7 @@ public class FunctionVisitor extends GrammarBaseVisitor<Function> {
                     .map(p -> p.IDENTIFIER().getText()).toArray(String[]::new);
         }
 
-        final Function function = new Function(paramTypes, paramNames, name, block, type);
+        final Function function = new Function(paramTypes, paramNames, name, body, type);
 
         if (ctx.modifierList() != null && ctx.modifierList().modifier() != null) {
             for (final GrammarParser.ModifierContext modCtx : ctx.modifierList().modifier()) {
@@ -40,7 +43,7 @@ public class FunctionVisitor extends GrammarBaseVisitor<Function> {
             }
         }
 
-        block.setParent(function);
+        body.setParent(function);
 
         function.setText(ctx.getText());
         function.setFile(sourceFile);
