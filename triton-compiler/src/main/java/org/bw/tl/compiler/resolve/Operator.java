@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static org.bw.tl.util.TypeUtilities.getTypeFromName;
+import static org.bw.tl.util.TypeUtilities.isAssignableFrom;
 
 public @Data class Operator implements Opcodes {
 
@@ -97,6 +98,8 @@ public @Data class Operator implements Opcodes {
         addOperator("+", IADD, "char");
         addOperator("+", IADD, "byte");
 
+        addOperator("+", 0, "java.lang.String", "java.lang.Object", "byte",
+                "short", "int", "long", "char", "boolean", "float", "double");
 
         addOperator("-", LSUB, "long", "int", "short", "char", "byte");
         addOperator("-", FSUB, "float", "long", "int", "short", "char", "byte");
@@ -212,8 +215,10 @@ public @Data class Operator implements Opcodes {
     public static Operator getOperator(@NotNull final String name, @NotNull final Type lhs, @NotNull final Type rhs) {
         for (final Operator operator : operators) {
             if (operator.getName().equals(name)) {
-                if ((operator.lhs.equals(lhs) && operator.rhs.equals(rhs)) || (operator.lhs.equals(rhs) && operator.rhs.equals(lhs))) {
-                    return new Operator(operator.getName(), operator.getOpcode(), operator.getBranchOpcode(), lhs, rhs, operator.getResultType(), operator.isCmpOp);
+                if((isAssignableFrom(operator.lhs, lhs) && isAssignableFrom(operator.rhs, rhs)) ||
+                        (isAssignableFrom(operator.lhs, rhs) && isAssignableFrom(operator.rhs, lhs))) {
+                    return new Operator(operator.getName(), operator.getOpcode(), operator.getBranchOpcode(), lhs, rhs,
+                            operator.getResultType(), operator.isCmpOp);
                 }
             }
         }

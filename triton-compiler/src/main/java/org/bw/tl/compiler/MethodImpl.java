@@ -14,6 +14,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import java.util.List;
+import java.util.Stack;
 
 import static org.bw.tl.util.TypeUtilities.*;
 
@@ -809,6 +810,45 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
         mv.visitLabel(endLabel);
     }
 
+    private int depthCounter = 0;
+
+    private void stringAdd(final Expression lhs, final Expression rhs, final Type leftType, final Type rightType) {
+        if (depthCounter == 0) {
+            mv.visitTypeInsn(NEW, "java/lang/StringBuilder");
+            mv.visitInsn(DUP);
+            mv.visitMethodInsn(INVOKESPECIAL, "java/lang/StringBuilder", "<init>", "()V", false);
+        }
+
+        depthCounter++;
+
+        append(lhs, leftType);
+        append(rhs, rightType);
+
+        depthCounter--;
+
+        if (depthCounter == 0) {
+            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "toString", "()Ljava/lang/String;", false);
+        }
+    }
+
+    private void append(final Expression expr, final Type type) {
+        Type typeToAppend = type;
+
+        if (!Type.getType(String.class).equals(type) && isAssignableFrom(type, Type.getType(Object.class))) {
+            typeToAppend = Type.getType(Object.class);
+        } else if (isAssignableFrom(type, Type.INT_TYPE)) {
+            typeToAppend = Type.INT_TYPE;
+        }
+
+        final Type appendDesc = Type.getMethodType(Type.getType(StringBuilder.class), typeToAppend);
+
+        expr.accept(this);
+
+        if (!(expr instanceof BinaryOp) || !Type.getType(String.class).equals(type)) {
+            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/StringBuilder", "append", appendDesc.getDescriptor(), false);
+        }
+    }
+
     @Override
     public void visitBinaryOp(final BinaryOp binaryOp) {
         final Expression lhs = binaryOp.getLeftSide();
@@ -826,11 +866,17 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
             return;
         }
 
+        final Type stringType = Type.getType(String.class);
+
         if (binaryOp.getOperator().equals("&&")) {
             andOperator(lhs, rhs, leftType, rightType);
             return;
         } else if (binaryOp.getOperator().equals("||")) {
             orOperator(lhs, rhs, leftType, rightType);
+            return;
+        } else if ((isAssignableFrom(leftType, stringType) || isAssignableFrom(rightType, stringType)) &&
+                "+".equals(binaryOp.getOperator())) {
+            stringAdd(lhs, rhs, leftType, rightType);
             return;
         }
 
@@ -840,6 +886,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
             ctx.reportError("No such operator (" + leftType.getClassName() + " " + binaryOp.getOperator() +
                     " " + rightType.getClassName() + ")", binaryOp);
         } else {
+
             lhs.accept(this);
 
             if (!op.getLhs().equals(op.getResultType()) && isAssignableWithImplicitCast(op.getLhs(), op.getRhs())) {
