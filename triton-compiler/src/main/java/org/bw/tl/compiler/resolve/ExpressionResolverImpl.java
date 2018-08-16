@@ -50,8 +50,13 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
             return null;
         }
 
-        if (bop.getOperator().equals("&&") || bop.getOperator().equals("||"))
+        if ("&&".equals(bop.getOperator()) || "||".equals(bop.getOperator()))
             return Type.BOOLEAN_TYPE;
+
+        if ((isAssignableFrom(lhs, Type.getType(String.class)) || isAssignableFrom(rhs, Type.getType(String.class))) &&
+                "+".equals(bop.getOperator())) {
+            return Type.getType(String.class);
+        }
 
         final Operator operator = Operator.getOperator(bop.getOperator(), lhs, rhs);
 
