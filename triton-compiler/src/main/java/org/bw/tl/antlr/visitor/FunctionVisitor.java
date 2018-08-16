@@ -21,12 +21,14 @@ public class FunctionVisitor extends GrammarBaseVisitor<Function> {
                 TypeName.of("void");
 
         final String name = ctx.IDENTIFIER().getText();
-        final Block body;
+        boolean shortForm = false;
+        final Node body;
 
         if (ctx.block() != null) {
             body = ctx.block().accept(BlockVisitor.of(sourceFile));
         } else {
-            body = new Block(new Return(ctx.expression().accept(ExpressionVisitor.of(sourceFile))));
+            body = ctx.expression().accept(ExpressionVisitor.of(sourceFile));
+            shortForm = true;
         }
 
         TypeName[] paramTypes = new TypeName[0];
@@ -54,6 +56,7 @@ public class FunctionVisitor extends GrammarBaseVisitor<Function> {
         }
 
         final Function function = new Function(paramTypes, paramNames, paramModifiers, name, body, type);
+        function.setShortForm(shortForm);
 
         if (ctx.modifierList() != null && ctx.modifierList().modifier() != null) {
             for (final GrammarParser.ModifierContext modCtx : ctx.modifierList().modifier()) {

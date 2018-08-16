@@ -671,7 +671,19 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     @Nullable
     public Type resolveFunction(@NotNull final Clazz clazz, @NotNull final Function function) {
         final TypeName[] parameterTypes = function.getParameterTypes();
-        final Type retType = resolveType(clazz, function.getType());
+        final Type retType;
+
+        if (function.isShortForm()) {
+            if (function.getBody() instanceof Expression) {
+                final Expression expr = (Expression) function.getBody();
+                retType = expr.resolveType(this);
+            } else {
+                return null;
+            }
+        } else {
+            retType = resolveType(clazz, function.getType());
+        }
+
         final Type[] paramTypes = new Type[parameterTypes.length];
 
         for (int i = 0; i < parameterTypes.length; i++) {

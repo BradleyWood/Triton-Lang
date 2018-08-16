@@ -53,7 +53,16 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
             }
         }
 
-        function.getBody().accept(this);
+        if (function.isShortForm()) {
+            if (function.getBody() instanceof Expression) {
+                final Expression retVal = (Expression) function.getBody();
+                visitReturn(new Return(retVal));
+            } else {
+                ctx.reportError("Illegal return statement", function);
+            }
+        } else {
+            function.getBody().accept(this);
+        }
 
         mv.visitInsn(RETURN);
 

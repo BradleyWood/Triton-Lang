@@ -12,8 +12,9 @@ public @Data class Function extends ModifiableStatement {
     private final String[] parameterNames;
     private final List<Modifier>[] parameterModifiers;
     private final String name;
-    private final Block body;
+    private final Node body;
     private final TypeName type;
+    private boolean shortForm;
 
     @Override
     public void accept(final ASTVisitor visitor) {

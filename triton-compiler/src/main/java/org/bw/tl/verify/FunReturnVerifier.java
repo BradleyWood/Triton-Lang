@@ -27,12 +27,14 @@ public class FunReturnVerifier implements Verifiable<Function> {
 
         @Override
         public void visitFunction(final Function function) {
-            final List<Node> block = function.getBody().getStatements();
+            if (function.getBody() instanceof Block) {
+                final List<Node> block = ((Block) function.getBody()).getStatements();
 
-            if (block.isEmpty())
-                return;
+                if (block.isEmpty())
+                    return;
 
-            isValid = handleBlock(block);
+                isValid = handleBlock(block);
+            }
         }
 
         private boolean handleBlock(final List<Node> stmts) {
