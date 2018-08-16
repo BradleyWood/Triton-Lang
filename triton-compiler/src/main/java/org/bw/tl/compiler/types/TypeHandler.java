@@ -57,6 +57,11 @@ public abstract @Data class TypeHandler {
         return true;
     }
 
+    public void convertToString(final MethodVisitor mv) {
+        toObject(mv);
+        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;", false);
+    }
+
     public abstract boolean toInt(final MethodVisitor mv);
 
     public abstract boolean toShort(final MethodVisitor mv);
