@@ -89,6 +89,9 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
     private Type getImplicitType(final Expression expr) {
         final Type type = expr.resolveType(ctx.getResolver());
 
+        if (type == null)
+            return null;
+
         if (isAssignableWithImplicitCast(type, Type.INT_TYPE))
             return Type.INT_TYPE;
 
