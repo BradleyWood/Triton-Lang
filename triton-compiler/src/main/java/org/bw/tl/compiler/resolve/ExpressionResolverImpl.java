@@ -668,15 +668,33 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         return Type.getType(builder.toString());
     }
 
+    private final void defineParameters(final Function function) {
+        final String[] parameterNames = function.getParameterNames();
+        final List<Modifier>[] parameterModifiers = function.getParameterModifiers();
+        final TypeName[] typeNames = function.getParameterTypes();
+
+        for (int i = 0; i < function.getParameterNames().length; i++) {
+            final Type type = typeNames[i].resolveType(this);
+            final int modifiers = parameterModifiers[i].stream().mapToInt(Modifier::getValue).sum();
+            scope.putVar(parameterNames[i], type, modifiers);
+        }
+    }
+
     @Nullable
     public Type resolveFunction(@NotNull final Clazz clazz, @NotNull final Function function) {
         final TypeName[] parameterTypes = function.getParameterTypes();
         final Type retType;
 
-        if (function.isShortForm()) {
+        if (function.isShortForm() && function.getType() == null) {
             if (function.getBody() instanceof Expression) {
                 final Expression expr = (Expression) function.getBody();
+
+                // must temporarily add function parameters into the scope
+                // or else we cannot resolve them in the body
+                scope.beginScope();
+                defineParameters(function);
                 retType = expr.resolveType(this);
+                scope.endScope();
             } else {
                 return null;
             }

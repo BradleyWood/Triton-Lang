@@ -17,7 +17,7 @@ public class FunctionVisitor extends GrammarBaseVisitor<Function> {
 
     @Override
     public Function visitFunctionDef(final GrammarParser.FunctionDefContext ctx) {
-        final TypeName type = ctx.type() != null ? TypeName.of(ctx.type().getText()) :
+        TypeName type = ctx.type() != null ? TypeName.of(ctx.type().getText()) :
                 TypeName.of("void");
 
         final String name = ctx.IDENTIFIER().getText();
@@ -28,6 +28,7 @@ public class FunctionVisitor extends GrammarBaseVisitor<Function> {
             body = ctx.block().accept(BlockVisitor.of(sourceFile));
         } else {
             body = ctx.expression().accept(ExpressionVisitor.of(sourceFile));
+            type = null;
             shortForm = true;
         }
 

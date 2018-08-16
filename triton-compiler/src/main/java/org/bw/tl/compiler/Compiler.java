@@ -58,7 +58,7 @@ public @Data class Compiler {
 
         buildClassInitializer(cw, clazz);
 
-        final ExpressionResolver resolver = new ExpressionResolverImpl(clazz, classes, null);
+        final ExpressionResolver resolver = new ExpressionResolverImpl(clazz, classes, new Scope());
 
         for (final Field field : clazz.getFields()) {
             if (field.getType() == null) {

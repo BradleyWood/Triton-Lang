@@ -56,7 +56,21 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
         if (function.isShortForm()) {
             if (function.getBody() instanceof Expression) {
                 final Expression retVal = (Expression) function.getBody();
-                visitReturn(new Return(retVal));
+                final Type retType = retVal.resolveType(ctx.getResolver());
+                if (ctx.getReturnType().equals(Type.VOID_TYPE)) {
+                    // short-form function definition with where void return type is explicitly requested
+                    retVal.accept(this);
+
+                    if (!retType.equals(Type.VOID_TYPE)) {
+                        if (retType.equals(Type.LONG_TYPE) || retType.equals(Type.DOUBLE_TYPE)) {
+                            mv.visitInsn(POP2);
+                        } else {
+                            mv.visitInsn(POP);
+                        }
+                    }
+                } else {
+                    visitReturn(new Return(retVal));
+                }
             } else {
                 ctx.reportError("Illegal return statement", function);
             }
