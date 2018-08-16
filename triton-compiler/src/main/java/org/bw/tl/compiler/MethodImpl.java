@@ -555,7 +555,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
                 } else if (parameters.size() == 1) {
                     handler.newArray(mv);
                 } else {
-                    handler.muliNewArray(mv, parameters.size());
+                    handler.multiNewArray(mv, parameters.size());
                 }
                 if (newExpr.shouldPop()) {
                     ctx.reportError("Not a statement", newExpr);

@@ -41,7 +41,7 @@ public abstract @Data class TypeHandler {
         return false;
     }
 
-    public boolean muliNewArray(final MethodVisitor mv, final int d) {
+    public boolean multiNewArray(final MethodVisitor mv, final int d) {
         if (Type.getType(desc).equals(Type.VOID_TYPE))
             return false;
 
