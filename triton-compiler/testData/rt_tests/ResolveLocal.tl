@@ -6,7 +6,7 @@ fun add(int a, int b): int {
     return a + b
 }
 
-fun resolveLocalFunction() {
+fun resolveLocalFunctionTest() {
     add(10, 20)
 
     int a = add(10, 20)
@@ -22,7 +22,7 @@ fun resolveLocalFunction() {
     Assert.assertEquals(30.0, d, 0.0001)
 }
 
-fun resolveLocalField() {
+fun resolveLocalFieldTest() {
     int i = 0
     int j = 1
     Assert.assertEquals(1, add(i, j))
