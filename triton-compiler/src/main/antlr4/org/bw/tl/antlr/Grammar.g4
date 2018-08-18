@@ -66,7 +66,7 @@ typeArguments
     ;
 
 typeArgument
-    : fqn
+    : fqn typeArguments?
     | arrayType
     ;
 

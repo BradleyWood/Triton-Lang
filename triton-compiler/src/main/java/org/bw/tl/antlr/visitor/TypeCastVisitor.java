@@ -15,7 +15,7 @@ public class TypeCastVisitor extends GrammarBaseVisitor<TypeCast> {
 
     @Override
     public TypeCast visitTypeCast(final GrammarParser.TypeCastContext ctx) {
-        final QualifiedName type = QualifiedName.of(ctx.type().getText());
+        final QualifiedName type = ctx.type().accept(TypeVisitor.of(sourceFile));
         final Expression expression = ctx.expression().accept(ExpressionVisitor.of(sourceFile));
 
         final TypeCast typeCast = new TypeCast(type, expression);

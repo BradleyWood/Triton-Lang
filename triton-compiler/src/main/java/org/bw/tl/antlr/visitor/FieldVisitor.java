@@ -17,7 +17,7 @@ public class FieldVisitor extends GrammarBaseVisitor<Field> {
     @Override
     public Field visitVarDef(final GrammarParser.VarDefContext ctx) {
         final String name = ctx.IDENTIFIER().getText();
-        final TypeName type = ctx.type() != null ? TypeName.of(ctx.type().getText()) : null;
+        final TypeName type = ctx.type() != null ? ctx.type().accept(TypeVisitor.of(sourceFile)) : null;
         Expression initialValue = null;
 
         if (ctx.expression() != null)

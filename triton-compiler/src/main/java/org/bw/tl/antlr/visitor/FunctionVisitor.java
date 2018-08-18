@@ -17,7 +17,7 @@ public class FunctionVisitor extends GrammarBaseVisitor<Function> {
 
     @Override
     public Function visitFunctionDef(final GrammarParser.FunctionDefContext ctx) {
-        TypeName type = ctx.type() != null ? TypeName.of(ctx.type().getText()) :
+        TypeName type = ctx.type() != null ? ctx.type().accept(TypeVisitor.of(sourceFile)):
                 TypeName.of("void");
 
         final String name = ctx.IDENTIFIER().getText();
@@ -51,7 +51,7 @@ public class FunctionVisitor extends GrammarBaseVisitor<Function> {
             }
 
             paramTypes = ctx.functionParamDefs().functionParam().stream()
-                    .map(p -> TypeName.of(p.type().getText())).toArray(TypeName[]::new);
+                    .map(p -> p.type().accept(TypeVisitor.of(sourceFile))).toArray(TypeName[]::new);
             paramNames = ctx.functionParamDefs().functionParam().stream()
                     .map(p -> p.IDENTIFIER().getText()).toArray(String[]::new);
         }

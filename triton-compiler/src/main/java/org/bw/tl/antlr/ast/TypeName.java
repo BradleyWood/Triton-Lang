@@ -6,9 +6,13 @@ import org.bw.tl.compiler.resolve.ExpressionResolver;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.Type;
 
+import java.util.LinkedList;
+import java.util.List;
+
 @EqualsAndHashCode(callSuper = true)
 public @Data class TypeName extends QualifiedName {
 
+    private final LinkedList<TypeName> typeParameters = new LinkedList<>();
     private int dim = 0;
 
     public TypeName(final int dim, final String... names) {
@@ -18,6 +22,10 @@ public @Data class TypeName extends QualifiedName {
 
     public TypeName(final String... names) {
         super(names);
+    }
+
+    public void addTypeParameter(final TypeName name) {
+        typeParameters.add(name);
     }
 
     @Override
