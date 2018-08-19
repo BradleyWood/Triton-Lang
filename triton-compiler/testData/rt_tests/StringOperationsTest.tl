@@ -42,3 +42,11 @@ fun testAddWithSubExpressions() {
     Assert.assertEquals("abcd5050", "a" + "b" + "c" + "d" + 50 + 50)
     Assert.assertEquals("abcd100", "a" + "b" + "c" + "d" + (50 + 50))
 }
+
+fun testStringTemplate() {
+    var a = 100
+    var b = 200
+    var c = 300
+
+    Assert.assertEquals("100 + 200 = 300", "$a + $b = $c")
+}
