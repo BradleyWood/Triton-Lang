@@ -13,8 +13,9 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.bw.tl.util.TypeUtilities.*;
 
@@ -939,12 +940,81 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
                 pushDouble((Double) value);
             } else if (value instanceof Boolean) {
                 pushInteger((Boolean) value ? 1 : 0);
+            } else if (value instanceof String) {
+                pushString(literal);
             } else {
                 mv.visitLdcInsn(value);
             }
         } else {
             System.err.println("Invalid literal type");
         }
+    }
+
+    private void pushString(final Literal<String> value) {
+        final String str = value.getValue();
+        final Pattern identifierPattern = Pattern.compile("\\$[a-zA-Z_][a-zA-Z_0-9]*");
+        final Matcher matcher = identifierPattern.matcher(str);
+        final List<Expression> expressions = new ArrayList<>();
+
+        int index = 0;
+
+        while (matcher.find()) {
+            final int end = matcher.end();
+            final int start = matcher.start();
+            final Literal<String> lhs = new Literal<>(str.substring(index, start));
+
+            lhs.setText(str.substring(index, start));
+            lhs.setLineNumber(value.getLineNumber());
+            lhs.setFile(value.getFile());
+            lhs.setParent(value);
+
+            if (start - index > 0) {
+                expressions.add(lhs);
+            }
+
+            final QualifiedName id = QualifiedName.of(str.substring(matcher.start() + 1, end));
+            id.setText(str.substring(matcher.start(), end));
+            id.setLineNumber(value.getLineNumber());
+            id.setFile(value.getFile());
+            id.setParent(value);
+
+            expressions.add(id);
+
+            index = end;
+        }
+
+        if (index < str.length()) {
+            final Literal<String> id = new Literal<>(str.substring(index));
+
+            id.setLineNumber(value.getLineNumber());
+            id.setText(str.substring(index));
+            id.setFile(value.getFile());
+            id.setParent(value);
+
+            expressions.add(id);
+        }
+
+        if (expressions.size() < 2) {
+            mv.visitLdcInsn(str);
+        } else {
+            final Expression bop = addExpressions(expressions);
+            bop.accept(this);
+        }
+    }
+
+    private Expression addExpressions(final List<Expression> expressions) {
+        final int len = expressions.size();
+
+        if (len == 2) {
+            return new BinaryOp(expressions.get(0), "+", expressions.get(1));
+        } else if (len == 1) {
+            return expressions.get(0);
+        }
+
+        final Expression lhs = addExpressions(expressions.subList(0, len / 2));
+        final Expression rhs = addExpressions(expressions.subList(len / 2, len));
+
+        return addExpressions(Arrays.asList(lhs, rhs));
     }
 
     @Override
