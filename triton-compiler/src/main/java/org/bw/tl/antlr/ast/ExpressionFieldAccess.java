@@ -14,7 +14,7 @@ public @Data class ExpressionFieldAccess extends Expression {
 
     @Override
     public Type resolveType(final ExpressionResolver resolver) {
-        final FieldContext ctx = resolver.resolveFieldContext(precedingExpr, fieldName);
+        final FieldContext ctx = resolver.resolveFieldCtx(precedingExpr, fieldName);
 
         if (ctx == null)
             return null;

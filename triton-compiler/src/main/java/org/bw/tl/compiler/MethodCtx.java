@@ -41,7 +41,7 @@ public @Data class MethodCtx {
      * @return The type descriptor of the return type if found, otherwise null
      */
     public Type getReturnType() {
-        final Type methodType = getResolver().resolveFunction(clazz, function);
+        final Type methodType = getResolver().resolveFunctionCtx(clazz, function);
 
         if (methodType != null) {
             return methodType.getReturnType();

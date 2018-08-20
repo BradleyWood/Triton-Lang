@@ -116,7 +116,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     @Nullable
     @Override
     public Type resolveName(@NotNull final QualifiedName name) {
-        final FieldContext[] ctx = resolveFieldContext(name);
+        final FieldContext[] ctx = resolveFieldCtx(name);
 
         if (ctx == null)
             return null;
@@ -145,14 +145,14 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
                 if (owner == null)
                     return null;
 
-                return resolveFunction(owner, call.getName(), parameterTypes);
+                return resolveFunctionCtx(owner, call.getName(), parameterTypes);
             } else {
                 final Type objType = preceding.resolveType(this);
 
                 if (objType == null)
                     return null;
 
-                return resolveFunction(objType, call.getName(), parameterTypes);
+                return resolveFunctionCtx(objType, call.getName(), parameterTypes);
             }
         }
 
@@ -166,7 +166,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
 
     @Nullable
     @Override
-    public SymbolContext resolveConstructorContext(@NotNull final New newStmt) {
+    public SymbolContext resolveConstructorCtx(@NotNull final New newStmt) {
         final List<Expression> expressionList = newStmt.getParameters();
         final Type[] types = new Type[expressionList.size()];
 
@@ -176,7 +176,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
                 return null;
         }
 
-        return resolveConstructor(newStmt.getType(), types);
+        return resolveConstructorCtx(newStmt.getType(), types);
     }
 
     @Nullable
@@ -197,7 +197,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
             return Type.getType(sb.toString());
         }
 
-        final SymbolContext ctx = resolveConstructorContext(newStmt);
+        final SymbolContext ctx = resolveConstructorCtx(newStmt);
         final Type type = resolveType(newStmt.getType());
 
         if (ctx != null && type != null)
@@ -232,7 +232,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
 
     @Nullable
     @Override
-    public FieldContext[] resolveFieldContext(@NotNull final QualifiedName name) {
+    public FieldContext[] resolveFieldCtx(@NotNull final QualifiedName name) {
         final FieldContext[] localCtx = resolveFieldFromLocalVar(name);
 
         if (localCtx != null) {
@@ -274,7 +274,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
                 return null;
 
             for (int i = idx; i < names.length; i++) {
-                final FieldContext ctx = resolveField(type, names[i]);
+                final FieldContext ctx = resolveFieldCtx(type, names[i]);
 
                 if (ctx == null)
                     return null;
@@ -301,7 +301,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
                     final String[] names = fqn.subname(1, fqn.length()).getNames();
                     Type type = var.getType();
                     for (final String n : names) {
-                        final FieldContext ctxN = resolveField(type, n);
+                        final FieldContext ctxN = resolveFieldCtx(type, n);
                         if (ctxN == null)
                             return null;
                         ctxList.add(ctxN);
@@ -320,7 +320,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         final List<FieldContext> ctxList = new LinkedList<>();
         final String[] names = fqn.getNames();
 
-        FieldContext ctx = resolveField(Type.getType(clazz.getDescriptor()), names[0]);
+        FieldContext ctx = resolveFieldCtx(Type.getType(clazz.getDescriptor()), names[0]);
 
         if (ctx == null)
             ctx = resolveFieldFromStaticImports(names[0]);
@@ -331,7 +331,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         ctxList.add(ctx);
 
         for (int i = 1; i < names.length; i++) {
-            ctx = resolveField(ctx.getTypeDescriptor(), names[i]);
+            ctx = resolveFieldCtx(ctx.getTypeDescriptor(), names[i]);
 
             if (ctx == null)
                 return null;
@@ -344,7 +344,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
 
     @Nullable
     @Override
-    public FieldContext resolveFieldContext(@Nullable final Expression preceding, @NotNull final String name) {
+    public FieldContext resolveFieldCtx(@Nullable final Expression preceding, @NotNull final String name) {
         if (preceding != null) {
             Type type = preceding.resolveType(this);
 
@@ -353,7 +353,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
             }
 
             if (type != null) {
-                return resolveField(type, name);
+                return resolveFieldCtx(type, name);
             }
 
             return null;
@@ -367,21 +367,21 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
             }
         }
 
-        return resolveField(Type.getType(clazz.getDescriptor()), name);
+        return resolveFieldCtx(Type.getType(clazz.getDescriptor()), name);
     }
 
     @Nullable
-    public SymbolContext resolveFunction(@NotNull final Type owner, @NotNull final String name, @NotNull final Type... parameterTypes) {
+    private SymbolContext resolveFunctionCtx(@NotNull final Type owner, @NotNull final String name, @NotNull final Type... parameterTypes) {
         for (final Clazz module : classpath) {
             if (module.getPackageName().getName().equals(owner.getClassName())) {
-                final Function fun = resolveFunction(name, parameterTypes);
+                final Function fun = resolveFunctionCtx(name, parameterTypes);
                 if (fun != null) {
                     final Type retType = getTypeFromName(fun.getType());
 
                     if (retType == null)
                         return null;
 
-                    final Type methodType = resolveFunction(clazz, fun);
+                    final Type methodType = resolveFunctionCtx(clazz, fun);
 
                     if (methodType == null)
                         return null;
@@ -392,7 +392,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         }
 
         try {
-            return resolveFunction(Class.forName(owner.getClassName()), name, parameterTypes);
+            return resolveFunctionCtx(Class.forName(owner.getClassName()), name, parameterTypes);
         } catch (ClassNotFoundException ignored) {
         }
 
@@ -400,7 +400,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     }
 
     @Nullable
-    public SymbolContext resolveFunction(final @NotNull Class<?> clazz, @NotNull final String name, @NotNull final Type... parameterTypes) {
+    private SymbolContext resolveFunctionCtx(final @NotNull Class<?> clazz, @NotNull final String name, @NotNull final Type... parameterTypes) {
         final List<Executable> candidates = new LinkedList<>();
 
         for (final Method method : clazz.getMethods()) {
@@ -493,17 +493,17 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     }
 
     @Nullable
-    public SymbolContext resolveConstructor(@NotNull final QualifiedName owner, @NotNull final Type... parameterTypes) {
+    private SymbolContext resolveConstructorCtx(@NotNull final QualifiedName owner, @NotNull final Type... parameterTypes) {
         final Type type = resolveType(owner);
 
         if (type != null)
-            return resolveConstructor(type, parameterTypes);
+            return resolveConstructorCtx(type, parameterTypes);
 
         return null;
     }
 
     @Nullable
-    public SymbolContext resolveConstructor(@NotNull final Type owner, @NotNull final Type... parameterTypes) {
+    private SymbolContext resolveConstructorCtx(@NotNull final Type owner, @NotNull final Type... parameterTypes) {
         try {
             final Class<?> clazz = Class.forName(owner.getClassName());
             final List<Executable> constructorList = new LinkedList<>();
@@ -533,13 +533,13 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     }
 
     @Nullable
-    public FieldContext resolveField(@NotNull final Type owner, @NotNull final String name) {
+    private FieldContext resolveFieldCtx(@NotNull final Type owner, @NotNull final String name) {
         if (owner.getDescriptor().startsWith("[") && name.equals("length"))
             return ExpressionResolverImpl.ARRAY_LENGTH;
 
         for (final Clazz module : classpath) {
             if (Type.getType(module.getDescriptor()).equals(owner)) {
-                final Field field = resolveField(module, name);
+                final Field field = resolveFieldCtx(module, name);
 
                 if (field == null)
                     continue;
@@ -554,7 +554,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         }
 
         try {
-            return resolveField(Class.forName(owner.getClassName()), name);
+            return resolveFieldCtx(Class.forName(owner.getClassName()), name);
         } catch (final ClassNotFoundException ignored) {
         }
 
@@ -562,7 +562,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     }
 
     @Nullable
-    public FieldContext resolveField(@NotNull final Class<?> clazz, @NotNull final String name) {
+    private FieldContext resolveFieldCtx(@NotNull final Class<?> clazz, @NotNull final String name) {
         if (clazz.isArray() && name.equals("length"))
             return ExpressionResolverImpl.ARRAY_LENGTH;
 
@@ -576,12 +576,12 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
 
     @Nullable
     public SymbolContext resolveFunctionContext(@NotNull final String name, @NotNull final Type... parameterTypes) {
-        final Function function = resolveFunction(name, parameterTypes);
+        final Function function = resolveFunctionCtx(name, parameterTypes);
 
         if (function == null)
             return null;
 
-        final Type type = resolveFunction(clazz, function);
+        final Type type = resolveFunctionCtx(clazz, function);
 
         if (type == null)
             return null;
@@ -623,7 +623,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     }
 
     @Nullable
-    public Function resolveFunction(@NotNull final String name, @NotNull final Type... parameterTypes) {
+    private Function resolveFunctionCtx(@NotNull final String name, @NotNull final Type... parameterTypes) {
         final List<Type[]> functionTypeList = new LinkedList<>();
         final List<Function> functionList = new LinkedList<>();
 
@@ -633,7 +633,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
             if (!function.getName().equals(name) || types.length != parameterTypes.length)
                 continue;
 
-            final Type type = resolveFunction(clazz, function);
+            final Type type = resolveFunctionCtx(clazz, function);
 
             if (type != null) {
                 functionTypeList.add(type.getArgumentTypes());
@@ -673,7 +673,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         return Type.getType(builder.toString());
     }
 
-    private final void defineParameters(final Function function) {
+    private void defineParameters(final Function function) {
         final String[] parameterNames = function.getParameterNames();
         final List<Modifier>[] parameterModifiers = function.getParameterModifiers();
         final TypeName[] typeNames = function.getParameterTypes();
@@ -686,7 +686,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     }
 
     @Nullable
-    public Type resolveFunction(@NotNull final Clazz clazz, @NotNull final Function function) {
+    public Type resolveFunctionCtx(@NotNull final Clazz clazz, @NotNull final Function function) {
         final TypeName[] parameterTypes = function.getParameterTypes();
         final Type retType;
 
@@ -721,12 +721,12 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         return Type.getMethodType(retType, paramTypes);
     }
 
-    public SymbolContext resolveCallFromStaticImports(@NotNull final String name, @NotNull final Type... parameterTypes) {
+    private SymbolContext resolveCallFromStaticImports(@NotNull final String name, @NotNull final Type... parameterTypes) {
         for (final QualifiedName staticImp : clazz.getStaticImports()) {
             final Type type = resolveType(staticImp);
 
             if (type != null) {
-                final SymbolContext ctx = resolveFunction(type, name, parameterTypes);
+                final SymbolContext ctx = resolveFunctionCtx(type, name, parameterTypes);
 
                 if (ctx != null && ctx.isStatic())
                     return ctx;
@@ -736,12 +736,12 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         return null;
     }
 
-    public FieldContext resolveFieldFromStaticImports(@NotNull final String name) {
+    private FieldContext resolveFieldFromStaticImports(@NotNull final String name) {
         for (final QualifiedName staticImp : clazz.getStaticImports()) {
             final Type type = resolveType(staticImp);
 
             if (type != null) {
-                final FieldContext ctx = resolveField(type, name);
+                final FieldContext ctx = resolveFieldCtx(type, name);
 
                 if (ctx != null && ctx.isStatic())
                     return ctx;
@@ -752,17 +752,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     }
 
     @Nullable
-    public Type resolveFunctionType(@NotNull final String name, @NotNull final Type... parameterTypes) {
-        final Function fun = resolveFunction(name, parameterTypes);
-
-        if (fun == null)
-            return null;
-
-        return resolveFunction(clazz, fun);
-    }
-
-    @Nullable
-    public Field resolveField(@NotNull final Clazz clazz, @NotNull final String name) {
+    private Field resolveFieldCtx(@NotNull final Clazz clazz, @NotNull final String name) {
         for (final Field field : clazz.getFields()) {
             if (field.getName().equals(name)) {
                 return field;
@@ -772,8 +762,8 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     }
 
     @Nullable
-    public Type resolveFieldType(@NotNull final Clazz clazz, @NotNull final String name) {
-        final Field field = resolveField(clazz, name);
+    private Type resolveFieldType(@NotNull final Clazz clazz, @NotNull final String name) {
+        final Field field = resolveFieldCtx(clazz, name);
 
         if (field == null)
             return null;

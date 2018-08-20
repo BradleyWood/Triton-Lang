@@ -318,7 +318,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
     @Override
     public void visitExpressionFieldAccess(final ExpressionFieldAccess fa) {
         final Type precedingType = fa.getPrecedingExpr().resolveType(ctx.getResolver());
-        final FieldContext fieldCtx = ctx.getResolver().resolveFieldContext(fa.getPrecedingExpr(), fa.getFieldName());
+        final FieldContext fieldCtx = ctx.getResolver().resolveFieldCtx(fa.getPrecedingExpr(), fa.getFieldName());
 
         if (precedingType == null) {
             ctx.reportError("Cannot resolve expression", fa.getPrecedingExpr());
@@ -336,7 +336,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
 
     @Override
     public void visitName(final QualifiedName name) {
-        final FieldContext[] ctxList = ctx.getResolver().resolveFieldContext(name);
+        final FieldContext[] ctxList = ctx.getResolver().resolveFieldCtx(name);
 
         if (ctxList != null) {
             for (final FieldContext fieldCtx : ctxList) {
@@ -568,7 +568,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
             }
 
         } else {
-            final SymbolContext constructorCtx = ctx.getResolver().resolveConstructorContext(newExpr);
+            final SymbolContext constructorCtx = ctx.getResolver().resolveConstructorCtx(newExpr);
 
             if (constructorCtx == null) {
                 ctx.reportError("Cannot resolve constructor", newExpr);
@@ -697,7 +697,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
 
         final TypeHandler from = getTypeHandler(valueType);
 
-        final FieldContext fieldCtx = ctx.getResolver().resolveFieldContext(precedingExpr, assignment.getName());
+        final FieldContext fieldCtx = ctx.getResolver().resolveFieldCtx(precedingExpr, assignment.getName());
 
         if (fieldCtx == null) {
             ctx.reportError("Cannot resolve field: " + assignment.getName(), assignment);

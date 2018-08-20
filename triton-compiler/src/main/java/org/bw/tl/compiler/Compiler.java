@@ -65,7 +65,9 @@ public @Data class Compiler {
                 errors.add(ErrorType.GENERAL_ERROR.newError("Implicit typing is only supported for local variables", field));
                 continue;
             }
-            final Type type = resolver.resolveType(clazz, field.getType());
+
+            final Type type = field.getType().resolveType(resolver);
+
             if (type == null) {
                 errors.add(ErrorType.GENERAL_ERROR.newError("Cannot resolve type: " + field.getType(), field));
                 continue;
@@ -74,7 +76,7 @@ public @Data class Compiler {
         }
 
         for (final Function function : clazz.getFunctions()) {
-            final Type methodDescriptor = resolver.resolveFunction(clazz, function);
+            final Type methodDescriptor = resolver.resolveFunctionCtx(clazz, function);
 
             if (!functionVerifiable.isValid(function)) {
                 errors.add(ErrorType.GENERAL_ERROR.newError("Missing return statement", function));
