@@ -14,9 +14,9 @@ fun main(String[] args) {
     lst.add(34)
     lst.add(99)
 
-    System.out.println(lst)
+    println("Before: $lst")
 
-    Collections.sort(lst)
+    sort(lst)
 
-    System.out.println(lst)
+    println("After: $lst")
 }
