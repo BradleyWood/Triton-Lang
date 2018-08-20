@@ -41,7 +41,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
 
             mv.visitLabel(startLabel);
 
-            if (!ctx.getScope().putVar(parameterNames[i], ctx.resolveType(parameterTypes[i]), modifiers)) {
+            if (!ctx.getScope().putVar(parameterNames[i], parameterTypes[i].resolveType(ctx.getResolver()), modifiers)) {
                 ctx.reportError("Duplicate function parameter names", function);
             } else {
                 final int idx = ctx.getScope().findVar(parameterNames[i]).getIndex();
