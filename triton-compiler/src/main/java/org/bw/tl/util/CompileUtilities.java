@@ -35,6 +35,10 @@ public class CompileUtilities {
 
     public static final List<Primer> PRIMERS = Arrays.asList(new ModifierPrimer());
 
+    public static final List<String> DEFAULT_STATIC_IMPORTS = Arrays.asList(
+            "triton.Builtin"
+    );
+
     public static final List<String> DEFAULT_IMPORTS = Arrays.asList(
             "java.lang.System",
             "java.lang.Throwable",
@@ -103,6 +107,7 @@ public class CompileUtilities {
                 return null;
 
             DEFAULT_IMPORTS.forEach(imp -> cl.getImports().add(QualifiedName.of(imp)));
+            DEFAULT_STATIC_IMPORTS.forEach(imp -> cl.getStaticImports().add(QualifiedName.of(imp)));
             PRIMERS.forEach(p -> p.prime(cl));
             classes.add(cl);
         }
