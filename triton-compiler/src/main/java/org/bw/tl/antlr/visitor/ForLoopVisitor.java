@@ -21,7 +21,7 @@ public class ForLoopVisitor extends GrammarBaseVisitor<Node> {
 
         final GrammarParser.ForControlContext fctx = ctx.forControl();
 
-        if (ctx.forControl().COLON() != null) { // for each
+        if (fctx != null && ctx.forControl().COLON() != null) { // for each
             final TypeName type = fctx.type() != null ? fctx.type().accept(TypeVisitor.of(sourceFile)) : null;
             final Expression iterableExpression = fctx.expression(0).accept(ExpressionVisitor.of(sourceFile));
             final Field field = new Field(fctx.IDENTIFIER().getText(), type, null);
