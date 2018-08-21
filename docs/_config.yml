@@ -1,0 +1,74 @@
+# ----
+# Site
+
+title: Triton-Lang
+description: An experimental Jvm language
+url: https://triton-lang.github.com
+google_analytics_key:
+permalink: pretty
+
+# -----
+# Build
+
+timezone: Etc/UTC
+
+collections:
+  documentation:
+    title: Documentation
+    position: 1
+  stdlib:
+    title: Standard Library
+    position: 2
+plugins:
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      layout: default
+  -
+    scope:
+      type: "documentation"
+    values:
+      _hide_content: true
+  -
+    scope:
+      type: "api"
+    values:
+      _hide_content: true
+
+# -----------
+# CloudCannon
+
+types:
+  - get
+  - put
+  - delete
+  - post
+
+languages:
+  bash: Bash
+  c: C
+  css: CSS
+  html: HTML
+  java: Java
+  javascript: JavaScript
+  json: JSON
+  php: PHP
+  python: Python
+  ruby: Ruby
+
+_options:
+  content_markdown:
+    format: p h4 h5 h6
+    bold: true
+    italic: true
+    link: true
+    bulletedlist: true
+    numberedlist: true
+    image: true
+    table: true
+    styles: /css/editor.css
