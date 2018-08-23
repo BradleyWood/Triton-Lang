@@ -23,6 +23,7 @@ public @Data class Compiler {
     private final Verifiable<Function> functionVerifiable = new FunReturnVerifier();
     private final List<Error> errors = new LinkedList<>();
     private final List<Clazz> classes;
+    private String parent = "java/lang/Object";
 
     public Compiler(final List<Clazz> classes) {
         this.classes = classes;
@@ -54,7 +55,7 @@ public @Data class Compiler {
         final ClassWriter cw = new ClassWriter(COMPUTE_FRAMES + COMPUTE_MAXS);
 
         cw.visit(V1_8, ACC_PUBLIC + ACC_SUPER, clazz.getInternalName(), null,
-                "java/lang/Object", null);
+                parent, null);
 
         buildClassInitializer(cw, clazz);
 
