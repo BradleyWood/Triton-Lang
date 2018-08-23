@@ -4,6 +4,16 @@ file
     : NL* (packageDef NL*)? imp* NL* topLevelStatement* NL* EOF
     ;
 
+script
+    : NL* (packageDef NL*)? imp* NL* (scriptStatement semi)* (scriptStatement semi?)? NL* EOF
+    ;
+
+scriptStatement
+    : statement
+    | functionDef
+    | varDef
+    ;
+
 topLevelStatement
     : (
     functionDef
