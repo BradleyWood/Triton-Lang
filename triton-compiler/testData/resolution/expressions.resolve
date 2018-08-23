@@ -13,7 +13,24 @@ float            : 1.0e6f
 double           : 1.0
 double           : 1e6
 double           : 1.0e6
+
 java.lang.String : "Hello, World"
+java.lang.String : "" + ""
+java.lang.String : "" + 5
+java.lang.String : "" + true
+
+boolean          : true
+boolean          : false
+boolean          : 10 > 5
+boolean          : 10 < 5
+boolean          : 10 == 5
+boolean          : 10 >= 5
+boolean          : 10 <= 5
+boolean          : true && true
+boolean          : true || true
+boolean          : "".equals("")
+boolean          : !true
+boolean          : !false
 
 
 int              : 100000 * 10
