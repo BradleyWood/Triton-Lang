@@ -96,7 +96,9 @@ public @Data class Compiler {
 
             final MethodCtx ctx = new MethodCtx(classes, function, clazz);
 
-            function.accept(MethodImpl.of(mv, ctx));
+            final MethodImpl methodImpl = MethodImpl.of(mv, ctx);
+            methodImpl.setExpressionImpl(new ExpressionImpl(mv, ctx));
+            function.accept(methodImpl);
 
             errors.addAll(ctx.getErrors());
 
@@ -125,7 +127,9 @@ public @Data class Compiler {
 
         final MethodCtx ctx = new MethodCtx(classes, init, clazz);
 
-        init.accept(MethodImpl.of(mv, ctx));
+        final MethodImpl methodImpl = MethodImpl.of(mv, ctx);
+        methodImpl.setExpressionImpl(new ExpressionImpl(mv, ctx));
+        init.accept(methodImpl);
 
         errors.addAll(ctx.getErrors());
 
