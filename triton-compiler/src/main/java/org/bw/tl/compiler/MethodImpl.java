@@ -110,7 +110,7 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
         if (type == null)
             return null;
 
-        if (isAssignableWithImplicitCast(type, Type.INT_TYPE))
+        if (isAssignableFrom(type, Type.INT_TYPE))
             return Type.INT_TYPE;
 
         return type;
