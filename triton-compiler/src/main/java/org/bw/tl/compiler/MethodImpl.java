@@ -25,10 +25,17 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
 
     private final Label endOfFunctionLabel = new Label();
 
-    @Override
-    public void visitFunction(final Function function) {
-        ctx.beginScope();
+    public MethodImpl(@NotNull final MethodVisitor mv, @NotNull final MethodCtx ctx, @NotNull final ExpressionImpl expressionImpl) {
+        this.mv = mv;
+        this.ctx = ctx;
+        this.expressionImpl = expressionImpl;
+    }
 
+    public MethodImpl(@NotNull final MethodVisitor mv, @NotNull final MethodCtx ctx) {
+        this(mv, ctx, new ExpressionImpl(mv, ctx));
+    }
+
+    protected void defineParameters(final Function function) {
         if (!ctx.isStatic()) {
             ctx.getScope().putVar(" __this__ ", Type.getType(Object.class), 0);
         }
@@ -56,6 +63,13 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
                 }
             }
         }
+    }
+
+    @Override
+    public void visitFunction(final Function function) {
+        ctx.beginScope();
+
+        defineParameters(function);
 
         if (function.isShortForm()) {
             if (function.getBody() instanceof Expression) {
@@ -126,30 +140,27 @@ public @Data(staticConstructor = "of") class MethodImpl extends ASTVisitorBase i
         if (!ctx.getScope().putVar(field.getName(), fieldType, field.getAccessModifiers()))
             ctx.reportError("Field: " + field.getName() + " has already been defined", field);
 
-        final TypeHandler to = getTypeHandler(fieldType);
-
         if (value == null) {
             value = getDefault(fieldType);
         }
 
         visitAssignment(new Assignment(null, field.getName(), value));
-//        to.store(mv, ctx.getScope().findVar(field.getName()).getIndex());
     }
 
     public Literal getDefault(final Type type) {
         if (type.equals(Type.BYTE_TYPE) || type.equals(Type.CHAR_TYPE)
                 || type.equals(Type.SHORT_TYPE) || type.equals(Type.INT_TYPE)) {
-            return new Literal(0);
+            return new Literal<>(0);
         } else if (type.equals(Type.FLOAT_TYPE)) {
-            return new Literal(0f);
+            return new Literal<>(0f);
         } else if (type.equals(Type.DOUBLE_TYPE)) {
-            return new Literal(0.0);
+            return new Literal<>(0.0);
         } else if (type.equals(Type.LONG_TYPE)) {
-            return new Literal(0l);
+            return new Literal<>(0l);
         } else if (type.equals(Type.BOOLEAN_TYPE)) {
-            return new Literal(false);
+            return new Literal<>(false);
         } else {
-            return new Literal(null);
+            return new Literal<>(null);
         }
     }
 
