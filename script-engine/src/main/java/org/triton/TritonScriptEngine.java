@@ -1,10 +1,15 @@
 package org.triton;
 
+import org.triton.iterpreter.TritonBindings;
+import org.triton.iterpreter.TritonInterpreter;
+
 import javax.script.*;
+import java.io.IOException;
 import java.io.Reader;
 
 public class TritonScriptEngine extends AbstractScriptEngine {
 
+    private final TritonInterpreter interpreter = new TritonInterpreter();
     private final ScriptEngineFactory factory;
 
     public TritonScriptEngine(final ScriptEngineFactory factory) {
@@ -12,18 +17,24 @@ public class TritonScriptEngine extends AbstractScriptEngine {
     }
 
     @Override
-    public Object eval(String script, ScriptContext context) {
-        return null;
+    public Object eval(final String script, final ScriptContext context) throws ScriptException {
+        interpreter.setCtx(context);
+        return interpreter.eval(script);
     }
 
     @Override
-    public Object eval(Reader reader, ScriptContext context) throws ScriptException {
-        return null;
+    public Object eval(final Reader reader, final ScriptContext context) throws ScriptException {
+        interpreter.setCtx(context);
+        try {
+            return interpreter.eval(reader);
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     @Override
     public Bindings createBindings() {
-        return null;
+        return new TritonBindings();
     }
 
     @Override
