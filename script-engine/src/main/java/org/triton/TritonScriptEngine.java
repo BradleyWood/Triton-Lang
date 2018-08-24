@@ -1,6 +1,5 @@
 package org.triton;
 
-import org.triton.iterpreter.TritonBindings;
 import org.triton.iterpreter.TritonInterpreter;
 
 import javax.script.*;
@@ -34,7 +33,7 @@ public class TritonScriptEngine extends AbstractScriptEngine {
 
     @Override
     public Bindings createBindings() {
-        return new TritonBindings();
+        return new SimpleBindings();
     }
 
     @Override
