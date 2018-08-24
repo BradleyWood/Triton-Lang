@@ -99,7 +99,7 @@ public @Data class TritonInterpreter {
             final List<Error> errors = sc.getErrors();
 
             if (!errors.isEmpty())
-                throw new ScriptException(errors.get(0).getMessage());
+                throw new ScriptException(errors.get(0).toString());
 
             throw new ScriptException("Compilation failed");
         }
