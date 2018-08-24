@@ -63,7 +63,7 @@ public class ScriptMethodImpl extends MethodImpl {
             final Type fieldType = field.getType().resolveType(getCtx().getResolver());
 
             if (fieldType == null) {
-                getCtx().reportError("cannot resolve type", field.getType());
+                getCtx().reportError("Cannot resolve type", field.getType());
                 return;
             }
 

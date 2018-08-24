@@ -22,12 +22,12 @@ import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
 import static org.objectweb.asm.ClassWriter.COMPUTE_MAXS;
 import static org.objectweb.asm.Opcodes.*;
 
-@Data class ScriptCompiler {
+public @Data class ScriptCompiler {
 
     private final List<Error> errors = new LinkedList<>();
     private final Clazz script;
 
-    byte[] build(final String name) {
+    public byte[] build(final String name) {
         final ClassWriter cw = new ClassWriter(COMPUTE_FRAMES + COMPUTE_MAXS);
 
         cw.visit(V1_8, ACC_PUBLIC + ACC_SUPER, name, null,
