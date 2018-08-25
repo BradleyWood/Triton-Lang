@@ -21,7 +21,7 @@ public @Data(staticConstructor = "of") class ScriptVisitor extends GrammarBaseVi
         final LinkedList<Node> statements = new LinkedList<>();
 
         if (ctx.imp() != null) {
-            ctx.imp().forEach(i -> imports.add(QualifiedName.of(i.getText())));
+            ctx.imp().forEach(i -> imports.add(QualifiedName.of(i.fqn().getText())));
         }
 
         if (ctx.scriptStatement() != null) {
