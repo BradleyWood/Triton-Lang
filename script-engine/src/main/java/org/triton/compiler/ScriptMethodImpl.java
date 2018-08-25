@@ -3,22 +3,32 @@ package org.triton.compiler;
 import org.bw.tl.antlr.ast.*;
 import org.bw.tl.compiler.MethodCtx;
 import org.bw.tl.compiler.MethodImpl;
+import org.bw.tl.compiler.resolve.ExpressionResolverImpl;
+import org.bw.tl.compiler.resolve.FieldContext;
+import org.bw.tl.compiler.types.Primitive;
+import org.bw.tl.compiler.types.TypeHandler;
+import org.bw.tl.util.TypeUtilities;
 import org.jetbrains.annotations.NotNull;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
+import javax.script.ScriptContext;
+import java.util.HashSet;
 import java.util.List;
 
 public class ScriptMethodImpl extends MethodImpl {
 
+    private final HashSet<String> varSet = new HashSet<>();
+
     ScriptMethodImpl(@NotNull final MethodVisitor mv, final @NotNull MethodCtx ctx) {
-        super(mv, ctx, new ScriptExpressionImpl(mv, ctx));
+        super(mv, ctx);
     }
 
     @Override
     public void visitFunction(final Function function) {
         if (isEvalMethod()) {
-            getCtx().beginScope();
+            ctx.beginScope();
 
             defineParameters(function);
 
@@ -32,7 +42,7 @@ public class ScriptMethodImpl extends MethodImpl {
                     final Node last = statements.get(statements.size() - 1);
 
                     if (last instanceof Expression) {
-                        final Type type = ((Expression) last).resolveType(getCtx().getResolver());
+                        final Type type = ((Expression) last).resolveType(ctx.getResolver());
 
                         if (!Type.VOID_TYPE.equals(type)) {
                             statements.remove(statements.get(statements.size() - 1));
@@ -46,7 +56,7 @@ public class ScriptMethodImpl extends MethodImpl {
 
             ret.accept(this);
 
-            getCtx().endScope();
+            ctx.endScope();
         } else {
             super.visitFunction(function);
         }
@@ -56,26 +66,135 @@ public class ScriptMethodImpl extends MethodImpl {
     public void visitField(final Field field) {
         if (field.getInitialValue() == null) {
             if (field.getType() == null) {
-                getCtx().reportError("Cannot infer type", field);
+                ctx.reportError("Cannot infer type", field);
                 return;
             }
 
-            final Type fieldType = field.getType().resolveType(getCtx().getResolver());
+            final Type fieldType = field.getType().resolveType(ctx.getResolver());
 
             if (fieldType == null) {
-                getCtx().reportError("Cannot resolve type", field.getType());
+                ctx.reportError("Cannot resolve type", field.getType());
                 return;
             }
 
-            if (!getCtx().getScope().putVar(field.getName(), fieldType, field.getAccessModifiers()))
-                getCtx().reportError("Field: " + field.getName() + " has already been defined", field);
+            if (!ctx.getScope().putVar(field.getName(), fieldType, field.getAccessModifiers()))
+                ctx.reportError("Field: " + field.getName() + " has already been defined", field);
 
         } else {
             super.visitField(field);
         }
     }
 
+    private void storeAttribute(final String name, final Expression expression) {
+        final String putDesc = "(Ljava/lang/String;Ljava/lang/Object;I)V";
+        final int bindingsIdx = ctx.getScope().findVar(" __ctx__ ").getIndex();
+
+        final Type type = expression.resolveType(ctx.getResolver());
+        final TypeHandler handler = TypeUtilities.getTypeHandler(type);
+
+        mv.visitVarInsn(ALOAD, bindingsIdx);
+
+        mv.visitLdcInsn(name);
+
+        expression.accept(this);
+
+        handler.toObject(mv);
+
+        mv.visitIntInsn(BIPUSH, ScriptContext.ENGINE_SCOPE);
+
+        mv.visitMethodInsn(INVOKEINTERFACE, "javax/script/ScriptContext", "setAttribute", putDesc, true);
+        varSet.add(name);
+    }
+
+    private void loadAttribute(final String attribute) {
+        final String containsKey = "(Ljava/lang/String;)I";
+        final String getDesc = "(Ljava/lang/String;)Ljava/lang/Object;";
+        final int bindingsIdx = ctx.getScope().findVar(" __ctx__ ").getIndex();
+
+        if (!varSet.contains(attribute)) {
+            final Label exceptionEnd = new Label();
+
+            mv.visitVarInsn(ALOAD, bindingsIdx);
+            mv.visitLdcInsn(attribute);
+
+            mv.visitMethodInsn(INVOKEINTERFACE, "javax/script/ScriptContext", "getAttributesScope", containsKey, true);
+            mv.visitJumpInsn(IFGE, exceptionEnd);
+
+            throwException("java/lang/NoSuchFieldException", attribute);
+            mv.visitLabel(exceptionEnd);
+            varSet.add(attribute);
+        }
+
+
+        mv.visitVarInsn(ALOAD, bindingsIdx);
+        mv.visitLdcInsn(attribute);
+        mv.visitMethodInsn(INVOKEINTERFACE, "javax/script/ScriptContext", "getAttribute", getDesc, true);
+    }
+
+    private void throwException(final String type, final String message) {
+        mv.visitTypeInsn(NEW, type);
+        mv.visitInsn(DUP);
+        mv.visitLdcInsn(String.valueOf(message));
+        mv.visitMethodInsn(INVOKESPECIAL, type, "<init>", "(Ljava/lang/String;)V", false);
+
+        mv.visitInsn(ATHROW);
+    }
+
+    @Override
+    public void visitAssignment(final Assignment assignment) {
+        if (assignment.getPrecedingExpr() == null) {
+            storeAttribute(assignment.getName(), assignment.getValue());
+        } else {
+            super.visitAssignment(assignment);
+        }
+    }
+
+    private void loadField(final FieldContext fieldCtx) {
+        final Type type = fieldCtx.getTypeDescriptor();
+        final TypeHandler handler = TypeUtilities.getTypeHandler(type);
+        TypeHandler boxedHandler = null;
+
+        if (handler.isPrimitive()) {
+            final String boxed = Primitive.getPrimitiveByDesc(type.getDescriptor()).getWrappedType();
+            boxedHandler = TypeUtilities.getTypeHandler(Type.getType(boxed));
+        }
+
+        if (fieldCtx == ExpressionResolverImpl.ARRAY_LENGTH) {
+            mv.visitInsn(ARRAYLENGTH);
+        } if (isEvalMethod() && fieldCtx.isLocal()) {
+            loadAttribute(fieldCtx.getName());
+
+            if (boxedHandler != null) {
+                mv.visitTypeInsn(CHECKCAST, boxedHandler.getInternalName());
+                handler.cast(mv, boxedHandler);
+            } else {
+                mv.visitTypeInsn(CHECKCAST, fieldCtx.getTypeDescriptor().getInternalName());
+            }
+        } else if (fieldCtx.isLocal()) {
+            handler.load(mv, ctx.getScope().findVar(fieldCtx.getName()).getIndex());
+        } else if (fieldCtx.isStatic()) {
+            mv.visitFieldInsn(GETSTATIC, fieldCtx.getOwner(), fieldCtx.getName(), fieldCtx.getTypeDescriptor().getDescriptor());
+        } else {
+            mv.visitFieldInsn(GETFIELD, fieldCtx.getOwner(), fieldCtx.getName(), fieldCtx.getTypeDescriptor().getDescriptor());
+        }
+    }
+
+    @Override
+    public void visitName(final QualifiedName name) {
+        final FieldContext[] ctxList = ctx.getResolver().resolveFieldCtx(name);
+
+        if (ctxList != null) {
+            for (final FieldContext fieldCtx : ctxList) {
+                loadField(fieldCtx);
+            }
+        } else if (name.length() == 1) {
+            loadAttribute(name.toString());
+        } else {
+            ctx.reportError("Cannot resolve field: " + name, name);
+        }
+    }
+
     private boolean isEvalMethod() {
-        return "eval".equals(getCtx().getMethodName()) && !getCtx().isStatic();
+        return "eval".equals(ctx.getMethodName()) && !ctx.isStatic();
     }
 }

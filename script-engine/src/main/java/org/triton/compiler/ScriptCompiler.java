@@ -54,7 +54,6 @@ public @Data class ScriptCompiler {
             final MethodCtx ctx = new MethodCtx(Collections.singletonList(script), function, script);
 
             final MethodImpl methodImpl = new ScriptMethodImpl(mv, ctx);
-            methodImpl.setExpressionImpl(new ScriptExpressionImpl(mv, ctx));
             function.accept(methodImpl);
 
             errors.addAll(ctx.getErrors());

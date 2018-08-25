@@ -63,7 +63,7 @@ public @Data class Compiler {
 
         for (final Field field : clazz.getFields()) {
             if (field.getType() == null) {
-                errors.add(ErrorType.GENERAL_ERROR.newError("Implicit typing is only supported for local variables", field));
+                errors.add(ErrorType.GENERAL_ERROR.newError("Type inference is not supported for fields", field));
                 continue;
             }
 
@@ -97,7 +97,6 @@ public @Data class Compiler {
             final MethodCtx ctx = new MethodCtx(classes, function, clazz);
 
             final MethodImpl methodImpl = new MethodImpl(mv, ctx);
-            methodImpl.setExpressionImpl(new ExpressionImpl(mv, ctx));
             function.accept(methodImpl);
 
             errors.addAll(ctx.getErrors());
@@ -128,7 +127,6 @@ public @Data class Compiler {
         final MethodCtx ctx = new MethodCtx(classes, init, clazz);
 
         final MethodImpl methodImpl = new MethodImpl(mv, ctx);
-        methodImpl.setExpressionImpl(new ExpressionImpl(mv, ctx));
         init.accept(methodImpl);
 
         errors.addAll(ctx.getErrors());
