@@ -32,29 +32,42 @@ public class ScriptMethodImpl extends MethodImpl {
 
             defineParameters(function);
 
-            Node ret = new Return(new Literal<>(null));
+            Node lastStmt = function.getBody();
 
-            if (function.getBody() instanceof Block) {
+            if (lastStmt instanceof Block) {
                 final Block block = (Block) function.getBody();
                 final List<Node> statements = block.getStatements();
 
                 if (!statements.isEmpty()) {
-                    final Node last = statements.get(statements.size() - 1);
-
-                    if (last instanceof Expression) {
-                        final Type type = ((Expression) last).resolveType(ctx.getResolver());
-
-                        if (!Type.VOID_TYPE.equals(type)) {
-                            statements.remove(statements.get(statements.size() - 1));
-                            ret = new Return((Expression) last);
-                        }
-                    }
+                    lastStmt = statements.get(statements.size() - 1);
                 }
+            }
+
+            if (lastStmt instanceof Expression) {
+                ((Expression) lastStmt).setPop(false);
             }
 
             function.getBody().accept(this);
 
-            ret.accept(this);
+            if (lastStmt instanceof Expression) {
+                final Type lastType = ((Expression) lastStmt).resolveType(ctx.getResolver());
+
+                if (lastType == null) {
+                    // error would already have been reported
+                    return;
+                }
+
+                if (Type.VOID_TYPE.equals(lastType)) {
+                    mv.visitInsn(ACONST_NULL);
+                } else {
+                    final TypeHandler handler = TypeUtilities.getTypeHandler(lastType);
+                    handler.toObject(mv);
+                }
+            } else {
+                mv.visitInsn(ACONST_NULL);
+            }
+
+            mv.visitInsn(ARETURN);
 
             ctx.endScope();
         } else {
