@@ -41,7 +41,8 @@ public @Data class IfStatement extends Expression {
             } else if (TypeUtilities.isAssignableWithImplicitCast(elseBodyType, bodyType)) {
                 return bodyType;
             } else {
-                return null;
+                // todo; find lowest common parent
+                return Type.getType(Object.class);
             }
         }
 
