@@ -319,9 +319,17 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
 
     @Override
     public void visitIf(final IfStatement ifStatement) {
+        final Type resultType = ifStatement.resolveType(ctx.getResolver());
         final Expression condition = ifStatement.getCondition();
         final Type type = condition.resolveType(ctx.getResolver());
         final Node elseBlock = ifStatement.getElseBody();
+
+        if (!ifStatement.shouldPop()) {
+            if (resultType == null) {
+                ctx.reportError("If-expression requires each branch to have matching return types", ifStatement);
+                return;
+            }
+        }
 
         if (type == null) {
             ctx.reportError("Cannot resolve expression", condition);
@@ -334,10 +342,17 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
 
             condition.accept(this);
 
+            if (!ifStatement.shouldPop())
+                asExpression(ifStatement.getBody());
+
             if (elseBlock != null) {
                 mv.visitJumpInsn(IFEQ, elseLabel);
 
                 ctx.beginScope();
+
+                if (!ifStatement.shouldPop())
+                    asExpression(ifStatement.getElseBody());
+
                 ifStatement.getBody().accept(this);
                 ctx.endScope();
 
@@ -359,6 +374,17 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
             mv.visitLabel(after);
         } else {
             ctx.reportError("Expected boolean, found: " + type.getClassName(), condition);
+        }
+    }
+
+    private void asExpression(final Node node) {
+        if (node instanceof Block) {
+            final List<Node> stmts = ((Block) node).getStatements();
+
+            if (!stmts.isEmpty())
+                asExpression(stmts.get(stmts.size() - 1));
+        } else if (node instanceof Expression) {
+            ((Expression) node).setPop(false);
         }
     }
 

@@ -18,8 +18,6 @@ public class StatementVisitor extends GrammarBaseVisitor<Node> {
         Node stmt = null;
         if (ctx.block() != null) {
             stmt = ctx.block().accept(BlockVisitor.of(sourceFile));
-        } else if (ctx.ifStatement() != null) {
-            stmt = ctx.ifStatement().accept(IfVisitor.of(sourceFile));
         } else if (ctx.whileStatement() != null) {
             stmt = ctx.whileStatement().accept(WhileVisitor.of(sourceFile));
         } else if (ctx.forStatement() != null) {

@@ -23,7 +23,6 @@ topLevelStatement
 
 statement
     : block
-    | ifStatement
     | whileStatement
     | forStatement
     | expression
@@ -38,6 +37,7 @@ expression
     | name=fqn
     | preceeding=expression NL* DOT NL* call=functionCall
     | call=functionCall
+    | ifStatement
     | newStatement
     | listDef
     | preceeding=expression NL* DOT NL* assignment

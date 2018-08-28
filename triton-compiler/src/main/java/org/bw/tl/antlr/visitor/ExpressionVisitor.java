@@ -46,6 +46,8 @@ public class ExpressionVisitor extends GrammarBaseVisitor<Expression> {
             }
         } else if (ctx.newStatement() != null) {
             expression = ctx.newStatement().accept(NewVisitor.of(sourceFile));
+        } else if (ctx.ifStatement() != null) {
+            expression = ctx.ifStatement().accept(IfVisitor.of(sourceFile));
         } else if(ctx.indices() != null) {
             final Expression lstMapOrArray = ctx.expression(0).accept(this);
             final List<Expression> indices = new LinkedList<>();
