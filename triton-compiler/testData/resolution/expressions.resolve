@@ -13,6 +13,11 @@ float            : 1.0e6f
 double           : 1.0
 double           : 1e6
 double           : 1.0e6
+double           : if (a > b) 0 else 0.0
+float            : if (a > b) 0 else 0f
+byte             : if (a > b) 0 else 1
+
+java.lang.String : if (a > b) "yes" else "no"
 
 java.lang.String : "Hello, World"
 java.lang.String : "" + ""
