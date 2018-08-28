@@ -324,6 +324,9 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
         final Type type = condition.resolveType(ctx.getResolver());
         final Node elseBlock = ifStatement.getElseBody();
 
+        final Type bodyType = resolveNode(ifStatement.getBody());
+        final Type elseBodyType = resolveNode(ifStatement.getElseBody());
+
         if (!ifStatement.shouldPop()) {
             if (resultType == null) {
                 ctx.reportError("If-expression requires each branch to have matching return types", ifStatement);
@@ -351,9 +354,13 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
                 ctx.beginScope();
 
                 if (!ifStatement.shouldPop())
-                    asExpression(ifStatement.getElseBody());
+                    asExpression(elseBlock);
 
                 ifStatement.getBody().accept(this);
+
+                if (!ifStatement.shouldPop())
+                    typeCast(bodyType, resultType);
+
                 ctx.endScope();
 
                 mv.visitJumpInsn(GOTO, after);
@@ -361,13 +368,23 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
                 mv.visitLabel(elseLabel);
 
                 ctx.beginScope();
+
                 elseBlock.accept(this);
+
+                if (!ifStatement.shouldPop())
+                    typeCast(elseBodyType, resultType);
+
                 ctx.endScope();
             } else {
                 mv.visitJumpInsn(IFEQ, after);
 
                 ctx.beginScope();
+
                 ifStatement.getBody().accept(this);
+
+                if (!ifStatement.shouldPop())
+                    typeCast(bodyType, resultType);
+
                 ctx.endScope();
             }
 
@@ -375,6 +392,28 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
         } else {
             ctx.reportError("Expected boolean, found: " + type.getClassName(), condition);
         }
+    }
+
+    private void typeCast(@NotNull final Type from, @NotNull final Type to) {
+        final TypeHandler fromHandler = TypeUtilities.getTypeHandler(from);
+        final TypeHandler toHandler = TypeUtilities.getTypeHandler(to);
+
+        toHandler.cast(mv, fromHandler);
+    }
+
+    private Type resolveNode(final Node node) {
+        if (node instanceof Block) {
+            final Block block = (Block) node;
+            final List<Node> stmts = block.getStatements();
+
+            if (!stmts.isEmpty())
+                return resolveNode(stmts.get(stmts.size() - 1));
+        } else if (node instanceof Expression) {
+            final Expression expr = (Expression) node;
+            return expr.resolveType(ctx.getResolver());
+        }
+
+        return null;
     }
 
     private void asExpression(final Node node) {

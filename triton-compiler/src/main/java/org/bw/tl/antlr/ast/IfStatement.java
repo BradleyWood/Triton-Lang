@@ -26,7 +26,7 @@ public @Data class IfStatement extends Expression {
         final Type bodyType = resolveNode(body, resolver);
 
         if (elseBody != null && bodyType != null) {
-            final Type elseBodyType = resolveNode(body, resolver);
+            final Type elseBodyType = resolveNode(elseBody, resolver);
 
             if (elseBodyType == null) {
                 return null;
