@@ -28,4 +28,11 @@
     if (abc)
         d()
     else e()
+
+    var a = if (b > c) d else e
+
+    var abcd = if (a > b)
+        test()
+        else
+        test() + 20
 }
