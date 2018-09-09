@@ -151,7 +151,12 @@ whenExpr
     ;
 
 whenCase
-    :   expression NL* '->' NL* (expression | block)
+    : whenCondition NL* '->' NL* (expression | block)
+    ;
+
+whenCondition
+    : expression
+    | ('is' | '!is') type
     ;
 
 whenElse
@@ -281,6 +286,7 @@ ZeroToThree
     ;
 
 IF      : 'if';
+IS      : 'is';
 DO      : 'do';
 NEW     : 'new';
 FUN     : 'fun';
