@@ -36,6 +36,8 @@ public interface ASTVisitor {
 
     void visitNew(final New newExpr);
 
+    void visitWhen(final When when);
+
     void visitExpressionIndices(final ExpressionIndex expressionIndex);
 
 }

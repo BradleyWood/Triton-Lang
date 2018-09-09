@@ -16,6 +16,8 @@ public interface ExpressionResolver {
 
     Type resolveName(QualifiedName name);
 
+    Type resolveWhen(When when);
+
     Type resolveConstructor(New newStmt);
 
     Type resolveTypeCast(TypeCast typeCast);

@@ -518,6 +518,11 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
     }
 
     @Override
+    public void visitWhen(final When when) {
+
+    }
+
+    @Override
     public void visitNew(final New newExpr) {
         final List<Expression> parameters = newExpr.getParameters();
         final boolean isArray = newExpr.isArray();

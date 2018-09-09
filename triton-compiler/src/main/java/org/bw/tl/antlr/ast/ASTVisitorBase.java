@@ -88,6 +88,11 @@ public class ASTVisitorBase implements ASTVisitor {
     }
 
     @Override
+    public void visitWhen(When when) {
+        throw new UnsupportedOperationException("When not implemented");
+    }
+
+    @Override
     public void visitExpressionIndices(final ExpressionIndex expressionIndex) {
         throw new UnsupportedOperationException("Expression indices not supported");
     }

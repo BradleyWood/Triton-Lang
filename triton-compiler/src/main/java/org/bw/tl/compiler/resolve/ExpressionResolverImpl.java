@@ -84,6 +84,11 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         return ctx.getTypeDescriptor().getReturnType();
     }
 
+    @Override
+    public Type resolveWhen(@NotNull final When when) {
+        return null;
+    }
+
     @Nullable
     @Override
     public Type resolveLiteral(@NotNull final Literal literal) {
