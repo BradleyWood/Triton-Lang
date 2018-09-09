@@ -38,6 +38,7 @@ expression
     | preceeding=expression NL* DOT NL* call=functionCall
     | call=functionCall
     | ifStatement
+    | whenExpr
     | newStatement
     | listDef
     | preceeding=expression NL* DOT NL* assignment
@@ -143,6 +144,18 @@ block
 ifStatement
     : IF NL* LPAREN condition=expression RPAREN NL* body=statement SEMICOLON?
     (NL* ELSE NL* else_=statement)?
+    ;
+
+whenExpr
+    : WHEN NL* (LPAREN NL* expression NL* RPAREN NL*)? '{' NL* (whenCase semi NL*)* whenElse semi? '}'
+    ;
+
+whenCase
+    :   expression NL* '->' NL* (expression | block)
+    ;
+
+whenElse
+    :   ELSE NL* '->' NL* (expression | block)
     ;
 
 whileStatement
@@ -281,6 +294,7 @@ BYTE_T  : 'byte';
 NULL    : 'null';
 TRUE    : 'true';
 ELSE    : 'else';
+WHEN    : 'when';
 FALSE   : 'false';
 WHILE   : 'while';
 FLOAT_T : 'float';
