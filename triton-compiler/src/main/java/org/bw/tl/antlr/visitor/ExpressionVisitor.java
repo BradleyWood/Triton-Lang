@@ -46,6 +46,8 @@ public class ExpressionVisitor extends GrammarBaseVisitor<Expression> {
             }
         } else if (ctx.newStatement() != null) {
             expression = ctx.newStatement().accept(NewVisitor.of(sourceFile));
+        } else if (ctx.whenExpr() != null) {
+            expression = ctx.whenExpr().accept(WhenVisitor.of(sourceFile));
         } else if (ctx.ifStatement() != null) {
             expression = ctx.ifStatement().accept(IfVisitor.of(sourceFile));
         } else if(ctx.indices() != null) {

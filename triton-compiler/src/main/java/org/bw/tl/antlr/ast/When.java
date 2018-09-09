@@ -12,6 +12,8 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public @Data class When extends Expression {
 
+    @Nullable
+    private final Expression data;
     @NotNull
     private final List<Expression> branchConditions;
     @NotNull
