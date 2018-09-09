@@ -147,7 +147,7 @@ ifStatement
     ;
 
 whenExpr
-    : WHEN NL* (LPAREN NL* expression NL* RPAREN NL*)? '{' NL* (whenCase semi NL*)* whenElse semi? '}'
+    : WHEN NL* (LPAREN NL* expression NL* RPAREN NL*)? '{' NL* (whenCase semi)* (whenElse semi?)? '}'
     ;
 
 whenCase
