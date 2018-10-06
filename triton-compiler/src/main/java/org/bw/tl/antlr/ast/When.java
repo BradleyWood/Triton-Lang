@@ -15,9 +15,7 @@ public @Data class When extends Expression {
     @Nullable
     private final Expression data;
     @NotNull
-    private final List<Expression> branchConditions;
-    @NotNull
-    private final List<Node> branches;
+    private final List<WhenCase> cases;
 
     @Nullable
     private final Node elseBranch;

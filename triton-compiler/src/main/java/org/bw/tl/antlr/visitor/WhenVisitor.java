@@ -1,6 +1,5 @@
 package org.bw.tl.antlr.visitor;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.bw.tl.antlr.GrammarBaseVisitor;
@@ -8,6 +7,7 @@ import org.bw.tl.antlr.GrammarParser;
 import org.bw.tl.antlr.ast.Expression;
 import org.bw.tl.antlr.ast.Node;
 import org.bw.tl.antlr.ast.When;
+import org.bw.tl.antlr.ast.WhenCase;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -20,25 +20,8 @@ public class WhenVisitor extends GrammarBaseVisitor<When> {
     @Override
     public When visitWhenExpr(final GrammarParser.WhenExprContext ctx) {
         final Expression expr = ctx.expression().accept(ExpressionVisitor.of(sourceFile));
-        final List<Expression> conditions = new LinkedList<>();
-        final List<Node> branches = new LinkedList<>();
+        final List<WhenCase> cases = new LinkedList<>();
         Node elseBranch = null;
-
-        if (ctx.whenCase() != null) {
-            for (final GrammarParser.WhenCaseContext whenCaseContext : ctx.whenCase()) {
-                if (whenCaseContext.whenCondition().expression() != null) {
-                    conditions.add(whenCaseContext.whenCondition().expression().accept(ExpressionVisitor.of(sourceFile)));
-                } else {
-                    throw new UnsupportedOperationException("Instance check not supported yet for 'when' expression");
-                }
-
-                if (whenCaseContext.expression() != null) {
-                    branches.add(whenCaseContext.expression().accept(ExpressionVisitor.of(sourceFile)));
-                } else if (whenCaseContext.block() != null) {
-                    branches.add(whenCaseContext.block().accept(BlockVisitor.of(sourceFile)));
-                }
-            }
-        }
 
         if (ctx.whenElse() != null) {
             if (ctx.whenElse().block() != null) {
@@ -48,11 +31,35 @@ public class WhenVisitor extends GrammarBaseVisitor<When> {
             }
         }
 
-        final When when = new When(expr, conditions, branches, elseBranch);
+        final When when = new When(expr, cases, elseBranch);
+
+        if (ctx.whenCase() != null) {
+            for (final GrammarParser.WhenCaseContext whenCaseContext : ctx.whenCase()) {
+                final Expression branchCondition;
+                final Node branch;
+
+                if (whenCaseContext.whenCondition().expression() != null) {
+                    branchCondition = whenCaseContext.whenCondition().expression().accept(ExpressionVisitor.of(sourceFile));
+                } else {
+                    throw new UnsupportedOperationException("Instance check not supported yet for 'when' expression");
+                }
+
+                if (whenCaseContext.expression() != null) {
+                    branch = whenCaseContext.expression().accept(ExpressionVisitor.of(sourceFile));
+                } else if (whenCaseContext.block() != null) {
+                    branch = whenCaseContext.block().accept(BlockVisitor.of(sourceFile));
+                } else {
+                    throw new IllegalStateException("No branch for when case");
+                }
+
+                branch.setParent(when);
+                branchCondition.setParent(when);
+
+                cases.add(new WhenCase(branchCondition, branch));
+            }
+        }
 
         expr.setParent(when);
-        conditions.forEach(e -> e.setParent(when));
-        branches.forEach(n -> n.setParent(when));
 
         if (elseBranch != null)
             elseBranch.setParent(when);
