@@ -28,7 +28,6 @@ public class FunctionVisitor extends GrammarBaseVisitor<Function> {
             body = ctx.block().accept(BlockVisitor.of(sourceFile));
         } else {
             body = ctx.expression().accept(ExpressionVisitor.of(sourceFile));
-            type = null;
             shortForm = true;
         }
 
