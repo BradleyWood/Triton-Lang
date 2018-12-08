@@ -86,7 +86,22 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
 
     @Override
     public Type resolveWhen(@NotNull final When when) {
-        return null;
+        return Type.getType(Object.class);
+    }
+
+    private Type resolveNode(final Node node) {
+        if (node instanceof Block) {
+            final Block block = (Block) node;
+            final List<Node> stmts = block.getStatements();
+
+            if (!stmts.isEmpty())
+                return resolveNode(stmts.get(stmts.size() - 1));
+        } else if (node instanceof Expression) {
+            final Expression expr = (Expression) node;
+            return expr.resolveType(this);
+        }
+
+        return Type.VOID_TYPE;
     }
 
     @Nullable
@@ -441,11 +456,17 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         for (int i = 0; i < parameterTypes.length; i++) {
             if (!parameterTypes[i].equals(requiredTypes[i])) {
                 if (DISCRETE_TYPES.contains(parameterTypes[i]) && DISCRETE_TYPES.contains(requiredTypes[i])) {
-                    if (DISCRETE_TYPES.indexOf(requiredTypes[i]) < DISCRETE_TYPES.indexOf(parameterTypes[i]))
+                    if (DISCRETE_TYPES.indexOf(requiredTypes[i]) < DISCRETE_TYPES.indexOf(parameterTypes[i])) {
                         return -1;
+                    } else {
+                        rating += DISCRETE_TYPES.indexOf(requiredTypes[i]) - DISCRETE_TYPES.indexOf(parameterTypes[i]);
+                    }
                 } else if (CONTINUOUS_TYPES.contains(parameterTypes[i]) && CONTINUOUS_TYPES.contains(requiredTypes[i])) {
-                    if (!parameterTypes[i].equals(requiredTypes[i]) && requiredTypes[i] == Type.FLOAT_TYPE)
+                    if (!parameterTypes[i].equals(requiredTypes[i]) && requiredTypes[i] == Type.FLOAT_TYPE) {
                         return -1;
+                    } else {
+                        rating += 1;
+                    }
                 } else {
                     final Primitive parameterType = Primitive.getPrimitiveByDesc(parameterTypes[i].getDescriptor());
                     final Primitive requiredType = Primitive.getPrimitiveByDesc(requiredTypes[i].getDescriptor());
