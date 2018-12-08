@@ -19,7 +19,11 @@ public class WhenVisitor extends GrammarBaseVisitor<When> {
 
     @Override
     public When visitWhenExpr(final GrammarParser.WhenExprContext ctx) {
-        final Expression expr = ctx.expression().accept(ExpressionVisitor.of(sourceFile));
+        Expression expr = null;
+
+        if (ctx.expression() != null)
+            expr = ctx.expression().accept(ExpressionVisitor.of(sourceFile));
+
         final List<WhenCase> cases = new LinkedList<>();
         Node elseBranch = null;
 
@@ -59,7 +63,8 @@ public class WhenVisitor extends GrammarBaseVisitor<When> {
             }
         }
 
-        expr.setParent(when);
+        if (expr != null)
+            expr.setParent(when);
 
         if (elseBranch != null)
             elseBranch.setParent(when);
