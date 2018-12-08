@@ -373,6 +373,8 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
 
                 if (!ifStatement.shouldPop())
                     typeCast(elseBodyType, resultType);
+                else if (elseBodyType != null)
+                    pop(elseBodyType);
 
                 ctx.endScope();
             } else {
@@ -384,6 +386,8 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
 
                 if (!ifStatement.shouldPop())
                     typeCast(bodyType, resultType);
+                else
+                    pop(bodyType);
 
                 ctx.endScope();
             }
@@ -413,7 +417,7 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
             return expr.resolveType(ctx.getResolver());
         }
 
-        return null;
+        return Type.VOID_TYPE;
     }
 
     private void asExpression(final Node node) {
@@ -519,7 +523,97 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
 
     @Override
     public void visitWhen(final When when) {
+        final boolean hasParameter = when.getData() != null;
+        final Type whenType = when.resolveType(ctx.getResolver());
+        Type parameterType = Type.BOOLEAN_TYPE;
 
+        if (when.getData() != null) {
+            parameterType = when.getData().resolveType(ctx.getResolver());
+
+            if (parameterType == null) {
+                ctx.reportError("Cannot resolve expression", when.getData());
+                return;
+            }
+        }
+
+        final TypeHandler paramTypeHandler = TypeUtilities.getTypeHandler(parameterType);
+        final Label endLabel = new Label();
+
+        if (hasParameter) {
+            when.getData().accept(this);
+            duplicate(parameterType);
+        }
+
+        final List<WhenCase> cases = when.getCases();
+
+        for (int i = 0; i < cases.size(); i++) {
+            final WhenCase whenCase = cases.get(i);
+            final Type conditionType = whenCase.getCondition().resolveType(ctx.getResolver());
+            final Type branchType = resolveNode(whenCase.getBranch());
+            final Label nextCaseLabel = new Label();
+
+            if (conditionType == null) {
+                ctx.reportError("Cannot resolve expression", whenCase.getCondition());
+                return;
+            }
+
+            if (!conditionType.equals(parameterType) && !isAssignableFrom(conditionType, parameterType) &&
+                    isAssignableWithImplicitCast(conditionType, parameterType)) {
+                ctx.reportError("Type: " + conditionType.getClassName() + " cannot be assigned to " +
+                        parameterType.getClassName(), whenCase.getCondition());
+                return;
+            }
+
+            final TypeHandler conditionTypeHandler = TypeUtilities.getTypeHandler(conditionType);
+            final Operator eqOperator = Operator.getOperator("==", conditionType, parameterType);
+
+            if (!hasParameter) {
+                if (Type.BOOLEAN_TYPE.equals(conditionType)) {
+
+                } else {
+
+                }
+            } else if (eqOperator != null) {
+                whenCase.getCondition().accept(this);
+                eqOperator.applyCmp(mv, nextCaseLabel);
+            } else {
+                paramTypeHandler.toObject(mv);
+                whenCase.getCondition().accept(this);
+                conditionTypeHandler.toObject(mv);
+
+                mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "equals", "(Ljava/lang/Object;)Z", false);
+                mv.visitJumpInsn(IFEQ, nextCaseLabel);
+            }
+
+            whenCase.getBranch().accept(this);
+
+            if (whenType != null) {
+                typeCast(branchType, whenType);
+            }
+
+            mv.visitJumpInsn(GOTO, endLabel);
+
+            mv.visitLabel(nextCaseLabel);
+
+            if (hasParameter && i < cases.size() - 1) {
+                duplicate(parameterType);
+            }
+        }
+
+        final Type elseType = resolveNode(when.getElseBranch());
+
+        if (when.getElseBranch() != null) {
+            when.getElseBranch().accept(this);
+
+            if (whenType != null)
+                typeCast(elseType, whenType);
+        }
+
+        mv.visitLabel(endLabel);
+
+        if (when.shouldPop() && whenType != null) {
+            pop(whenType);
+        }
     }
 
     @Override
@@ -990,6 +1084,22 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
             } else {
                 getTypeHandler(resultType).arrayStore(mv);
             }
+        }
+    }
+
+    private void duplicate(final Type type) {
+        if (Type.LONG_TYPE.equals(type) || Type.DOUBLE_TYPE.equals(type)) {
+            mv.visitInsn(DUP2);
+        } else if (!Type.VOID_TYPE.equals(type)) {
+            mv.visitInsn(DUP);
+        }
+    }
+
+    private void pop(@NotNull final Type type) {
+        if (Type.LONG_TYPE.equals(type) || Type.DOUBLE_TYPE.equals(type)) {
+            mv.visitInsn(POP2);
+        } else if (!Type.VOID_TYPE.equals(type)) {
+            mv.visitInsn(POP);
         }
     }
 
