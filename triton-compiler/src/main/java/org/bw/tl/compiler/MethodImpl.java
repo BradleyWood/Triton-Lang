@@ -568,10 +568,9 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
             final Operator eqOperator = Operator.getOperator("==", conditionType, parameterType);
 
             if (!hasParameter) {
-                if (Type.BOOLEAN_TYPE.equals(conditionType)) {
-
-                } else {
-
+                if (!Type.BOOLEAN_TYPE.equals(conditionType)) {
+                    ctx.reportError("Expected type boolean but got " + conditionType.getClassName(),
+                            whenCase.getCondition());
                 }
             } else if (eqOperator != null) {
                 whenCase.getCondition().accept(this);
