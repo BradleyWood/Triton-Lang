@@ -18,7 +18,7 @@ fun resolveLocalFunctionTest() {
     float c = add(10, 20)
     double d = add(10, 20)
 
-    Assert.assertEquals(30.0, c, 0.0001)
+    Assert.assertEquals(30.0f, c, 0.0001f)
     Assert.assertEquals(30.0, d, 0.0001)
 }
 
