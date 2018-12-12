@@ -40,6 +40,62 @@ public class TypeUtilities {
         return t == Primitive.SHORT && (f == Primitive.BYTE);
     }
 
+    /**
+     * Counts the number of types between child and parent
+     *
+     * @param childType
+     * @param parentType
+     * @return
+     */
+    public static int countToParent(final Type childType, final Type parentType) {
+        if (childType.equals(parentType))
+            return 0;
+
+        int count = 0;
+
+        try {
+            final Class<?> parentClass = Class.forName(parentType.getClassName());
+            Class<?> cl = Class.forName(childType.getClassName());
+
+            if (!parentClass.isAssignableFrom(cl)) {
+                return -1;
+            }
+
+            while (!cl.equals(parentClass)) {
+                count++;
+                cl = cl.getSuperclass();
+
+                if (cl == null) {
+                    count = 0;
+                    cl = Class.forName(childType.getClassName());
+                    break;
+                }
+            }
+
+            outer:
+            for (final Class<?> iface : cl.getInterfaces()) {
+                cl = iface;
+
+                while (!cl.equals(parentClass)) {
+                    count++;
+                    cl = cl.getSuperclass();
+
+                    if (cl == null) {
+                        count = 0;
+                        break outer;
+                    }
+                }
+
+                return count;
+            }
+
+        } catch (ClassNotFoundException e) {
+            return -1;
+        }
+
+        return count;
+    }
+
     public static boolean isAssignableWithImplicitCast(final String fromDesc, final String toDesc) {
         return isAssignableWithImplicitCast(Type.getType(fromDesc), Type.getType(toDesc));
     }

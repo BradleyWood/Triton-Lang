@@ -3,7 +3,7 @@ package org.bw.tl.compiler.resolve;
 import lombok.Data;
 import org.bw.tl.antlr.ast.*;
 import org.bw.tl.compiler.Scope;
-import org.bw.tl.compiler.types.Primitive;
+import org.bw.tl.compiler.types.MethodComparator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
@@ -11,9 +11,7 @@ import org.objectweb.asm.Type;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static org.bw.tl.util.TypeUtilities.*;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
@@ -444,53 +442,6 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         return null;
     }
 
-    private int rateParameters(final Type[] parameterTypes, final Type[] requiredTypes) {
-        if (parameterTypes == null)
-            return -1;
-
-        final List<Type> DISCRETE_TYPES = Arrays.asList(Type.BYTE_TYPE, Type.SHORT_TYPE, Type.INT_TYPE, Type.LONG_TYPE);
-        final List<Type> CONTINUOUS_TYPES = Arrays.asList(Type.FLOAT_TYPE, Type.DOUBLE_TYPE);
-
-        int rating = 0;
-
-        for (int i = 0; i < parameterTypes.length; i++) {
-            if (!parameterTypes[i].equals(requiredTypes[i])) {
-                if (DISCRETE_TYPES.contains(parameterTypes[i]) && DISCRETE_TYPES.contains(requiredTypes[i])) {
-                    if (DISCRETE_TYPES.indexOf(requiredTypes[i]) < DISCRETE_TYPES.indexOf(parameterTypes[i])) {
-                        return -1;
-                    } else {
-                        rating += DISCRETE_TYPES.indexOf(requiredTypes[i]) - DISCRETE_TYPES.indexOf(parameterTypes[i]);
-                    }
-                } else if (CONTINUOUS_TYPES.contains(parameterTypes[i]) && CONTINUOUS_TYPES.contains(requiredTypes[i])) {
-                    if (!parameterTypes[i].equals(requiredTypes[i]) && requiredTypes[i] == Type.FLOAT_TYPE) {
-                        return -1;
-                    } else {
-                        rating += 1;
-                    }
-                } else {
-                    final Primitive parameterType = Primitive.getPrimitiveByDesc(parameterTypes[i].getDescriptor());
-                    final Primitive requiredType = Primitive.getPrimitiveByDesc(requiredTypes[i].getDescriptor());
-
-                    if ((parameterType == null || parameterType != requiredType) && (parameterType == null && requiredType == null)) {
-                        if (!isAssignableFrom(parameterTypes[i], requiredTypes[i])) {
-                            if (isAssignableWithImplicitCast(parameterTypes[i], requiredTypes[i])) {
-                                rating += 2;
-                            } else {
-                                return -1;
-                            }
-                        }
-                    } else if (isAssignableWithImplicitCast(parameterTypes[i], requiredTypes[i])) {
-                        rating += 2;
-                    } else {
-                        return -1;
-                    }
-                }
-            }
-        }
-
-        return rating;
-    }
-
     @Nullable
     public Type resolveType(@NotNull final QualifiedName name) {
         if (name.length() == 0)
@@ -616,20 +567,29 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     }
 
     private int selectFun(@NotNull final List<Type[]> functionArgList, @NotNull final Type... parameterTypes) {
-        final int[] ratings = new int[functionArgList.size()];
+        final MethodComparator mc = new MethodComparator(parameterTypes);
 
-        for (int i = 0; i < ratings.length; i++) {
-            ratings[i] = rateParameters(parameterTypes, functionArgList.get(i));
+        final List<Type[]> types = new ArrayList<>(functionArgList);
+        types.sort(mc);
+
+        if (types.isEmpty())
+            return -1;
+
+        final Type[] bestTypes = types.get(0);
+
+        for (int i = 0; i < bestTypes.length; i++) {
+            if (!isAssignableFrom(parameterTypes[i], bestTypes[i]) &&
+                    !isAssignableWithImplicitCast(parameterTypes[i], bestTypes[i]))
+                return -1;
         }
 
-        int best = -1;
-
-        for (int i = 0; i < ratings.length; i++) {
-            if (ratings[i] != -1 && (best == -1 || ratings[i] < ratings[best]))
-                best = i;
+        if (types.size() > 1) {
+            if (mc.compare(bestTypes, types.get(1)) >= 0) {
+                return -1;
+            }
         }
 
-        return best;
+        return functionArgList.indexOf(types.get(0));
     }
 
     private int selectExecutable(@NotNull final List<Executable> executables, @NotNull final Type... parameterTypes) {
