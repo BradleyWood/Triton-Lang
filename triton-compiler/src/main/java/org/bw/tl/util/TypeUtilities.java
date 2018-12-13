@@ -134,6 +134,28 @@ public class TypeUtilities {
     }
 
     /**
+     * Returns the method signature including name and argument types
+     *
+     * Should only be used on a method Type
+     *
+     * @param type The method type
+     * @return The signature
+     */
+    public static String getMethodSignature(final String name, final Type type) {
+        final Type[] types = type.getArgumentTypes();
+        final StringBuilder sb = new StringBuilder(name);
+
+        sb.append("(");
+
+        for (Type t : types) {
+            sb.append(t.getDescriptor());
+        }
+
+        sb.append(")");
+        return sb.toString();
+    }
+
+    /**
      * Attempts to resolve a type with no contextual information. The type must
      * be primitive or fully qualified and must exists the compiler's classpath
      *

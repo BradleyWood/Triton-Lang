@@ -6,6 +6,7 @@ import org.bw.tl.ErrorType;
 import org.bw.tl.antlr.ast.*;
 import org.bw.tl.compiler.resolve.ExpressionResolver;
 import org.bw.tl.compiler.resolve.ExpressionResolverImpl;
+import org.bw.tl.util.TypeUtilities;
 import org.bw.tl.verify.FunReturnVerifier;
 import org.bw.tl.verify.Verifiable;
 import org.objectweb.asm.ClassWriter;
@@ -76,6 +77,8 @@ public @Data class Compiler {
             cw.visitField(field.getAccessModifiers(), field.getName(), type.getDescriptor(), null, null);
         }
 
+        final Set<String> methodSignatures = new HashSet<>();
+
         for (final Function function : clazz.getFunctions()) {
             final Type methodDescriptor = resolver.resolveFunctionCtx(clazz, function);
 
@@ -88,6 +91,15 @@ public @Data class Compiler {
                 errors.add(ErrorType.GENERAL_ERROR.newError("Invalid method signature", function));
                 continue;
             }
+
+            final String sig = TypeUtilities.getMethodSignature(function.getName(), methodDescriptor);
+
+            if (methodSignatures.contains(sig)) {
+                errors.add(ErrorType.GENERAL_ERROR.newError("Duplicate method signature: " + sig, function));
+                continue;
+            }
+
+            methodSignatures.add(sig);
 
             final MethodVisitor mv = cw.visitMethod(function.getAccessModifiers(), function.getName(),
                     methodDescriptor.getDescriptor(), null, null);
