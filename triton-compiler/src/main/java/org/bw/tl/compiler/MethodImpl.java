@@ -136,7 +136,10 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
             value = getDefault(fieldType);
         }
 
-        visitAssignment(new Assignment(null, field.getName(), value));
+        final Assignment assignment = new Assignment(null, field.getName(), value);
+        assignment.setPop(true);
+
+        visitAssignment(assignment);
     }
 
     public Literal getDefault(final Type type) {
@@ -709,13 +712,7 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
 
         assignment.getValue().accept(this);
 
-        if (!assignment.shouldPop()) {
-            if (valueType.equals(Type.LONG_TYPE) || valueType.equals(Type.DOUBLE_TYPE)) {
-                mv.visitInsn(DUP2);
-            } else {
-                mv.visitInsn(DUP);
-            }
-        }
+        pop(valueType);
 
         if (!fieldCtx.getTypeDescriptor().equals(valueType) && !isAssignableFrom(valueType, fieldCtx.getTypeDescriptor())) {
             if (isAssignableWithImplicitCast(valueType, fieldCtx.getTypeDescriptor())) {

@@ -98,18 +98,39 @@ public class ScriptMethodImpl extends MethodImpl {
         }
     }
 
-    private void storeAttribute(final String name, final Expression expression) {
+    private void storeAttribute(final String name, final Expression expression, final boolean duplicate) {
         final String putDesc = "(Ljava/lang/String;Ljava/lang/Object;I)V";
         final int bindingsIdx = ctx.getScope().findVar(" __ctx__ ").getIndex();
 
         final Type type = expression.resolveType(ctx.getResolver());
         final TypeHandler handler = TypeUtilities.getTypeHandler(type);
 
-        mv.visitVarInsn(ALOAD, bindingsIdx);
+        if (duplicate) {
+            expression.accept(this);
+            handler.dup(mv);
 
-        mv.visitLdcInsn(name);
+            mv.visitVarInsn(ALOAD, bindingsIdx);
 
-        expression.accept(this);
+            if (Type.LONG_TYPE.equals(type) || Type.DOUBLE_TYPE.equals(type)) {
+                mv.visitInsn(DUP_X2);
+                mv.visitInsn(POP);
+            } else {
+                mv.visitInsn(SWAP);
+            }
+
+            mv.visitLdcInsn(name);
+
+            if (Type.LONG_TYPE.equals(type) || Type.DOUBLE_TYPE.equals(type)) {
+                mv.visitInsn(DUP_X2);
+                mv.visitInsn(POP);
+            } else {
+                mv.visitInsn(SWAP);
+            }
+        } else {
+            mv.visitVarInsn(ALOAD, bindingsIdx);
+            mv.visitLdcInsn(name);
+            expression.accept(this);
+        }
 
         handler.toObject(mv);
 
@@ -156,7 +177,7 @@ public class ScriptMethodImpl extends MethodImpl {
     @Override
     public void visitAssignment(final Assignment assignment) {
         if (assignment.getPrecedingExpr() == null) {
-            storeAttribute(assignment.getName(), assignment.getValue());
+            storeAttribute(assignment.getName(), assignment.getValue(), !assignment.shouldPop());
         } else {
             super.visitAssignment(assignment);
         }
