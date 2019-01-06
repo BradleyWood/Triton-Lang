@@ -122,6 +122,13 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
                 ctx.reportError("Cannot infer type", field);
                 return;
             }
+
+            int dim = 0;
+
+            if (fieldType.getDescriptor().startsWith("["))
+                dim = fieldType.getDimensions();
+
+            field.setType(TypeName.of(fieldType.getClassName(), dim));
         }
 
         if (fieldType == null) {
