@@ -20,15 +20,18 @@ import javax.script.CompiledScript;
 import javax.script.ScriptContext;
 import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 @AllArgsConstructor
-public @Data class TritonInterpreter {
+public @Data
+class TritonInterpreter {
+
+    private final List<QualifiedName> imports = new LinkedList<>();
+    private final Map<String, TypeName> fields = new HashMap<>();
 
     private ScriptContext ctx;
 
@@ -68,20 +71,20 @@ public @Data class TritonInterpreter {
         return ctx.getAttribute(name);
     }
 
-    private static CompiledScript compile(@NotNull final String s, @NotNull final String source)
+    private CompiledScript compile(@NotNull final String s, @NotNull final String source)
             throws ScriptException {
         return compile(CharStreams.fromString(s), source);
     }
 
-    private static CompiledScript compile(@NotNull final Reader reader) throws IOException, ScriptException {
+    private CompiledScript compile(@NotNull final Reader reader) throws IOException, ScriptException {
         return compile(CharStreams.fromReader(reader), "<TritonScript>");
     }
 
-    private static CompiledScript compile(@NotNull final String srcFile) throws IOException, ScriptException {
+    private CompiledScript compile(@NotNull final String srcFile) throws IOException, ScriptException {
         return compile(CharStreams.fromFileName(srcFile), srcFile);
     }
 
-    private static CompiledScript compile(@NotNull final CharStream charStream, @NotNull final String sourceFile)
+    private CompiledScript compile(@NotNull final CharStream charStream, @NotNull final String sourceFile)
             throws ScriptException {
         final Script script = parseScript(charStream, sourceFile);
 
@@ -93,7 +96,7 @@ public @Data class TritonInterpreter {
         final ScriptCompiler sc = new ScriptCompiler(clazz);
         final String scriptName = "TritonScript$" + counter++;
 
-        final byte[] bytes = sc.build(scriptName);
+        final byte[] bytes = sc.build(scriptName, fields);
 
         if (bytes == null) {
             final List<Error> errors = sc.getErrors();
@@ -111,8 +114,16 @@ public @Data class TritonInterpreter {
             }
         };
 
+        imports.addAll(script.getImports());
+
         try {
-            return (CompiledScript) cl.loadClass(scriptName).newInstance();
+            final CompiledScript cs = (CompiledScript) cl.loadClass(scriptName).newInstance();
+
+            script.getStatements().stream().filter(s -> s instanceof Field).map(s -> (Field) s).forEach(s -> {
+                fields.put(s.getName(), s.getType());
+            });
+
+            return cs;
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
             throw new ScriptException("Internal Error");
         }
@@ -133,18 +144,19 @@ public @Data class TritonInterpreter {
         return null;
     }
 
-    private static Clazz buildTree(@NotNull final Script script) {
+    private Clazz buildTree(@NotNull final Script script) {
         final List<QualifiedName> staticImports = new LinkedList<>();
         final List<QualifiedName> imports = script.getImports();
 
         CompileUtilities.DEFAULT_IMPORTS.forEach(imp -> imports.add(QualifiedName.of(imp)));
+        imports.addAll(this.imports);
         CompileUtilities.DEFAULT_STATIC_IMPORTS.forEach(imp -> staticImports.add(QualifiedName.of(imp)));
 
         return new Clazz(QualifiedName.of("script"), imports, staticImports, Collections.emptyList(),
                 Arrays.asList(buildEvalFunction(script.getStatements()), buildGetEngineFunction()), script.getSrcFile());
     }
 
-    private static Function buildGetEngineFunction() {
+    private Function buildGetEngineFunction() {
         final TypeName[] parameterTypes = new TypeName[0];
         final String[] parameterNames = new String[0];
         final List<Modifier>[] modifiers = new List[0];
@@ -158,12 +170,12 @@ public @Data class TritonInterpreter {
         return function;
     }
 
-    private static Function buildEvalFunction(@NotNull final List<Node> statements) {
+    private Function buildEvalFunction(@NotNull final List<Node> statements) {
         final TypeName[] parameterTypes = new TypeName[]{TypeName.of("javax.script.ScriptContext")};
         final String[] parameterNames = new String[]{" __ctx__ "};
         final List<Modifier>[] modifiers = new List[]{new LinkedList<Modifier>()};
 
-        final Block body = new Block(statements);
+        final Block body = new Block(new ArrayList<>(statements));
 
         final Function function = new Function(parameterTypes, parameterNames, modifiers, "eval", body, TypeName.of("java.lang.Object"));
         function.addModifiers(Modifier.PUBLIC);

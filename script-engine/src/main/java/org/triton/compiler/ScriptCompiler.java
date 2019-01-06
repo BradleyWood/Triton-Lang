@@ -3,8 +3,7 @@ package org.triton.compiler;
 import lombok.Data;
 import org.bw.tl.Error;
 import org.bw.tl.ErrorType;
-import org.bw.tl.antlr.ast.Clazz;
-import org.bw.tl.antlr.ast.Function;
+import org.bw.tl.antlr.ast.*;
 import org.bw.tl.compiler.MethodCtx;
 import org.bw.tl.compiler.MethodImpl;
 import org.bw.tl.compiler.Scope;
@@ -14,9 +13,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
 import static org.objectweb.asm.ClassWriter.COMPUTE_MAXS;
@@ -27,7 +24,7 @@ public @Data class ScriptCompiler {
     private final List<Error> errors = new LinkedList<>();
     private final Clazz script;
 
-    public byte[] build(final String name) {
+    public byte[] build(final String name, final Map<String, TypeName> fields) {
         final ClassWriter cw = new ClassWriter(COMPUTE_FRAMES + COMPUTE_MAXS);
 
         cw.visit(V1_8, ACC_PUBLIC + ACC_SUPER, name, null,
@@ -52,6 +49,16 @@ public @Data class ScriptCompiler {
             mv.visitCode();
 
             final MethodCtx ctx = new MethodCtx(Collections.singletonList(script), function, script);
+
+            if ("eval".equals(function.getName())) {
+                if (function.getBody() instanceof Block) {
+                    final Block body = (Block) function.getBody();
+
+                    for (Map.Entry<String, TypeName> entry : fields.entrySet()) {
+                        body.getStatements().add(0, new Field(entry.getKey(), entry.getValue(), null));
+                    }
+                }
+            }
 
             final MethodImpl methodImpl = new ScriptMethodImpl(mv, ctx);
             function.accept(methodImpl);
