@@ -62,6 +62,22 @@ public abstract @Data class TypeHandler {
         mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;", false);
     }
 
+    public void pop(final MethodVisitor mv) {
+        if (this instanceof DoubleHandler || this instanceof LongHandler) {
+            mv.visitInsn(POP2);
+        } else {
+            mv.visitInsn(POP);
+        }
+    }
+
+    public void dup(final MethodVisitor mv) {
+        if (this instanceof DoubleHandler || this instanceof LongHandler) {
+            mv.visitInsn(DUP2);
+        } else {
+            mv.visitInsn(DUP);
+        }
+    }
+
     public abstract boolean toInt(final MethodVisitor mv);
 
     public abstract boolean toShort(final MethodVisitor mv);
