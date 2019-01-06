@@ -137,7 +137,6 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
         }
 
         final Assignment assignment = new Assignment(null, field.getName(), value);
-        assignment.setPop(true);
 
         visitAssignment(assignment);
     }
@@ -151,7 +150,7 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
         } else if (type.equals(Type.DOUBLE_TYPE)) {
             return new Literal<>(0.0);
         } else if (type.equals(Type.LONG_TYPE)) {
-            return new Literal<>(0l);
+            return new Literal<>(0L);
         } else if (type.equals(Type.BOOLEAN_TYPE)) {
             return new Literal<>(false);
         } else {
@@ -712,7 +711,9 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
 
         assignment.getValue().accept(this);
 
-        pop(valueType);
+        if (!assignment.shouldPop()) {
+            duplicate(valueType);
+        }
 
         if (!fieldCtx.getTypeDescriptor().equals(valueType) && !isAssignableFrom(valueType, fieldCtx.getTypeDescriptor())) {
             if (isAssignableWithImplicitCast(valueType, fieldCtx.getTypeDescriptor())) {
