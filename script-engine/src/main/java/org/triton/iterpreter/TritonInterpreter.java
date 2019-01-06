@@ -20,15 +20,12 @@ import javax.script.CompiledScript;
 import javax.script.ScriptContext;
 import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.*;
 
 @AllArgsConstructor
-public @Data
-class TritonInterpreter {
+public @Data class TritonInterpreter {
 
     private final List<QualifiedName> imports = new LinkedList<>();
     private final Map<String, TypeName> fields = new HashMap<>();
