@@ -495,7 +495,14 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
             final Type[] argumentTypes = funCtx.getTypeDescriptor().getArgumentTypes();
 
             if (!funCtx.isStatic()) {
-                call.getPrecedingExpr().accept(this);
+                if (call.getPrecedingExpr() != null) {
+                    call.getPrecedingExpr().accept(this);
+                } else if (!ctx.isStatic()){
+                    final int idx = ctx.getScope().findVar(" __this__ ").getIndex();
+                    mv.visitVarInsn(ALOAD, idx);
+                } else {
+                    ctx.reportError("Cannot access not static method from a static context", call);
+                }
             }
 
             for (int i = 0; i < expressions.size(); i++) {
