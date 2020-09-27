@@ -391,8 +391,8 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     @Nullable
     private SymbolContext resolveFunctionCtx(@NotNull final Type owner, @NotNull final String name, @NotNull final Type... parameterTypes) {
         for (final Clazz module : classpath) {
-            if (module.getPackageName().getName().equals(owner.getClassName())) {
-                final Function fun = resolveFunctionCtx(name, parameterTypes);
+            if (module.getDescriptor().equals(owner.getDescriptor())) {
+                final Function fun = resolveFunctionCtx(module, name, parameterTypes);
                 if (fun != null) {
                     final Type retType = getTypeFromName(fun.getType());
 
@@ -456,8 +456,8 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         }
 
         for (final Clazz module : classpath) {
-            if (module.getPackageName().getName().equals(typeName.getName())) {
-                return Type.getType(module.getPackageName().getDesc());
+            if (module.getModuleClassName().equals(typeName.getName())) {
+                return Type.getType(module.getDescriptor());
             }
         }
 
@@ -610,6 +610,11 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
 
     @Nullable
     private Function resolveFunctionCtx(@NotNull final String name, @NotNull final Type... parameterTypes) {
+        return resolveFunctionCtx(clazz, name, parameterTypes);
+    }
+
+    @Nullable
+    private Function resolveFunctionCtx(@NotNull final Clazz clazz, @NotNull final String name, @NotNull final Type... parameterTypes) {
         final List<Type[]> functionTypeList = new LinkedList<>();
         final List<Function> functionList = new LinkedList<>();
 

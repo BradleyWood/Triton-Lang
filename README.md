@@ -59,12 +59,12 @@ fun sub(int a, int b) = a - b
 
 Foreach
 ```kotlin
-fun display(String[] messages) {
+fun display(String[] array) {
     for (var a : array) {
         println(a)
     }
 }
-```
+```:q
 
 For-I
 ```kotlin
