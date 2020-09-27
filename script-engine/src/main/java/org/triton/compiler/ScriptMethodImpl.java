@@ -221,7 +221,7 @@ public class ScriptMethodImpl extends MethodImpl {
             for (final FieldContext fieldCtx : ctxList) {
                 loadField(fieldCtx);
             }
-        } else if (name.length() == 1) {
+        } else if (name.length() == 1 && ctx.getScope().findVar(name.getName()) != null) {
             loadAttribute(name.toString());
         } else {
             ctx.reportError("Cannot resolve field: " + name, name);
