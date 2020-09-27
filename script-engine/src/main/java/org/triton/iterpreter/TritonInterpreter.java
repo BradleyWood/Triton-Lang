@@ -94,7 +94,7 @@ public @Data class TritonInterpreter {
         final Script script = parseScript(charStream, sourceFile);
 
         if (script == null)
-            throw new ScriptException("Compilation failed");
+            throw new ScriptException("Compilation failed: syntax error");
 
         final Clazz clazz = buildTree(script);
 
@@ -140,11 +140,13 @@ public @Data class TritonInterpreter {
         final CommonTokenStream ts = new CommonTokenStream(lexer);
         final GrammarParser p = new GrammarParser(ts);
 
-        GrammarParser.ScriptContext scriptContext = p.script();
+        try {
+            GrammarParser.ScriptContext scriptContext = p.script();
 
-        if (p.getNumberOfSyntaxErrors() == 0) {
-            return scriptContext.accept(ScriptVisitor.of(srcFile));
-        }
+            if (p.getNumberOfSyntaxErrors() == 0) {
+                return scriptContext.accept(ScriptVisitor.of(srcFile));
+            }
+        } catch (Throwable e) { }
 
         return null;
     }
