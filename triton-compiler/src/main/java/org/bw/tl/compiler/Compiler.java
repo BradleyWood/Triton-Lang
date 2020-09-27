@@ -24,14 +24,21 @@ public @Data class Compiler {
     private final Verifiable<Function> functionVerifiable = new FunReturnVerifier();
     private final List<Error> errors = new LinkedList<>();
     private final List<Clazz> classes;
+    private final ClassLoader loader;
     private String parent = "java/lang/Object";
 
-    public Compiler(final List<Clazz> classes) {
+    public Compiler(final List<Clazz> classes, final ClassLoader loader) {
         this.classes = classes;
+
+        if (loader == null) {
+            this.loader = Compiler.class.getClassLoader();
+        } else {
+            this.loader = loader;
+        }
     }
 
     public Compiler(final Clazz... classes) {
-        this(Arrays.asList(classes));
+        this(Arrays.asList(classes), null);
     }
 
     public Map<String, byte[]> compile() {
@@ -60,7 +67,7 @@ public @Data class Compiler {
 
         buildClassInitializer(cw, clazz);
 
-        final ExpressionResolver resolver = new ExpressionResolverImpl(clazz, classes, new Scope());
+        final ExpressionResolver resolver = new ExpressionResolverImpl(clazz, classes, loader, new Scope());
 
         for (final Field field : clazz.getFields()) {
             if (field.getType() == null) {
@@ -106,7 +113,7 @@ public @Data class Compiler {
 
             mv.visitCode();
 
-            final MethodCtx ctx = new MethodCtx(classes, function, clazz);
+            final MethodCtx ctx = new MethodCtx(classes, function, clazz, loader);
 
             final MethodImpl methodImpl = new MethodImpl(mv, ctx);
             function.accept(methodImpl);
@@ -136,7 +143,7 @@ public @Data class Compiler {
         final Function init = new Function(new TypeName[0], new String[0], new List[0], "<clinit>", block,
                 new TypeName("void"));
 
-        final MethodCtx ctx = new MethodCtx(classes, init, clazz);
+        final MethodCtx ctx = new MethodCtx(classes, init, clazz, loader);
 
         final MethodImpl methodImpl = new MethodImpl(mv, ctx);
         init.accept(methodImpl);

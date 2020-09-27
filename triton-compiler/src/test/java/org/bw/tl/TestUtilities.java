@@ -27,7 +27,7 @@ public class TestUtilities {
         if (clazz == null)
             return null;
 
-        return new ExpressionResolverImpl(clazz, Collections.singletonList(clazz), new Scope());
+        return new ExpressionResolverImpl(clazz, Collections.singletonList(clazz), TestUtilities.class.getClassLoader(), new Scope());
     }
 
     public static Clazz getClazz(final String txt, final String srcFile) {

@@ -1,9 +1,7 @@
 package org.bw.tl;
 
 import lombok.Data;
-import org.bw.tl.antlr.ast.Clazz;
-import org.bw.tl.antlr.ast.QualifiedName;
-import org.bw.tl.primer.ModifierPrimer;
+import org.bw.tl.util.CompileUtilities;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,8 +16,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import org.bw.tl.compiler.Compiler;
 
 @RunWith(Parameterized.class)
 public @Data class RuntimeTest {
@@ -37,31 +33,29 @@ public @Data class RuntimeTest {
         final LinkedList<Object[]> parameters = new LinkedList<>();
 
         try {
-            final ModifierPrimer mp = new ModifierPrimer();
-
-            final List<Clazz> moduleList = Files.walk(Paths.get("testData/rt_tests/"))
+            final Set<String> files = Files.walk(Paths.get("testData/rt_tests/"))
                     .filter(p -> p.toString().endsWith(".tl"))
-                    .map(Path::toString)
-                    .map(TestUtilities::getClazzFromFile)
-                    .peek(mp::prime)
-                    .collect(Collectors.toList());
+                    .map(Path::toString).collect(Collectors.toSet());
 
-            for (final Clazz clazz : moduleList) {
-                clazz.getStaticImports().add(QualifiedName.of("org.bw.tl.Builtin"));
-                final Compiler compiler = new Compiler(clazz);
-                final Map<String, byte[]> classMap = compiler.compile();
-                for (final Error error : compiler.getErrors()) {
-                    error.print();
-                }
-                Assert.assertNotNull("Test class failed to compile", classMap);
-                Assert.assertTrue("Test class failed to compile", compiler.getErrors().isEmpty());
-                for (final Map.Entry<String, byte[]> entry : classMap.entrySet()) {
+            for (final String file : files) {
+                final Map<String, byte[]> map = CompileUtilities.compile(Collections.singletonList(file));
+                Assert.assertNotNull("Test class failed to compile: " + file, map);
+
+                for (final Map.Entry<String, byte[]> entry : map.entrySet()) {
+                    Assert.assertNotNull("Test class failed to compile: "+ entry.getKey(), entry.getValue());
+
                     final Class<?> cl = TestUtilities.loadClass(entry.getKey(), entry.getValue());
                     Assert.assertNotNull("Error loading class", cl);
-                    for (final Method method : cl.getDeclaredMethods()) {
-                        if (method.getName().toLowerCase().contains("test") && Modifier.isStatic(method.getModifiers())) {
-                            parameters.add(new Object[]{method, cl.getName() + "." + method.getName() + "()"});
+
+                    try {
+                        for (final Method method : cl.getDeclaredMethods()) {
+                            if (method.getName().toLowerCase().contains("test") && Modifier.isStatic(method.getModifiers())) {
+                                parameters.add(new Object[]{method, cl.getName() + "." + method.getName() + "()"});
+                            }
                         }
+
+                    } catch (VerifyError e) {
+                        Assert.fail("Error loading class: " + entry.getKey());
                     }
                 }
             }

@@ -16,17 +16,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CompileUtilities {
@@ -92,12 +89,17 @@ public class CompileUtilities {
     public static Map<String, byte[]> compile(@NotNull final List<String> files, @NotNull final List<String> classpath)
             throws IOException {
 
-        for (final String path : classpath) {
-            if (!addToClasspath(path)) {
-                System.err.println("Failure reading: " + path);
-                return null;
-            }
+        final URL[] urls = getClasspath(classpath);
+
+        if (urls == null) {
+            System.err.println("Error loading classpath: " + classpath);
+            return null;
         }
+
+        final URLClassLoader classLoader = new URLClassLoader(urls,  CompileUtilities.class.getClassLoader());
+
+
+        System.out.println(CompileUtilities.class.getClassLoader().getClass());
 
         final List<Clazz> classes = new LinkedList<>();
 
@@ -112,7 +114,7 @@ public class CompileUtilities {
             classes.add(cl);
         }
 
-        final Compiler compiler = new Compiler(classes);
+        final Compiler compiler = new Compiler(classes, classLoader);
 
         final Map<String, byte[]> result = compiler.compile();
 
@@ -143,31 +145,22 @@ public class CompileUtilities {
         return null;
     }
 
-    private static boolean addToClasspath(@NotNull final String s) throws IOException {
-        return addToClasspath(new File(s).toURI().toURL());
-    }
-
-    private static boolean addToClasspath(@NotNull final URL u) {
-        if (!(ClassLoader.getSystemClassLoader() instanceof URLClassLoader)) {
-            return false;
-        } else if (addUrlMethod == null) {
+    @Nullable
+    private static URL[] getClasspath(final List<String> classpath) {
+        final URL[] urls = classpath.stream().map(path -> {
             try {
-                addUrlMethod = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-                addUrlMethod.setAccessible(true);
-            } catch (NoSuchMethodException e) {
-                return false;
+                return new File(path).toURI().toURL();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                return null;
             }
-        }
-        if (addUrlMethod == null) {
-            return false;
+        }).toArray(URL[]::new);
+
+        if (Arrays.stream(urls).anyMatch(Objects::isNull)) {
+            return null;
         }
 
-        try {
-            addUrlMethod.invoke(ClassLoader.getSystemClassLoader(), u);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            return false;
-        }
-        return true;
+        return urls;
     }
 
     private static Method addUrlMethod = null;

@@ -28,7 +28,7 @@ public class ExpressionResolutionTest {
         @Test
         public void testResolveBinaryOpByte() {
             final ExpressionResolverImpl expressionResolver = new ExpressionResolverImpl(null,
-                    Collections.emptyList(), new Scope());
+                    Collections.emptyList(), ModuleExpressionResolutionTest.class.getClassLoader(), new Scope());
             final BinaryOp bop = new BinaryOp(new Literal<>(100), "*", new Literal<>(5));
             final Type type = bop.resolveType(expressionResolver);
 
@@ -41,7 +41,7 @@ public class ExpressionResolutionTest {
         @Test
         public void testResolveBinaryOpInt() {
             final ExpressionResolverImpl expressionResolver = new ExpressionResolverImpl(null,
-                    Collections.emptyList(), new Scope());
+                    Collections.emptyList(), ExpressionResolutionTest.class.getClassLoader(), new Scope());
             final BinaryOp bop = new BinaryOp(new Literal<>(100000), "*", new Literal<>(5));
             final Type type = bop.resolveType(expressionResolver);
 
@@ -58,7 +58,7 @@ public class ExpressionResolutionTest {
                     "fun add(int a, float b): long {}");
 
             final ExpressionResolverImpl expressionResolver = new ExpressionResolverImpl(resolver.getClazz(),
-                    Collections.singletonList(resolver.getClazz()), new Scope());
+                    Collections.singletonList(resolver.getClazz()), ModuleExpressionResolutionTest.class.getClassLoader(), new Scope());
 
             // expr = abc * add(60000, abc)
             // F    = F   * L(INT, FLOAT)
@@ -90,7 +90,7 @@ public class ExpressionResolutionTest {
         @Test
         public void resolveTest() {
             final ExpressionResolverImpl resolver = new ExpressionResolverImpl(null, Collections.emptyList(),
-                    new Scope());
+                    SimpleResolutionTest.class.getClassLoader(), new Scope());
 
             final Expression expression = parseExpression(expr);
             final Type resolvedType = expression.resolveType(resolver);

@@ -25,6 +25,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
 
     @NotNull
     private final List<Clazz> classpath;
+    private final ClassLoader loader;
     private final Scope scope;
 
     @Nullable
@@ -85,6 +86,10 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     @Override
     public Type resolveWhen(@NotNull final When when) {
         return Type.getType(Object.class);
+    }
+
+    private Class<?> resolveClass(final String name) throws ClassNotFoundException {
+        return loader.loadClass(name);
     }
 
     private Type resolveNode(final Node node) {
@@ -410,7 +415,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         }
 
         try {
-            return resolveFunctionCtx(Class.forName(owner.getClassName()), name, parameterTypes);
+            return resolveFunctionCtx(resolveClass(owner.getClassName()), name, parameterTypes);
         } catch (ClassNotFoundException ignored) {
         }
 
@@ -462,7 +467,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         }
 
         try {
-            return Type.getType(Class.forName(typeName.getName()));
+            return Type.getType(resolveClass(typeName.getName()));
         } catch (ClassNotFoundException ignored) {
         }
 
@@ -482,7 +487,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
     @Nullable
     private SymbolContext resolveConstructorCtx(@NotNull final Type owner, @NotNull final Type... parameterTypes) {
         try {
-            final Class<?> clazz = Class.forName(owner.getClassName());
+            final Class<?> clazz = resolveClass(owner.getClassName());
             final List<Executable> constructorList = new LinkedList<>();
 
             for (final Constructor<?> constructor : clazz.getConstructors()) {
@@ -531,7 +536,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         }
 
         try {
-            return resolveFieldCtx(Class.forName(owner.getClassName()), name);
+            return resolveFieldCtx(resolveClass(owner.getClassName()), name);
         } catch (final ClassNotFoundException ignored) {
         }
 

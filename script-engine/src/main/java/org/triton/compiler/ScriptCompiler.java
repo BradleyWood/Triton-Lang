@@ -33,7 +33,7 @@ public @Data class ScriptCompiler {
         writeInitializer(cw);
         writeConstructor(cw);
 
-        final ExpressionResolver resolver = new ExpressionResolverImpl(script, Collections.singletonList(script), new Scope());
+        final ExpressionResolver resolver = new ExpressionResolverImpl(script, Collections.singletonList(script), ScriptCompiler.class.getClassLoader(), new Scope());
 
         for (final Function function : script.getFunctions()) {
             final Type methodDescriptor = resolver.resolveFunctionCtx(script, function);
@@ -48,7 +48,7 @@ public @Data class ScriptCompiler {
 
             mv.visitCode();
 
-            final MethodCtx ctx = new MethodCtx(Collections.singletonList(script), function, script);
+            final MethodCtx ctx = new MethodCtx(Collections.singletonList(script), function, script, ScriptCompiler.class.getClassLoader());
 
             if ("eval".equals(function.getName())) {
                 if (function.getBody() instanceof Block) {

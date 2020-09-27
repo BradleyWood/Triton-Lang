@@ -19,6 +19,7 @@ public @Data class MethodCtx {
     private final List<Clazz> classPath;
     private final Function function;
     private final Clazz clazz;
+    private final ClassLoader loader;
 
     /**
      * Returns the expression resolver for the clazz that defined this method.
@@ -30,7 +31,7 @@ public @Data class MethodCtx {
      */
     public ExpressionResolver getResolver() {
         if (resolver == null) {
-            resolver = new ExpressionResolverImpl(clazz, classPath, scope);
+            resolver = new ExpressionResolverImpl(clazz, classPath, loader, scope);
         }
         return resolver;
     }
