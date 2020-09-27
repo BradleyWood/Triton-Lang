@@ -144,6 +144,10 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
         }
 
         final Assignment assignment = new Assignment(null, field.getName(), value);
+        assignment.setDeclaration(true);
+        assignment.setText(field.getText());
+        assignment.setFile(field.getFile());
+        assignment.setLineNumber(field.getLineNumber());
 
         visitAssignment(assignment);
     }
@@ -713,7 +717,7 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
             return;
         }
 
-        if (fieldCtx.isFinal() && !ctx.isInitializer()) {
+        if (fieldCtx.isFinal() && !ctx.isInitializer() && !assignment.isDeclaration()) {
             ctx.reportError("Cannot assign value to final field", assignment);
             return;
         }

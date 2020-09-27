@@ -64,7 +64,7 @@ fun display(String[] array) {
         println(a)
     }
 }
-```
+```:q
 
 For-I
 ```kotlin
