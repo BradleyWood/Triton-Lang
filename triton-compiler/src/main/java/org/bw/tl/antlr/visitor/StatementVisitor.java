@@ -4,9 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.bw.tl.antlr.GrammarBaseVisitor;
 import org.bw.tl.antlr.GrammarParser;
-import org.bw.tl.antlr.ast.Expression;
-import org.bw.tl.antlr.ast.Node;
-import org.bw.tl.antlr.ast.Return;
+import org.bw.tl.antlr.ast.*;
 
 @RequiredArgsConstructor(staticName = "of")
 public class StatementVisitor extends GrammarBaseVisitor<Node> {
@@ -37,6 +35,8 @@ public class StatementVisitor extends GrammarBaseVisitor<Node> {
 
             if (retVal != null)
                 retVal.setParent(stmt);
+        } else if (ctx.SEMICOLON() != null) {
+            stmt = new EmptyStatement();
         }
 
         if (stmt == null)
