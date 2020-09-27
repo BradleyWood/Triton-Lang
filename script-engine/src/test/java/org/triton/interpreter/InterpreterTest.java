@@ -20,6 +20,6 @@ public class InterpreterTest {
 
         Assert.assertEquals(11, interpreter.eval("5 + 5; 11"));
 
-        Assert.assertNull(interpreter.eval(""));
+        Assert.assertEquals(interpreter.eval(""), Void.TYPE);
     }
 }
