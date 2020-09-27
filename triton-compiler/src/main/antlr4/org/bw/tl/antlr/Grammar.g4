@@ -28,6 +28,7 @@ statement
     | expression
     | varDef
     | returnStatement
+    | SEMICOLON
     ;
 
 expression
