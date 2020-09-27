@@ -58,13 +58,13 @@ public class ScriptMethodImpl extends MethodImpl {
                 }
 
                 if (Type.VOID_TYPE.equals(lastType)) {
-                    mv.visitInsn(ACONST_NULL);
+                    mv.visitFieldInsn(GETSTATIC, "java/lang/Void", "TYPE", "Ljava/lang/Class;");
                 } else {
                     final TypeHandler handler = TypeUtilities.getTypeHandler(lastType);
                     handler.toObject(mv);
                 }
             } else {
-                mv.visitInsn(ACONST_NULL);
+                mv.visitFieldInsn(GETSTATIC, "java/lang/Void", "TYPE", "Ljava/lang/Class;");
             }
 
             mv.visitInsn(ARETURN);

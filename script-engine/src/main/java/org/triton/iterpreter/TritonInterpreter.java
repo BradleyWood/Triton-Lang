@@ -44,16 +44,24 @@ public @Data class TritonInterpreter {
         return compile(reader).eval(ctx);
     }
 
+    public void eval(@NotNull final CompiledScript script) throws ScriptException {
+        final Object eval = script.eval(ctx);
+
+        if (eval != Void.TYPE) {
+            System.out.println(eval);
+        }
+    }
+
     public void exec(@NotNull final String s) throws ScriptException {
-        compile(s, "<TritonScript>").eval(ctx);
+       eval(compile(s, "<TritonScript>"));
     }
 
     public void exec(@NotNull final Reader reader) throws IOException, ScriptException {
-        compile(reader).eval(ctx);
+        eval(compile(reader));
     }
 
     public void execFile(@NotNull final String sourceFile) throws IOException, ScriptException {
-        compile(sourceFile).eval(ctx);
+        eval(compile(sourceFile));
     }
 
     private void exec(@NotNull final CompiledScript compiledScript) throws ScriptException {
@@ -86,7 +94,7 @@ public @Data class TritonInterpreter {
         final Script script = parseScript(charStream, sourceFile);
 
         if (script == null)
-            return null;
+            throw new ScriptException("Compilation failed");
 
         final Clazz clazz = buildTree(script);
 
