@@ -1,0 +1,20 @@
+{
+schedule {
+    task(100) {}
+    task(period=1000) {}
+    task(period=1000) {
+
+    }
+
+    task(1000) {
+    } constrainedBy {}
+
+    task(1000) {
+        println()
+    } constrainedBy {
+        return 10 < 40
+    } constraintViolation {
+        println()
+    }
+}
+}
