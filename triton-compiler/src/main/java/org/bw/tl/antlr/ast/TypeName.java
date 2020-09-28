@@ -52,8 +52,8 @@ public @Data class TypeName extends QualifiedName {
 
     public static TypeName of(@NotNull final String name, final int dim) {
         final TypeName typeName;
-        if (name.contains(".")) {
-            typeName = new TypeName(dim, name.split("\\."));
+        if (name.contains(".") || name.contains("/")) {
+            typeName = new TypeName(dim, name.replace("/", ".").split("\\."));
         } else {
             typeName = new TypeName(dim, name);
         }

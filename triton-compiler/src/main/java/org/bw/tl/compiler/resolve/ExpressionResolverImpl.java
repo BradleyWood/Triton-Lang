@@ -430,7 +430,7 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
             if (method.getName().equals(name)) {
                 final Class<?>[] types = method.getParameterTypes();
 
-                if (!method.getName().equals(name) || types.length != parameterTypes.length)
+                if (types.length != parameterTypes.length)
                     continue;
 
                 candidates.add(method);
@@ -623,7 +623,10 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
         final List<Type[]> functionTypeList = new LinkedList<>();
         final List<Function> functionList = new LinkedList<>();
 
-        for (final Function function : clazz.getFunctions()) {
+        final List<Function> availableFunctions = new LinkedList<>(clazz.getFunctions());
+        availableFunctions.addAll(clazz.getSyntheticFunctions());
+
+        for (final Function function : availableFunctions) {
             final TypeName[] types = function.getParameterTypes();
 
             if (!function.getName().equals(name) || types.length != parameterTypes.length)

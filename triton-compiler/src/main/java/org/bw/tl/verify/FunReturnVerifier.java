@@ -120,7 +120,16 @@ public class FunReturnVerifier implements Verifiable<Function> {
         }
 
         @Override
+        public void visitScheduleBlock(ScheduleBlock task) {
+        }
+
+        @Override
         public void visitExpressionIndices(ExpressionIndex expressionIndex) {
+        }
+
+        @Override
+        public void visitTask(Task task) {
+
         }
 
         @Override

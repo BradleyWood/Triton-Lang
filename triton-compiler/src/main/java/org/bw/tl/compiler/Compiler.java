@@ -14,6 +14,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
 import java.util.*;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static org.objectweb.asm.ClassWriter.*;
@@ -108,7 +109,7 @@ public @Data class Compiler {
 
             methodSignatures.add(sig);
 
-            final MethodVisitor mv = cw.visitMethod(function.getAccessModifiers(), function.getName(),
+            MethodVisitor mv = cw.visitMethod(function.getAccessModifiers(), function.getName(),
                     methodDescriptor.getDescriptor(), null, null);
 
             mv.visitCode();
@@ -118,11 +119,38 @@ public @Data class Compiler {
             final MethodImpl methodImpl = new MethodImpl(mv, ctx);
             function.accept(methodImpl);
 
-            errors.addAll(ctx.getErrors());
-
             mv.visitMaxs(0, 0);
             mv.visitEnd();
 
+            errors.addAll(ctx.getErrors());
+
+            final LinkedList<Function> syntheticMethods = new LinkedList<>(ctx.getSyntheticMethods());
+
+            while (!syntheticMethods.isEmpty()) {
+                final Function syntheticMethod = syntheticMethods.removeFirst();
+
+                if (!functionVerifiable.isValid(syntheticMethod)) {
+                    errors.add(ErrorType.GENERAL_ERROR.newError("Missing return value", clazz.getSourceFile(), -1));
+                    continue;
+                }
+
+                final Type syntheticMethodType = resolver.resolveFunctionCtx(clazz, syntheticMethod);
+                final MethodCtx syntheticCtx = new MethodCtx(classes, syntheticMethod, clazz, loader);
+                syntheticCtx.setSynthetic(true);
+
+                mv = cw.visitMethod(syntheticMethod.getAccessModifiers(), syntheticMethod.getName(),
+                        syntheticMethodType.getDescriptor(), null, null);
+
+                mv.visitCode();
+
+                final MethodImpl impl = new MethodImpl(mv, syntheticCtx);
+                syntheticMethod.accept(impl);
+
+                syntheticMethods.addAll(syntheticCtx.getSyntheticMethods());
+                errors.addAll(syntheticCtx.getErrors());
+                mv.visitMaxs(0, 0);
+                mv.visitEnd();
+            }
         }
 
         return cw.toByteArray();
@@ -140,6 +168,8 @@ public @Data class Compiler {
                 .collect(Collectors.toList());
 
         final Block block = new Block(statements);
+        block.getStatements().addAll(clazz.getScheduleBlocks());
+
         final Function init = new Function(new TypeName[0], new String[0], new List[0], "<clinit>", block,
                 new TypeName("void"));
 

@@ -28,6 +28,11 @@ public class ASTVisitorBase implements ASTVisitor {
     }
 
     @Override
+    public void visitTask(final Task task) {
+        throw new UnsupportedOperationException("Tasks not implemented");
+    }
+
+    @Override
     public void visitIf(final IfStatement ifStatement) {
         throw new UnsupportedOperationException("If statements not implemented");
     }
@@ -60,6 +65,11 @@ public class ASTVisitorBase implements ASTVisitor {
     @Override
     public void visitReturn(final Return returnStmt) {
         throw new UnsupportedOperationException("Return statement not implemented");
+    }
+
+    @Override
+    public void visitScheduleBlock(final ScheduleBlock task) {
+        throw new UnsupportedOperationException("Schedule block not implemented");
     }
 
     @Override

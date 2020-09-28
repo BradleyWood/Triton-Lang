@@ -2,15 +2,19 @@ package org.bw.tl.antlr.ast;
 
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public @Data class Clazz {
 
+    private final List<Function> syntheticFunctions = new LinkedList<>();
     private final QualifiedName packageName;
     private final List<QualifiedName> imports;
     private final List<QualifiedName> staticImports;
     private final List<Field> fields;
     private final List<Function> functions;
+    private final List<ScheduleBlock> scheduleBlocks;
     private final String sourceFile;
 
     public String getName() {
@@ -23,6 +27,10 @@ public @Data class Clazz {
             return name.substring(0, idx);
 
         return name;
+    }
+
+    public void addSyntheticFunction(final Function function) {
+        syntheticFunctions.add(function);
     }
 
     public String getModuleClassName() {

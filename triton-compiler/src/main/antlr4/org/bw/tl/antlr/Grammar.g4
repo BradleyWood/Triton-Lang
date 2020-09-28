@@ -19,6 +19,7 @@ topLevelStatement
     functionDef
     ) semi?
     | varDef semi
+    | schedule semi
     ;
 
 statement
@@ -28,6 +29,7 @@ statement
     | expression
     | varDef
     | returnStatement
+    | schedule
     | SEMICOLON
     ;
 
@@ -53,6 +55,22 @@ expression
     | lhs=expression NL* (PLUS | MINUS) NL* rhs=expression
     | lhs=expression NL* (GT | LT | GTE | LTE | EQUALS | NOT_EQ) NL* rhs=expression
     | lhs=expression NL* (AND | OR) NL* rhs=expression
+    ;
+
+schedule
+    : SCHEDULE NL* LBR NL* (task NL*)* RBR
+    ;
+
+task
+    : TASK NL* taskParams NL* block NL* constraint*
+    ;
+
+taskParams
+    : LPAREN ((NL* PERIOD NL* ASSIGN)? NL* period=INT) NL* RPAREN
+    ;
+
+constraint
+    : CONSTRAINT NL* condition=block (NL* CONSTRAINT_VIOLATION NL* violation=block)?
     ;
 
 indices
@@ -296,6 +314,7 @@ VAL     : 'val';
 FOR     : 'for';
 IMP     : 'import';
 INT_T   : 'int';
+TASK    : 'task';
 LONG_T  : 'long';
 BYTE_T  : 'byte';
 NULL    : 'null';
@@ -305,7 +324,9 @@ WHEN    : 'when';
 FALSE   : 'false';
 WHILE   : 'while';
 FLOAT_T : 'float';
+NATIVE  : 'native';
 DOUBLE_T: 'double';
+PERIOD  : 'period';
 RETURN  : 'return';
 PUBLIC  : 'public';
 PRIVATE : 'private';
@@ -315,6 +336,16 @@ VOID_T  : 'void';
 BOOL_T  : 'boolean';
 LPAREN  : '(';
 RPAREN  : ')';
+
+SCHEDULE : 'schedule';
+CONSTRAINT : 'constrainedBy';
+CONSTRAINT_VIOLATION : 'constraintViolation';
+
+// RMD
+DELEGATE : 'delegate';
+ASYNC : 'async';
+CALLBACK : 'callback';
+
 
 LBR     : '{';
 RBR     : '}';

@@ -38,6 +38,10 @@ public interface ASTVisitor {
 
     void visitWhen(final When when);
 
+    void visitScheduleBlock(final ScheduleBlock task);
+
     void visitExpressionIndices(final ExpressionIndex expressionIndex);
+
+    void visitTask(final Task task);
 
 }

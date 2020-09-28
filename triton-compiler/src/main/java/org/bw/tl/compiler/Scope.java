@@ -29,12 +29,12 @@ public class Scope {
             idx += vars.size();
         }
 
-        final Var var = new Var(name, type, idx, modifiers);
+        final Var var = new Var(name, type, count(), idx, modifiers);
 
         scope.peek().add(var);
 
         if (type.equals(Type.LONG_TYPE) || type.equals(Type.DOUBLE_TYPE)) {
-            final Var second = new Var(name + " _2", type, idx + 1, modifiers);
+            final Var second = new Var(name + " _2", type, count(), idx + 1, modifiers);
             scope.peek().add(second);
             // long, double use 2 local indices
         }
@@ -64,6 +64,7 @@ public class Scope {
     public static @Data class Var {
         private final @NotNull String name;
         private final @NotNull Type type;
+        private final int scope;
         private final int index;
         private final int modifiers;
     }

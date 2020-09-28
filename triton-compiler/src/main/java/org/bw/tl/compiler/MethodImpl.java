@@ -5,22 +5,23 @@ import lombok.EqualsAndHashCode;
 import org.bw.tl.antlr.ast.*;
 import org.bw.tl.compiler.resolve.*;
 import org.bw.tl.compiler.types.AnyTypeHandler;
+import org.bw.tl.compiler.types.Primitive;
 import org.bw.tl.compiler.types.TypeHandler;
 import org.bw.tl.util.TypeUtilities;
 import org.jetbrains.annotations.NotNull;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import org.objectweb.asm.*;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.bw.tl.util.TypeUtilities.*;
 
 @EqualsAndHashCode(callSuper = false)
-public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
+public @Data
+class MethodImpl extends ASTVisitorBase implements Opcodes {
 
     protected final @NotNull MethodVisitor mv;
     protected final @NotNull MethodCtx ctx;
@@ -411,6 +412,124 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
         }
     }
 
+    @Override
+    public void visitScheduleBlock(final ScheduleBlock scheduleBlock) {
+        final List<Task> tasks = scheduleBlock.getTasks();
+
+        if (tasks.isEmpty()) {
+            return;
+        }
+
+        int i = 0;
+
+        mv.visitIntInsn(BIPUSH, 4);
+        mv.visitMethodInsn(INVOKESTATIC, "java/util/concurrent/Executors", "newScheduledThreadPool", "(I)Ljava/util/concurrent/ScheduledExecutorService;", false);
+
+        for (final Task task : tasks) {
+            if (i + 1 < tasks.size()) {
+                mv.visitInsn(DUP);
+            }
+
+            final AnonymousFunctionVisitor afv = new AnonymousFunctionVisitor(ctx, ctx.getScope().count());
+            task.accept(afv);
+
+            final List<FieldContext> params = afv.getParams().stream().distinct().collect(Collectors.toList());
+
+            final String[] varNames = params.stream()
+                    .map(SymbolContext::getName)
+                    .toArray(String[]::new);
+
+            final QualifiedName[] qualifiedNames = params.stream()
+                    .map(param -> QualifiedName.of(param.getName()))
+                    .peek(fqn -> fqn.accept(this))
+                    .toArray(QualifiedName[]::new);
+
+            final TypeName[] typeNames = params.stream()
+                    .map(param -> {
+                        final Primitive primitive = Primitive.getPrimitiveByDesc(param.getTypeDescriptor().getDescriptor());
+
+                        if (primitive != null)
+                            return TypeName.of(primitive.getName());
+
+                        return TypeName.of(param.getTypeDescriptor().getInternalName(), param.getTypeDescriptor().getDimensions() - 1);
+                    })
+                    .toArray(TypeName[]::new);
+
+            final List[] paramModifiers = params.stream().map(p -> Arrays.asList(Modifier.FINAL)).toArray(List[]::new);
+            final List<Node> statements = new LinkedList<>();
+            int constraintIndex = 0;
+
+            for (final Constraint constraint : task.getConstraints()) {
+                Block condition = constraint.getConstraint();
+                Block constraintViolation = constraint.getConstraintViolation();
+
+                if (constraintViolation == null)
+                    constraintViolation = new Block();
+                constraintViolation.getStatements().add(new Return(null));
+
+                final Function constraintConditionFunction = new Function(typeNames, varNames, paramModifiers,
+                        ctx.getMethodName() + "$" + i + "$" + constraintIndex++,
+                        condition,
+                        new TypeName("boolean"));
+                constraintConditionFunction.addModifiers(Modifier.PRIVATE, Modifier.STATIC);
+
+                final IfStatement ifStatement = new IfStatement(
+                        new BinaryOp(
+                                new Call(null, constraintConditionFunction.getName(), qualifiedNames),
+                                "==",
+                                new Literal<>(false)
+                        ),
+                        constraintViolation,
+                        null
+                );
+
+                ifStatement.setPop(true);
+                statements.add(ifStatement);
+
+                ctx.addSyntheticMethod(constraintConditionFunction);
+            }
+
+            statements.add(task.getBody());
+
+            final Block block = new Block(statements);
+
+            final Function func = new Function(typeNames, varNames, paramModifiers,
+                    ctx.getMethodName() + "$" + i++,
+                    block,
+                    new TypeName("void"));
+
+            func.addModifiers(Modifier.PRIVATE, Modifier.STATIC);
+            ctx.addSyntheticMethod(func);
+
+            Type[] paramTypes = params.stream().map(param -> param.getTypeDescriptor()).toArray(Type[]::new);
+            schedule(task.getPeriod(), task.getTimeUnit(), func.getName(), Type.getMethodType(Type.VOID_TYPE, paramTypes));
+        }
+    }
+
+    private void schedule(final int period, final TimeUnit timeUnit, final String name, final Type type) {
+        mv.visitInvokeDynamicInsn("run", Type.getMethodType(Type.getType(Runnable.class), type.getArgumentTypes()).getDescriptor(),
+                new Handle(H_INVOKESTATIC,
+                        "java/lang/invoke/LambdaMetafactory",
+                        "metafactory",
+                        "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;",
+                        false
+                ),
+                Type.getType("()V"),
+                new Handle(Opcodes.H_INVOKESTATIC, ctx.getClazz().getInternalName(),
+                        name,
+                        type.getDescriptor(), false),
+                Type.getType("()V")
+        );
+
+        mv.visitInsn(LCONST_0);
+        pushInteger(period);
+        mv.visitInsn(I2L);
+        mv.visitFieldInsn(GETSTATIC, "java/util/concurrent/TimeUnit", timeUnit.name(), "Ljava/util/concurrent/TimeUnit;");
+
+        mv.visitMethodInsn(INVOKEINTERFACE, "java/util/concurrent/ScheduledExecutorService", "scheduleAtFixedRate", "(Ljava/lang/Runnable;JJLjava/util/concurrent/TimeUnit;)Ljava/util/concurrent/ScheduledFuture;", true);
+        mv.visitInsn(POP);
+    }
+
     private void typeCast(@NotNull final Type from, @NotNull final Type to) {
         final TypeHandler fromHandler = TypeUtilities.getTypeHandler(from);
         final TypeHandler toHandler = TypeUtilities.getTypeHandler(to);
@@ -501,7 +620,7 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
             if (!funCtx.isStatic()) {
                 if (call.getPrecedingExpr() != null) {
                     call.getPrecedingExpr().accept(this);
-                } else if (!ctx.isStatic()){
+                } else if (!ctx.isStatic()) {
                     final int idx = ctx.getScope().findVar(" __this__ ").getIndex();
                     mv.visitVarInsn(ALOAD, idx);
                 } else {

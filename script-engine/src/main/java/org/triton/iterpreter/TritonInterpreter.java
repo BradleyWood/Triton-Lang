@@ -53,7 +53,7 @@ public @Data class TritonInterpreter {
     }
 
     public void exec(@NotNull final String s) throws ScriptException {
-       eval(compile(s, "<TritonScript>"));
+        eval(compile(s, "<TritonScript>"));
     }
 
     public void exec(@NotNull final Reader reader) throws IOException, ScriptException {
@@ -146,7 +146,8 @@ public @Data class TritonInterpreter {
             if (p.getNumberOfSyntaxErrors() == 0) {
                 return scriptContext.accept(ScriptVisitor.of(srcFile));
             }
-        } catch (Throwable e) { }
+        } catch (Throwable e) {
+        }
 
         return null;
     }
@@ -160,7 +161,8 @@ public @Data class TritonInterpreter {
         CompileUtilities.DEFAULT_STATIC_IMPORTS.forEach(imp -> staticImports.add(QualifiedName.of(imp)));
 
         return new Clazz(QualifiedName.of("script"), imports, staticImports, Collections.emptyList(),
-                Arrays.asList(buildEvalFunction(script.getStatements()), buildGetEngineFunction()), script.getSrcFile());
+                Arrays.asList(buildEvalFunction(script.getStatements()), buildGetEngineFunction()),
+                Collections.emptyList(), script.getSrcFile());
     }
 
     private Function buildGetEngineFunction() {

@@ -4,10 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.bw.tl.antlr.GrammarBaseVisitor;
 import org.bw.tl.antlr.GrammarParser;
-import org.bw.tl.antlr.ast.Clazz;
-import org.bw.tl.antlr.ast.Field;
-import org.bw.tl.antlr.ast.Function;
-import org.bw.tl.antlr.ast.QualifiedName;
+import org.bw.tl.antlr.ast.*;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -15,11 +12,13 @@ import java.util.LinkedList;
 @RequiredArgsConstructor(staticName = "of")
 public class FileVisitor extends GrammarBaseVisitor<Clazz> {
 
-    private final @Getter String sourceFile;
+    private final @Getter
+    String sourceFile;
 
     @Override
     public Clazz visitFile(final GrammarParser.FileContext ctx) {
         QualifiedName packageName = new QualifiedName("default");
+        final ArrayList<ScheduleBlock> scheduleBlocks = new ArrayList<>();
         final ArrayList<QualifiedName> imports = new ArrayList<>();
         final ArrayList<Field> fields = new ArrayList<>();
         final ArrayList<Function> functions = new ArrayList<>();
@@ -41,10 +40,14 @@ public class FileVisitor extends GrammarBaseVisitor<Clazz> {
                     functions.add(tlCtx.functionDef().accept(FunctionVisitor.of(sourceFile)));
                 } else if (tlCtx.varDef() != null) {
                     fields.add(tlCtx.varDef().accept(FieldVisitor.of(sourceFile)));
+                } else if (tlCtx.schedule() != null) {
+                    scheduleBlocks.add(tlCtx.schedule().accept(ScheduleVisitor.of(sourceFile)));
                 }
             }
         }
 
-        return new Clazz(packageName, imports, new LinkedList<>(), fields, functions, sourceFile);
+        // add schedule to class
+
+        return new Clazz(packageName, imports, new LinkedList<>(), fields, functions, scheduleBlocks, sourceFile);
     }
 }
