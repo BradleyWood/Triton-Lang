@@ -650,9 +650,9 @@ class MethodImpl extends ASTVisitorBase implements Opcodes {
             if (call.shouldPop() && !funCtx.getTypeDescriptor().getReturnType().equals(Type.VOID_TYPE)) {
                 final Type retType = funCtx.getTypeDescriptor().getReturnType();
                 if (retType.equals(Type.LONG_TYPE) || retType.equals(Type.DOUBLE_TYPE)) {
-                    mv.visitInsn(DUP2);
+                    mv.visitInsn(POP2);
                 } else {
-                    mv.visitInsn(DUP);
+                    mv.visitInsn(POP);
                 }
             }
         } else {
