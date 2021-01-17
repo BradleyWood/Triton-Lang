@@ -27,6 +27,7 @@ statement
     | whileStatement
     | forStatement
     | expression
+    | async
     | varDef
     | returnStatement
     | schedule
@@ -42,6 +43,7 @@ expression
     | call=functionCall
     | ifStatement
     | whenExpr
+    | delegate
     | newStatement
     | listDef
     | preceeding=expression NL* DOT NL* assignment
@@ -75,6 +77,13 @@ constraint
 
 indices
     :   (NL* '[' NL* expression NL* ']')+
+    ;
+
+delegate
+    : DELEGATE NL* block;
+
+async
+    : ASYNC NL* block (NL* CALLBACK NL* block)?
     ;
 
 assignment
