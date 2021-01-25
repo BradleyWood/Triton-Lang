@@ -57,6 +57,16 @@ public class AnonymousFunctionVisitor implements ASTVisitor {
     }
 
     @Override
+    public void visitRmdDelegate(RmdDelegate delegate) {
+
+    }
+
+    @Override
+    public void visitRmdAsyncDelegate(RmdAsyncDelegate delegate) {
+
+    }
+
+    @Override
     public void visitIf(final IfStatement ifStatement) {
         ifStatement.getCondition().accept(this);
         ifStatement.getBody().accept(this);

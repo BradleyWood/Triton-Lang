@@ -37,6 +37,8 @@ public class StatementVisitor extends GrammarBaseVisitor<Node> {
                 retVal.setParent(stmt);
         } else if (ctx.schedule() != null) {
             stmt = ctx.schedule().accept(ScheduleVisitor.of(sourceFile));
+        } else if (ctx.async() != null) {
+            stmt = ctx.async().accept(RmdAsyncVisitor.of(sourceFile));
         } else if (ctx.SEMICOLON() != null) {
             stmt = new EmptyStatement();
         }

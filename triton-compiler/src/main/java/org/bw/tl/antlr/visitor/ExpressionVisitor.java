@@ -96,6 +96,10 @@ public class ExpressionVisitor extends GrammarBaseVisitor<Expression> {
             if (lhs != null)
                 lhs.setParent(expression);
             rhs.setParent(expression);
+        } else if (ctx.delegate() != null) {
+            final Block body = ctx.delegate().body.accept(BlockVisitor.of(sourceFile));
+            expression = new RmdDelegate(body);
+            body.setParent(expression);
         }
 
         if (expression == null)

@@ -44,4 +44,8 @@ public interface ASTVisitor {
 
     void visitTask(final Task task);
 
+    void visitRmdDelegate(final RmdDelegate delegate);
+
+    void visitRmdAsyncDelegate(final RmdAsyncDelegate delegate);
+
 }

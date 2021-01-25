@@ -129,7 +129,14 @@ public class FunReturnVerifier implements Verifiable<Function> {
 
         @Override
         public void visitTask(Task task) {
+        }
 
+        @Override
+        public void visitRmdDelegate(RmdDelegate delegate) {
+        }
+
+        @Override
+        public void visitRmdAsyncDelegate(RmdAsyncDelegate delegate) {
         }
 
         @Override

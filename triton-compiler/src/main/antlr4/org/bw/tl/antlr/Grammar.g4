@@ -79,12 +79,16 @@ indices
     :   (NL* '[' NL* expression NL* ']')+
     ;
 
+/** RMD **/
+
 delegate
-    : DELEGATE NL* block;
+    : DELEGATE NL* body=block;
 
 async
-    : ASYNC NL* block (NL* CALLBACK NL* block)?
+    : ASYNC NL* body=block (NL* CALLBACK NL* cb=block)?
     ;
+
+/** RMD **/
 
 assignment
     :   <assoc=right>

@@ -93,17 +93,27 @@ public class ASTVisitorBase implements ASTVisitor {
     }
 
     @Override
-    public void visitNew(New newExpr) {
+    public void visitNew(final New newExpr) {
         throw new UnsupportedOperationException("New not implemented");
     }
 
     @Override
-    public void visitWhen(When when) {
+    public void visitWhen(final When when) {
         throw new UnsupportedOperationException("When not implemented");
     }
 
     @Override
     public void visitExpressionIndices(final ExpressionIndex expressionIndex) {
         throw new UnsupportedOperationException("Expression indices not supported");
+    }
+
+    @Override
+    public void visitRmdAsyncDelegate(final RmdAsyncDelegate delegate) {
+        throw new UnsupportedOperationException("Rmd async delegate not supported");
+    }
+
+    @Override
+    public void visitRmdDelegate(final RmdDelegate delegate) {
+        throw new UnsupportedOperationException("Rmd delegate indices not supported");
     }
 }
