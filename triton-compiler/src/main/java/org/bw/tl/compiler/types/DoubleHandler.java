@@ -98,8 +98,7 @@ public class DoubleHandler extends TypeHandler {
 
     @Override
     public boolean cast(final MethodVisitor mv, final TypeHandler from) {
-        if (from.isPrimitive() && !(from instanceof VoidHandler) && !(from instanceof BoolHandler)
-                || Type.getType(from.getDesc()).equals(Type.getType(Double.class))) {
+        if (from.isNumber()) {
             return from.toDouble(mv);
         }
         return false;

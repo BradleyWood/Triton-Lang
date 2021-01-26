@@ -11,6 +11,6 @@ public @Data class RmdAsyncDelegate extends Node {
 
     @Override
     public void accept(final ASTVisitor visitor) {
-
+        visitor.visitRmdAsyncDelegate(this);
     }
 }

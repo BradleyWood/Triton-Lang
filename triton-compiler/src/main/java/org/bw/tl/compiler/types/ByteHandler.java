@@ -36,8 +36,7 @@ public class ByteHandler extends IntHandler {
 
     @Override
     public boolean cast(final MethodVisitor mv, final TypeHandler from) {
-        if (from.isPrimitive() && !(from instanceof VoidHandler) && !(from instanceof BoolHandler)
-                || Type.getType(from.getDesc()).equals(Type.getType(Byte.class))) {
+        if (from.isNumber()) {
             return from.toByte(mv);
         }
         return false;

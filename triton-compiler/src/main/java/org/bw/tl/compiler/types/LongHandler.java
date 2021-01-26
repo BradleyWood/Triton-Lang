@@ -98,8 +98,7 @@ public class LongHandler extends TypeHandler {
 
     @Override
     public boolean cast(final MethodVisitor mv, final TypeHandler from) {
-        if (from.isPrimitive() && !(from instanceof VoidHandler) && !(from instanceof BoolHandler)
-                || Type.getType(from.getDesc()).equals(Type.getType(Long.class))) {
+        if (from.isNumber()) {
             return from.toLong(mv);
         }
         return false;

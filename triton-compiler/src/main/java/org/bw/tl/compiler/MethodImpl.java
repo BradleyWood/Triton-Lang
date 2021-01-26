@@ -11,6 +11,7 @@ import org.bw.tl.util.TypeUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.*;
 
+import javax.swing.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -20,8 +21,7 @@ import java.util.stream.Collectors;
 import static org.bw.tl.util.TypeUtilities.*;
 
 @EqualsAndHashCode(callSuper = false)
-public @Data
-class MethodImpl extends ASTVisitorBase implements Opcodes {
+public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
 
     protected final @NotNull MethodVisitor mv;
     protected final @NotNull MethodCtx ctx;
@@ -1164,6 +1164,100 @@ class MethodImpl extends ASTVisitorBase implements Opcodes {
                 }
             }
         }
+    }
+
+    private int delCount = 0;
+
+    @Override
+    public void visitRmdDelegate(final RmdDelegate delegate) {
+        final String methodName = ctx.getMethodName() + "$del$" + delCount++;
+        final Function function = fromBlock(delegate.getBlock(), methodName);
+        ctx.addSyntheticMethod(function);
+
+        mv.visitTypeInsn(NEW, "net/uoit/rmd/delegate/DelegateInfo");
+        mv.visitInsn(DUP);
+
+        mv.visitLdcInsn(Type.getType(ctx.getClazz().getDescriptor()));
+
+        mv.visitLdcInsn(methodName);
+
+        Type[] argTypes = Arrays.stream(function.getParameterTypes())
+                .map(t -> t.resolveType(ctx.getResolver())).toArray(Type[]::new);
+        Type methodType = Type.getMethodType(function.getType().resolveType(ctx.getResolver()), argTypes);
+
+        mv.visitLdcInsn(methodType.getDescriptor());
+
+        mv.visitMethodInsn(INVOKESPECIAL, "net/uoit/rmd/delegate/DelegateInfo", "<init>",
+                "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V", false);
+
+        pushInteger(argTypes.length);
+        mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
+        final String[] parameterNames = function.getParameterNames();
+
+        int idx = 0;
+        for (final String parameterName : parameterNames) {
+            mv.visitInsn(DUP);
+            pushInteger(idx);
+            visitName(QualifiedName.of(parameterName));
+
+            final Primitive primitive = Primitive.getPrimitiveByDesc(argTypes[idx++].getDescriptor());
+
+            if (primitive != null) {
+                primitive.getTypeHandler().toObject(mv);
+            }
+
+            mv.visitInsn(AASTORE);
+        }
+
+        mv.visitMethodInsn(INVOKESTATIC, "net/uoit/rmd/Rmd", "invokeDelegate",
+                "(Lnet/uoit/rmd/delegate/DelegateInfo;[Ljava/lang/Object;)Ljava/lang/Object;", false);
+
+        if (delegate.shouldPop()) {
+            mv.visitInsn(POP);
+        } else {
+            TypeHandler typeHandler = getTypeHandler(methodType.getReturnType());
+            mv.visitTypeInsn(CHECKCAST, "java/lang/Number");
+            typeHandler.cast(mv, new AnyTypeHandler("Ljava/lang/Number;"));
+        }
+    }
+
+    private Function fromBlock(final Block block, final String name) {
+        final AnonymousFunctionVisitor afv = new AnonymousFunctionVisitor(ctx, ctx.getScope().count());
+        block.accept(afv);
+
+        final Type returnType = ctx.getResolver().resolveBlock(block);
+
+        final List<FieldContext> params = afv.getParams().stream().distinct().collect(Collectors.toList());
+
+        final String[] varNames = params.stream()
+                .map(SymbolContext::getName)
+                .toArray(String[]::new);
+
+        final TypeName[] typeNames = params.stream()
+                .map(param -> {
+                    final Primitive primitive = Primitive.getPrimitiveByDesc(param.getTypeDescriptor().getDescriptor());
+
+                    if (primitive != null)
+                        return TypeName.of(primitive.getName());
+
+                    return TypeName.of(param.getTypeDescriptor().getInternalName(), param.getTypeDescriptor().getDimensions() - 1);
+                })
+                .toArray(TypeName[]::new);
+
+        final List[] paramModifiers = params.stream().map(p -> Arrays.asList(Modifier.FINAL)).toArray(List[]::new);
+
+        final Function function = new Function(typeNames, varNames, paramModifiers,
+                name,
+                block,
+                TypeName.of(returnType.getClassName()));
+        function.addModifiers(Modifier.PRIVATE, Modifier.STATIC);
+
+        return function;
+    }
+
+    @Override
+    public void visitRmdAsyncDelegate(final RmdAsyncDelegate delegate) {
+        super.visitRmdAsyncDelegate(delegate);
     }
 
     private void visitAssignIdx(final Expression array, final Type resultType, final List<Expression> indices,

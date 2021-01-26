@@ -20,7 +20,11 @@ public class Scope {
     }
 
     public boolean putVar(@NotNull final String name, @NotNull final Type type, final int modifiers) {
-        if (findVar(name) != null) {
+        return putVar(name, type, modifiers, false);
+    }
+
+    public boolean putVar(@NotNull final String name, @NotNull final Type type, final int modifiers, final boolean dup) {
+        if (!dup && findVar(name) != null) {
             return false;
         }
 

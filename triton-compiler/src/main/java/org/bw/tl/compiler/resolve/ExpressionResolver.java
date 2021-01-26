@@ -26,6 +26,8 @@ public interface ExpressionResolver {
 
     Type resolveType(QualifiedName name);
 
+    Type resolveBlock(Block block);
+
     SymbolContext resolveCallCtx(Call call);
 
     SymbolContext resolveConstructorCtx(New newStmt);

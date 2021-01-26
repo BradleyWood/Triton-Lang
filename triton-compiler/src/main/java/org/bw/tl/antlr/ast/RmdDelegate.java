@@ -12,11 +12,11 @@ public @Data class RmdDelegate extends Expression {
 
     @Override
     public void accept(final ASTVisitor visitor) {
-
+        visitor.visitRmdDelegate(this);
     }
 
     @Override
     public Type resolveType(final ExpressionResolver resolver) {
-        return null;
+        return resolver.resolveBlock(block);
     }
 }

@@ -1,22 +1,35 @@
 package example
 
-import java.util.List
-import java.util.Collections
-import java.util.ArrayList
+int counter = 0
 
 fun main(String[] args) {
-    List lst = new ArrayList()
+    schedule {
+        task (period=400) {
+            println("The count is: " + counter)
+        } constrainedBy {
+            return counter / 10 % 2 == 0
+        } constrainedBy {
+            return counter != 10
+        } constraintViolation {
+            println("Count cannot be 10! (for some reason)")
+        }
 
-    lst.add(54)
-    lst.add(11)
-    lst.add(71)
-    lst.add(42)
-    lst.add(34)
-    lst.add(99)
+        task(period=1000) {
+            int c1 = counter
+            int result = delegate {
+                400 + 20 + c1
+            }
 
-    println("Before: $lst")
+            println("Result=" + result)
+            println(counter + "! = " + factorial(counter))
+        } constrainedBy {
+            return counter <= 12
+        }
 
-    sort(lst)
-
-    println("After: $lst")
+        task (period=1000) {
+            counter += 1
+        }
+    }
 }
+
+fun factorial(int n): int = if (n <= 1) 1 else n * factorial(n - 1)

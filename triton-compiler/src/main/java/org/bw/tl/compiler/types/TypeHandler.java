@@ -6,14 +6,48 @@ import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static org.bw.tl.util.TypeUtilities.isAssignableFrom;
 import static org.objectweb.asm.Opcodes.*;
 
 @EqualsAndHashCode
 public abstract @Data class TypeHandler {
 
+    public static final List<String> WRAPPED_NUMBER_TYPES = Arrays.asList(
+            "Ljava/lang/Number;",
+            "Ljava/lang/Integer;",
+            "Ljava/lang/Long;",
+            "Ljava/lang/Short;",
+            "Ljava/lang/Byte;",
+            "Ljava/lang/Float;",
+            "Ljava/lang/Double;"
+    );
+
+    public static final List<String> PRIMITIVE_NUMBER_TYPES = Arrays.asList(
+            "I",
+            "J",
+            "F",
+            "D",
+            "S",
+            "B"
+    );
+
     @NotNull
     private final String desc;
+
+    public boolean isWrappedNumber() {
+        return WRAPPED_NUMBER_TYPES.contains(getDesc());
+    }
+
+    public boolean isPrimitiveNumber() {
+        return PRIMITIVE_NUMBER_TYPES.contains(getDesc());
+    }
+
+    public boolean isNumber() {
+        return isWrappedNumber() || isPrimitiveNumber();
+    }
 
     public final boolean isPrimitive() {
         return desc.length() == 1;

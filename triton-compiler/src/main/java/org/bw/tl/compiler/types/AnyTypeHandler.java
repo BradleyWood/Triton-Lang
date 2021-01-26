@@ -3,30 +3,13 @@ package org.bw.tl.compiler.types;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
-import java.util.Arrays;
-import java.util.List;
-
 import static org.bw.tl.util.TypeUtilities.isAssignableWithImplicitCast;
 import static org.objectweb.asm.Opcodes.*;
 
 public class AnyTypeHandler extends TypeHandler {
 
-    private static final List<String> NUMBER_TYPES = Arrays.asList(
-            "Ljava/lang/Number;",
-            "Ljava/lang/Integer;",
-            "Ljava/lang/Long;",
-            "Ljava/lang/Short;",
-            "Ljava/lang/Byte;",
-            "Ljava/lang/Float;",
-            "Ljava/lang/Double;"
-    );
-
     public AnyTypeHandler(final String desc) {
         super(desc);
-    }
-
-    private boolean isNumber() {
-        return NUMBER_TYPES.contains(getDesc());
     }
 
     @Override
@@ -51,7 +34,7 @@ public class AnyTypeHandler extends TypeHandler {
 
     @Override
     public boolean toInt(final MethodVisitor mv) {
-        if (isNumber()) {
+        if (isWrappedNumber()) {
             mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(), "intValue", "()I", false);
             return true;
         }
@@ -60,7 +43,7 @@ public class AnyTypeHandler extends TypeHandler {
 
     @Override
     public boolean toShort(final MethodVisitor mv) {
-        if (isNumber()) {
+        if (isWrappedNumber()) {
             mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(), "shortValue", "()S", false);
             return true;
         }
@@ -69,7 +52,7 @@ public class AnyTypeHandler extends TypeHandler {
 
     @Override
     public boolean toChar(final MethodVisitor mv) {
-        if (isNumber()) {
+        if (isWrappedNumber()) {
             toInt(mv);
             mv.visitInsn(I2C);
             return true;
@@ -79,7 +62,7 @@ public class AnyTypeHandler extends TypeHandler {
 
     @Override
     public boolean toByte(final MethodVisitor mv) {
-        if (isNumber()) {
+        if (isWrappedNumber()) {
             mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(), "byteValue", "()B", false);
             return true;
         }
@@ -88,7 +71,7 @@ public class AnyTypeHandler extends TypeHandler {
 
     @Override
     public boolean toLong(final MethodVisitor mv) {
-        if (isNumber()) {
+        if (isWrappedNumber()) {
             mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(), "longValue", "()J", false);
             return true;
         }
@@ -97,7 +80,7 @@ public class AnyTypeHandler extends TypeHandler {
 
     @Override
     public boolean toFloat(final MethodVisitor mv) {
-        if (isNumber()) {
+        if (isWrappedNumber()) {
             mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(), "floatValue", "()F", false);
             return true;
         }
@@ -106,7 +89,7 @@ public class AnyTypeHandler extends TypeHandler {
 
     @Override
     public boolean toDouble(final MethodVisitor mv) {
-        if (isNumber()) {
+        if (isWrappedNumber()) {
             mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(), "doubleValue", "()D", false);
             return true;
         }

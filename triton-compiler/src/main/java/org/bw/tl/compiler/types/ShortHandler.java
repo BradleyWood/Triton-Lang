@@ -30,10 +30,10 @@ public class ShortHandler extends IntHandler {
 
     @Override
     public boolean cast(final MethodVisitor mv, final TypeHandler from) {
-        if (from.isPrimitive() && !(from instanceof VoidHandler) && !(from instanceof BoolHandler)
-                || Type.getType(from.getDesc()).equals(Type.getType(Short.class))) {
+        if (from.isNumber()) {
             return from.toShort(mv);
         }
+
         return false;
     }
 

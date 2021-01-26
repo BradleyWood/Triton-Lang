@@ -779,4 +779,10 @@ public @Data class ExpressionResolverImpl implements ExpressionResolver {
 
         return resolveType(clazz, fieldType);
     }
+
+    @Override
+    public Type resolveBlock(@NotNull final Block block) {
+        final BlockResolver blockResolver = new BlockResolver(this);
+        return blockResolver.getType(block);
+    }
 }

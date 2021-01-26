@@ -99,8 +99,7 @@ public class IntHandler extends TypeHandler {
 
     @Override
     public boolean cast(final MethodVisitor mv, final TypeHandler from) {
-        if (from.isPrimitive() && !(from instanceof VoidHandler) && !(from instanceof BoolHandler)
-                || Type.getType(from.getDesc()).equals(Type.getType(Integer.class))) {
+        if (from.isNumber()) {
             return from.toInt(mv);
         }
         return false;
