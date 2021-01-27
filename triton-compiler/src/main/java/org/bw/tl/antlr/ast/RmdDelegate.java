@@ -9,6 +9,7 @@ import org.objectweb.asm.Type;
 public @Data class RmdDelegate extends Expression {
 
     private final Block block;
+    private final Expression condition;
 
     @Override
     public void accept(final ASTVisitor visitor) {

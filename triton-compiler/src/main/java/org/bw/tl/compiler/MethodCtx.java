@@ -8,14 +8,17 @@ import org.bw.tl.ErrorType;
 import org.bw.tl.antlr.ast.*;
 import org.bw.tl.compiler.resolve.ExpressionResolver;
 import org.bw.tl.compiler.resolve.ExpressionResolverImpl;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.util.LinkedList;
 import java.util.List;
 
 public @Data class MethodCtx {
 
-    private final List<Function> syntheticMethods = new LinkedList<>();
+    private final List<Function> syntheticASTMethods = new LinkedList<>();
+    private final List<MethodNode> syntheticASMMethods = new LinkedList<>();
     private final List<Error> errors = new LinkedList<>();
     private final Scope scope = new Scope();
     private ExpressionResolver resolver;
@@ -62,8 +65,17 @@ public @Data class MethodCtx {
     }
 
     public void addSyntheticMethod(final Function function) {
-        syntheticMethods.add(function);
+        syntheticASTMethods.add(function);
         clazz.addSyntheticFunction(function);
+    }
+
+    public MethodVisitor addSyntheticMethod(final List<Modifier> modifiers, final String name,
+                                            final String desc, final String signature, final String[] exceptions) {
+        final int access = modifiers.stream().mapToInt(Modifier::getValue).sum();
+        final MethodNode methodNode = new MethodNode(access, name, desc, signature, exceptions);
+
+        syntheticASMMethods.add(methodNode);
+        return methodNode;
     }
 
     /**

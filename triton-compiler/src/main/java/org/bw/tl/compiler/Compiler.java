@@ -12,9 +12,10 @@ import org.bw.tl.verify.Verifiable;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.IntInsnNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.util.*;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static org.objectweb.asm.ClassWriter.*;
@@ -124,7 +125,8 @@ public @Data class Compiler {
 
             errors.addAll(ctx.getErrors());
 
-            final LinkedList<Function> syntheticMethods = new LinkedList<>(ctx.getSyntheticMethods());
+            final LinkedList<Function> syntheticMethods = new LinkedList<>(ctx.getSyntheticASTMethods());
+            final LinkedList<MethodNode> syntheticASMMethods = new LinkedList<>(ctx.getSyntheticASMMethods());
 
             while (!syntheticMethods.isEmpty()) {
                 final Function syntheticMethod = syntheticMethods.removeFirst();
@@ -146,10 +148,17 @@ public @Data class Compiler {
                 final MethodImpl impl = new MethodImpl(mv, syntheticCtx);
                 syntheticMethod.accept(impl);
 
-                syntheticMethods.addAll(syntheticCtx.getSyntheticMethods());
+                syntheticMethods.addAll(syntheticCtx.getSyntheticASTMethods());
+                syntheticASMMethods.addAll(syntheticCtx.getSyntheticASMMethods());
                 errors.addAll(syntheticCtx.getErrors());
                 mv.visitMaxs(0, 0);
                 mv.visitEnd();
+            }
+
+            for (final MethodNode syntheticASMMethod : syntheticASMMethods) {
+                mv = cw.visitMethod(syntheticASMMethod.access, syntheticASMMethod.name,
+                        syntheticASMMethod.desc, syntheticASMMethod.signature, null);
+                syntheticASMMethod.accept(mv);
             }
         }
 

@@ -98,8 +98,18 @@ public class ExpressionVisitor extends GrammarBaseVisitor<Expression> {
             rhs.setParent(expression);
         } else if (ctx.delegate() != null) {
             final Block body = ctx.delegate().body.accept(BlockVisitor.of(sourceFile));
-            expression = new RmdDelegate(body);
+            Expression condition = null;
+
+            if (ctx.delegate().condition != null) {
+                condition = ctx.delegate().condition.accept(ExpressionVisitor.of(sourceFile));
+            }
+
+            expression = new RmdDelegate(body, condition);
             body.setParent(expression);
+
+            if (condition != null) {
+                condition.setParent(expression);
+            }
         }
 
         if (expression == null)

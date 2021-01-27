@@ -8,6 +8,8 @@ public @Data class RmdAsyncDelegate extends Node {
 
     private final Block body;
     private final Block callback;
+    private final Expression condition;
+    private String inputVar = "it";
 
     @Override
     public void accept(final ASTVisitor visitor) {

@@ -82,10 +82,10 @@ indices
 /** RMD **/
 
 delegate
-    : DELEGATE NL* body=block;
+    : DELEGATE (NL* LPAREN condition=expression RPAREN)? NL* body=block;
 
 async
-    : ASYNC NL* body=block (NL* CALLBACK NL* cb=block)?
+    : ASYNC (NL* LPAREN condition=expression RPAREN)? NL* body=block (NL* CALLBACK NL* cb=block)?
     ;
 
 /** RMD **/

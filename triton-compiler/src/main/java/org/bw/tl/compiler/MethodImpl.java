@@ -11,7 +11,6 @@ import org.bw.tl.util.TypeUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.*;
 
-import javax.swing.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -460,7 +459,23 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
             int constraintIndex = 0;
 
             for (final Constraint constraint : task.getConstraints()) {
-                Block condition = constraint.getConstraint();
+                final Block condition = constraint.getConstraint();
+                final List<Node> conStmts = condition.getStatements();
+
+                if (!conStmts.isEmpty()) {
+                    final Node last = conStmts.get(conStmts.size() - 1);
+                    if (last instanceof Expression) {
+                        final Type type = ((Expression) last).resolveType(ctx.getResolver());
+
+                        if (Type.BOOLEAN_TYPE.equals(type)) {
+                            conStmts.remove(last);
+                            final Return ret = new Return((Expression) last);
+                            ret.setParent(condition);
+                            conStmts.add(ret);
+                        }
+                    }
+                }
+
                 Block constraintViolation = constraint.getConstraintViolation();
 
                 if (constraintViolation == null)
@@ -1169,30 +1184,212 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
     private int delCount = 0;
 
     @Override
+    public void visitRmdAsyncDelegate(final RmdAsyncDelegate delegate) {
+        final String methodName = ctx.getMethodName() + "$del$" + delCount;
+        final String callbackName = ctx.getMethodName() + "$cb$" + delCount++;
+        final Function asyncFunction = fromBlock(delegate.getBody(), methodName);
+        final Type retType = asyncFunction.getType().resolveType(ctx.getResolver());
+        final boolean conditional = delegate.getCondition() != null;
+
+        final Label end = new Label();
+        final Label localBlock = new Label();
+
+        if (delegate.getCallback() != null) {
+            String virtVar = delegate.getInputVar() + "__obj";
+            final Function callbackFunction = new Function(
+                    new TypeName[]{TypeName.of("java/lang/Object")},
+                    new String[]{virtVar},
+                    new List[]{new LinkedList<Modifier>()},
+                    callbackName,
+                    delegate.getCallback(),
+                    TypeName.of("void")
+            );
+
+            delegate.getCallback().getStatements().add(0,
+                    new Field(delegate.getInputVar(), asyncFunction.getType(), new TypeCast(asyncFunction.getType(), QualifiedName.of(virtVar)))
+            );
+
+            callbackFunction.addModifiers(Modifier.PRIVATE, Modifier.STATIC);
+            ctx.addSyntheticMethod(callbackFunction);
+        }
+
+        if (conditional) {
+            final Type conditionType = delegate.getCondition().resolveType(ctx.getResolver());
+
+            if (!conditionType.equals(Type.BOOLEAN_TYPE)) {
+                ctx.reportError("Offload condition must evaluate to boolean expression", delegate.getCondition());
+                return;
+            }
+
+            delegate.getCondition().accept(this);
+            mv.visitJumpInsn(IFNE, localBlock);
+        }
+
+        ctx.addSyntheticMethod(asyncFunction);
+
+        final Type[] argTypes = Arrays.stream(asyncFunction.getParameterTypes())
+                .map(t -> t.resolveType(ctx.getResolver())).toArray(Type[]::new);
+        final Type methodType = Type.getMethodType(asyncFunction.getType().resolveType(ctx.getResolver()), argTypes);
+
+        mv.visitLdcInsn(Type.getType(ctx.getClazz().getDescriptor()));
+        mv.visitLdcInsn(methodName);
+        mv.visitLdcInsn(methodType.getDescriptor());
+
+        mv.visitMethodInsn(INVOKESTATIC, "net/uoit/rmd/delegate/DelegateInfo", "of",
+                "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)Lnet/uoit/rmd/delegate/DelegateInfo;", false);
+        localVariablesToObjectArray(asyncFunction.getParameterNames(), argTypes);
+
+        mv.visitInvokeDynamicInsn("accept", "()Ljava/util/function/Consumer;",
+                new Handle(Opcodes.H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory",
+                        "metafactory",
+                        "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;"),
+                new Object[]{
+                        Type.getType("(Ljava/lang/Object;)V"),
+                        new Handle(Opcodes.H_INVOKESTATIC, ctx.getClazz().getInternalName(), callbackName, "(Ljava/lang/Object;)V"),
+                        Type.getType("(Ljava/lang/Object;)V")
+                }
+        );
+
+        mv.visitMethodInsn(INVOKESTATIC, "net/uoit/rmd/Rmd", "delegate",
+                "(Lnet/uoit/rmd/delegate/DelegateInfo;[Ljava/lang/Object;Ljava/util/function/Consumer;)V", false);
+
+        if (conditional) {
+            mv.visitJumpInsn(GOTO, end);
+            mv.visitLabel(localBlock);
+
+            final QualifiedName[] paramNames = Arrays.stream(asyncFunction.getParameterNames()).map(QualifiedName::of)
+                    .toArray(QualifiedName[]::new);
+
+            for (final QualifiedName paramName : paramNames) {
+                visitName(paramName);
+            }
+
+            final Type type = Type.getMethodType(Type.VOID_TYPE, argTypes);
+            final Type lambdaType = Type.getMethodType(Type.getType(Runnable.class), argTypes);
+            final String syntheticRunnable = methodName + "$0";
+
+            mv.visitInvokeDynamicInsn("run",
+                    lambdaType.getDescriptor(),
+                    new Handle(Opcodes.H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory", "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;"),
+                    new Object[]{
+                            Type.getType("()V"),
+                            new Handle(Opcodes.H_INVOKESTATIC,
+                                    ctx.getClazz().getInternalName(),
+                                    syntheticRunnable,
+                                    type.getDescriptor()),
+                            Type.getType("()V")
+                    }
+            );
+
+            mv.visitMethodInsn(INVOKESTATIC, "net/uoit/rmd/Rmd", "delegateLocal",
+                    "(Ljava/lang/Runnable;)V", false);
+
+            mv.visitLabel(end);
+
+            final MethodVisitor smv = ctx.addSyntheticMethod(Arrays.asList(Modifier.PRIVATE, Modifier.STATIC), syntheticRunnable,
+                    type.getDescriptor(), null, null);
+
+            smv.visitCode();
+
+            for (int i = 0; i < argTypes.length; i++) {
+                TypeHandler typeHandler = getTypeHandler(argTypes[i]);
+                typeHandler.load(smv, i);
+            }
+
+            smv.visitMethodInsn(INVOKESTATIC, ctx.getClazz().getInternalName(), methodName, methodType.getDescriptor(), false);
+
+            if (delegate.getCallback() != null) {
+                final TypeHandler typeHandler = getTypeHandler(retType);
+                typeHandler.toObject(smv);
+                smv.visitMethodInsn(INVOKESTATIC, ctx.getClazz().getInternalName(), callbackName, "(Ljava/lang/Object;)V", false);
+            } else {
+                smv.visitInsn(POP);
+            }
+
+            smv.visitInsn(RETURN);
+            smv.visitMaxs(0, 0);
+            smv.visitEnd();
+        }
+    }
+
+    @Override
     public void visitRmdDelegate(final RmdDelegate delegate) {
         final String methodName = ctx.getMethodName() + "$del$" + delCount++;
         final Function function = fromBlock(delegate.getBlock(), methodName);
+        final boolean conditional = delegate.getCondition() != null;
         ctx.addSyntheticMethod(function);
 
-        mv.visitTypeInsn(NEW, "net/uoit/rmd/delegate/DelegateInfo");
-        mv.visitInsn(DUP);
+        final Label end = new Label();
+        final Label localBlock = new Label();
+
+        if (conditional) {
+            final Type conditionType = delegate.getCondition().resolveType(ctx.getResolver());
+
+            if (!conditionType.equals(Type.BOOLEAN_TYPE)) {
+                ctx.reportError("Offload condition must evaluate to boolean expression", delegate.getCondition());
+                return;
+            }
+
+            delegate.getCondition().accept(this);
+            mv.visitJumpInsn(IFNE, localBlock);
+        }
 
         mv.visitLdcInsn(Type.getType(ctx.getClazz().getDescriptor()));
-
         mv.visitLdcInsn(methodName);
 
-        Type[] argTypes = Arrays.stream(function.getParameterTypes())
+        final Type[] argTypes = Arrays.stream(function.getParameterTypes())
                 .map(t -> t.resolveType(ctx.getResolver())).toArray(Type[]::new);
-        Type methodType = Type.getMethodType(function.getType().resolveType(ctx.getResolver()), argTypes);
+        final Type methodType = Type.getMethodType(function.getType().resolveType(ctx.getResolver()), argTypes);
 
         mv.visitLdcInsn(methodType.getDescriptor());
 
-        mv.visitMethodInsn(INVOKESPECIAL, "net/uoit/rmd/delegate/DelegateInfo", "<init>",
-                "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V", false);
+        mv.visitMethodInsn(INVOKESTATIC, "net/uoit/rmd/delegate/DelegateInfo", "of",
+                "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)Lnet/uoit/rmd/delegate/DelegateInfo;", false);
 
+        localVariablesToObjectArray(function.getParameterNames(), argTypes);
+
+        mv.visitMethodInsn(INVOKESTATIC, "net/uoit/rmd/Rmd", "invokeDelegate",
+                "(Lnet/uoit/rmd/delegate/DelegateInfo;[Ljava/lang/Object;)Ljava/lang/Object;", false);
+
+        final TypeHandler typeHandler = getTypeHandler(methodType.getReturnType());
+
+        if (delegate.shouldPop()) {
+            mv.visitInsn(POP);
+        } else {
+            if (typeHandler.isNumber()) {
+                mv.visitTypeInsn(CHECKCAST, "java/lang/Number");
+                typeHandler.cast(mv, new AnyTypeHandler("Ljava/lang/Number;"));
+            } else {
+                mv.visitTypeInsn(CHECKCAST, typeHandler.getDesc());
+            }
+        }
+
+        if (conditional) {
+            mv.visitJumpInsn(GOTO, end);
+            mv.visitLabel(localBlock);
+
+            final QualifiedName[] paramNames = Arrays.stream(function.getParameterNames()).map(QualifiedName::of)
+                    .toArray(QualifiedName[]::new);
+
+            final Call call = new Call(
+                    null,
+                    methodName,
+                    paramNames
+            );
+
+            visitCall(call);
+
+            if (delegate.shouldPop()) {
+                typeHandler.pop(mv);
+            }
+
+            mv.visitLabel(end);
+        }
+    }
+
+    private void localVariablesToObjectArray(final String[] parameterNames, final Type[] argTypes) {
         pushInteger(argTypes.length);
         mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
-        final String[] parameterNames = function.getParameterNames();
 
         int idx = 0;
         for (final String parameterName : parameterNames) {
@@ -1207,17 +1404,6 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
             }
 
             mv.visitInsn(AASTORE);
-        }
-
-        mv.visitMethodInsn(INVOKESTATIC, "net/uoit/rmd/Rmd", "invokeDelegate",
-                "(Lnet/uoit/rmd/delegate/DelegateInfo;[Ljava/lang/Object;)Ljava/lang/Object;", false);
-
-        if (delegate.shouldPop()) {
-            mv.visitInsn(POP);
-        } else {
-            TypeHandler typeHandler = getTypeHandler(methodType.getReturnType());
-            mv.visitTypeInsn(CHECKCAST, "java/lang/Number");
-            typeHandler.cast(mv, new AnyTypeHandler("Ljava/lang/Number;"));
         }
     }
 
@@ -1253,11 +1439,6 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
         function.addModifiers(Modifier.PRIVATE, Modifier.STATIC);
 
         return function;
-    }
-
-    @Override
-    public void visitRmdAsyncDelegate(final RmdAsyncDelegate delegate) {
-        super.visitRmdAsyncDelegate(delegate);
     }
 
     private void visitAssignIdx(final Expression array, final Type resultType, final List<Expression> indices,
@@ -1395,8 +1576,14 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
                 if (isAssignableFrom(type, exprType)) {
                     mv.visitTypeInsn(CHECKCAST, to.getInternalName());
                 } else {
-                    ctx.reportError("Cast can never succeed from type: " + exprType.getClassName() + " to type: " +
-                            type.getClassName(), cast);
+                    if (to.isPrimitiveNumber() && "java/lang/Object".equals(from.getInternalName())) {
+                        mv.visitTypeInsn(CHECKCAST, "java/lang/Number");
+                        final TypeHandler num = new AnyTypeHandler("Ljava/lang/Number;");
+                        to.cast(mv, num);
+                    } else {
+                        ctx.reportError("Cast can never succeed from type: " + exprType.getClassName() + " to type: " +
+                                type.getClassName(), cast);
+                    }
                 }
             }
         }
