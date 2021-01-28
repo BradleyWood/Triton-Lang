@@ -421,7 +421,7 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
 
         int i = 0;
 
-        mv.visitIntInsn(BIPUSH, 4);
+        mv.visitIntInsn(BIPUSH, scheduleBlock.getTasks().size());
         mv.visitMethodInsn(INVOKESTATIC, "java/util/concurrent/Executors", "newScheduledThreadPool", "(I)Ljava/util/concurrent/ScheduledExecutorService;", false);
 
         for (final Task task : tasks) {
@@ -513,7 +513,7 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
                     block,
                     new TypeName("void"));
 
-            func.addModifiers(Modifier.PRIVATE, Modifier.STATIC);
+            func.addModifiers(Modifier.PRIVATE, Modifier.STATIC, Modifier.SYNTHETIC);
             ctx.addSyntheticMethod(func);
 
             Type[] paramTypes = params.stream().map(param -> param.getTypeDescriptor()).toArray(Type[]::new);
@@ -1222,7 +1222,7 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
             }
 
             delegate.getCondition().accept(this);
-            mv.visitJumpInsn(IFNE, localBlock);
+            mv.visitJumpInsn(IFEQ, localBlock);
         }
 
         ctx.addSyntheticMethod(asyncFunction);
@@ -1331,7 +1331,7 @@ public @Data class MethodImpl extends ASTVisitorBase implements Opcodes {
             }
 
             delegate.getCondition().accept(this);
-            mv.visitJumpInsn(IFNE, localBlock);
+            mv.visitJumpInsn(IFEQ, localBlock);
         }
 
         mv.visitLdcInsn(Type.getType(ctx.getClazz().getDescriptor()));

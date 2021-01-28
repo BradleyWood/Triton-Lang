@@ -10,7 +10,8 @@ public enum Modifier {
     PRIVATE("private", Opcodes.ACC_PRIVATE),
     PROTECTED("protected", Opcodes.ACC_PROTECTED),
     STATIC("static", Opcodes.ACC_STATIC),
-    FINAL("final", Opcodes.ACC_FINAL);
+    FINAL("final", Opcodes.ACC_FINAL),
+    SYNTHETIC("synthetic", Opcodes.ACC_SYNTHETIC);
 
     @Getter private final String name;
     @Getter private final int value;
