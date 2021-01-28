@@ -16,6 +16,8 @@ public @Data class Clazz {
     private final List<Function> functions;
     private final List<ScheduleBlock> scheduleBlocks;
     private final String sourceFile;
+    private TypeName parent = TypeName.of("java/lang/Object");
+    private List<TypeName> interfaces = new LinkedList<>();
 
     public String getName() {
         final java.io.File file = new java.io.File(sourceFile);
@@ -27,6 +29,10 @@ public @Data class Clazz {
             return name.substring(0, idx);
 
         return name;
+    }
+
+    public void addInterfaces(final List<TypeName> types) {
+        interfaces.addAll(types);
     }
 
     public void addSyntheticFunction(final Function function) {

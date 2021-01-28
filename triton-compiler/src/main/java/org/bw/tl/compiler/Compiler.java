@@ -27,7 +27,6 @@ public @Data class Compiler {
     private final List<Error> errors = new LinkedList<>();
     private final List<Clazz> classes;
     private final ClassLoader loader;
-    private String parent = "java/lang/Object";
 
     public Compiler(final List<Clazz> classes, final ClassLoader loader) {
         this.classes = classes;
@@ -64,12 +63,34 @@ public @Data class Compiler {
     private byte[] build(final Clazz clazz) {
         final ClassWriter cw = new ClassWriter(COMPUTE_FRAMES + COMPUTE_MAXS);
 
+        final ExpressionResolver resolver = new ExpressionResolverImpl(clazz, classes, loader, new Scope());
+        final Type parent = clazz.getParent().resolveType(resolver);
+        final List<TypeName> interfaceTypes = clazz.getInterfaces();
+        final String[] interfaces = new String[interfaceTypes.size()];
+
+        if (parent == null) {
+            errors.add(new Error("Cannot resolve type of parent", clazz.getSourceFile(), clazz.getParent(),
+                    ErrorType.SYMBOL_ERROR, clazz.getParent().getLineNumber()));
+            return null;
+        }
+
+        for (int i = 0; i < interfaces.length; i++) {
+            final TypeName typeName = interfaceTypes.get(i);
+            final Type type = interfaceTypes.get(i).resolveType(resolver);
+
+            if (type == null) {
+                errors.add(new Error("Cannot resolve type of interface", clazz.getSourceFile(), typeName,
+                        ErrorType.SYMBOL_ERROR, typeName.getLineNumber()));
+                return null;
+            }
+
+            interfaces[i] = type.getDescriptor();
+        }
+
         cw.visit(V1_8, ACC_PUBLIC + ACC_SUPER, clazz.getInternalName(), null,
-                parent, null);
+                parent.getInternalName(), interfaces);
 
         buildClassInitializer(cw, clazz);
-
-        final ExpressionResolver resolver = new ExpressionResolverImpl(clazz, classes, loader, new Scope());
 
         for (final Field field : clazz.getFields()) {
             if (field.getType() == null) {
@@ -166,7 +187,6 @@ public @Data class Compiler {
     }
 
     private void buildClassInitializer(final ClassWriter cw, final Clazz clazz) {
-
         final MethodVisitor mv = cw.visitMethod(ACC_PUBLIC + ACC_STATIC, "<clinit>", "()V",
                 null, null);
 
